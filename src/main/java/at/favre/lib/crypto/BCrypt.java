@@ -1,30 +1,72 @@
 package at.favre.lib.crypto;
 
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 
-public class BCrypt {
+public final class BCrypt {
+    final static int SALT_LENGTH = 16;
+    final static int MIN_COST = 4;
+    final static int MAX_COST = 30;
 
     private final Charset defaultCharset = StandardCharsets.UTF_8;
     private final Version version;
+    private final SecureRandom secureRandom;
+    private final BCryptProtocol.Radix64Encoder encoder;
 
-    public BCrypt(Version version) {
+    public BCrypt(Version version, SecureRandom secureRandom, BCryptProtocol.Radix64Encoder encoder) {
         this.version = version;
+        this.secureRandom = secureRandom;
+        this.encoder = encoder;
+    }
+
+    public byte[] hash(int cost, char[] password) {
+        return hash(cost, generateRandomSalt(), password);
     }
 
     public byte[] hash(int cost, byte[] salt, char[] password) {
-        return null;
+
+        if (cost > MAX_COST || cost < MIN_COST) {
+            throw new IllegalArgumentException("cost factor must be between " + MIN_COST + " and " + MAX_COST + ", was " + cost);
+        }
+        if (salt == null) {
+            throw new IllegalArgumentException("salt must not be null");
+        }
+        if (salt.length != SALT_LENGTH) {
+            throw new IllegalArgumentException("salt must be exactly " + SALT_LENGTH + " bytes, was " + salt.length);
+        }
+        if (password == null) {
+            throw new IllegalArgumentException("provided password must not be null");
+        }
+        if (password.length > 72 || password.length < 1) {
+            throw new IllegalArgumentException("password must be between 1 and 72 bytes encoded in utf-8, was " + password.length);
+        }
+
+        byte[] hash = new BCryptProtocol.BcryptHasher().cryptRaw(cost, salt, defaultCharset.encode(CharBuffer.wrap(password)).array());
+
+
+        return createOutMessage(cost, salt, hash);
     }
 
-    private String createOutMessage(int cost, byte[] salt, byte[] hash) {
-        ByteBuffer byteBuffer = ByteBuffer.allocate(version.versionPrefix.length + salt.length + hash.length);
+    private byte[] generateRandomSalt() {
+        byte[] salt = new byte[SALT_LENGTH];
+        secureRandom.nextBytes(salt);
+        return salt;
+    }
+
+    private byte[] createOutMessage(int cost, byte[] salt, byte[] hash) {
+        byte[] saltEncoded = encoder.encode(salt, salt.length);
+        byte[] hashEncoded = encoder.encode(hash, hash.length);
+
+        ByteBuffer byteBuffer = ByteBuffer.allocate(version.versionPrefix.length + 4 + 1 + saltEncoded.length + hashEncoded.length);
         byteBuffer.put(version.versionPrefix);
         byteBuffer.put(String.valueOf(cost).getBytes(defaultCharset));
         byteBuffer.put((byte) 0x24); //$
-        byteBuffer.put(salt);
-        byteBuffer.put(hash);
-        return new String(byteBuffer.array(), defaultCharset);
+        byteBuffer.put(saltEncoded);
+        byteBuffer.put(hashEncoded);
+        return byteBuffer.array();
     }
 
 
