@@ -11,18 +11,37 @@ public final class BCrypt {
      * Ascii hex pointer for '$'
      */
     private static final byte SEPARATOR = 0x24;
+
+    /**
+     * Ascii hex pointer for '2'
+     */
     private static final byte MAJOR_VERSION = 0x32;
     static final int SALT_LENGTH = 16;
     static final int MIN_COST = 4;
     static final int MAX_COST = 30;
 
+    public static BCrypt withDefaults() {
+        return new BCrypt(Version.VERSION_2A, new SecureRandom(), new BCryptProtocol.Encoder.Default());
+    }
+
+    public static BCrypt with(Version version) {
+        return new BCrypt(version, new SecureRandom(), new BCryptProtocol.Encoder.Default());
+    }
+
+    public static BCrypt with(SecureRandom secureRandom) {
+        return new BCrypt(Version.VERSION_2A, secureRandom, new BCryptProtocol.Encoder.Default());
+    }
+
+    public static BCrypt with(Version version, SecureRandom secureRandom) {
+        return new BCrypt(version, secureRandom, new BCryptProtocol.Encoder.Default());
+    }
 
     private final Charset defaultCharset = StandardCharsets.UTF_8;
     private final Version version;
     private final SecureRandom secureRandom;
-    private final BCryptProtocol.Radix64Encoder encoder;
+    private final BCryptProtocol.Encoder encoder;
 
-    public BCrypt(Version version, SecureRandom secureRandom, BCryptProtocol.Radix64Encoder encoder) {
+    private BCrypt(Version version, SecureRandom secureRandom, BCryptProtocol.Encoder encoder) {
         this.version = version;
         this.secureRandom = secureRandom;
         this.encoder = encoder;
@@ -46,7 +65,7 @@ public final class BCrypt {
         if (password == null) {
             throw new IllegalArgumentException("provided password must not be null");
         }
-        if (password.length > 72 || password.length < 1) {
+        if (password.length > 72 || password.length < 0) {
             throw new IllegalArgumentException("password must be between 1 and 72 bytes encoded in utf-8, was " + password.length);
         }
 
@@ -101,7 +120,7 @@ public final class BCrypt {
 
         ByteBuffer byteBuffer = ByteBuffer.allocate(version.versionPrefix.length + 4 + 1 + saltEncoded.length + hashEncoded.length);
         byteBuffer.put(version.versionPrefix);
-        byteBuffer.put(String.valueOf(cost).getBytes(defaultCharset));
+        byteBuffer.put(String.format("%02d", cost).getBytes(defaultCharset));
         byteBuffer.put(SEPARATOR);
         byteBuffer.put(saltEncoded);
         byteBuffer.put(hashEncoded);
