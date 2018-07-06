@@ -59,7 +59,15 @@ Add to your `build.gradle` module dependencies:
 
 ## Description
 
-tbd
+### Enhancements over jBcrypt
+
+* Support of most [version](https://en.wikipedia.org/wiki/Bcrypt#Versioning_history) variations (`$2a$`, `$2b$`, `$2x$`, `$2y$`) 
+* Only uses byte and char arrays which can be wiped after use
+* Provide your own salt
+* Provide your own `SecureRandom` for salt generation
+* Clearer and easier API
+* Signed Jar and signed commits
+* More tests (and probably higher coverage)
 
 ## Digital Signatures
 
