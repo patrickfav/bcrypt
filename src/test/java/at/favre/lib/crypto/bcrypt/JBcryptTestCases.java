@@ -13,19 +13,6 @@ import static org.junit.Assert.assertArrayEquals;
  * See: https://github.com/jeremyh/jBCrypt/blob/master/src/test/java/org/mindrot/TestBCrypt.java
  */
 public class JBcryptTestCases {
-    private final static class BcryptTestEntry {
-        public final String plainPw;
-        public final int cost;
-        public final String radix64Salt;
-        public final String hash;
-
-        public BcryptTestEntry(String plainPw, int cost, String radix64Salt, String hash) {
-            this.plainPw = plainPw;
-            this.cost = cost;
-            this.radix64Salt = radix64Salt;
-            this.hash = hash;
-        }
-    }
 
     private final BcryptTestEntry[] testEntries = new BcryptTestEntry[]{
             new BcryptTestEntry("abc", 6, "If6bvum7DFjUnE9p2uDeDu", "$2a$06$If6bvum7DFjUnE9p2uDeDu0YHzrHM6tf.iqN8.yx.jNN1ILEf7h0i"),
@@ -60,9 +47,10 @@ public class JBcryptTestCases {
     @Test
     @Ignore
     public void testAgainstReferenceHashes() {
-        for (int i = 0; i < testEntries.length; i++) {
-            byte[] hashed = BCrypt.withDefaults().hash(testEntries[i].cost, new BCryptProtocol.Encoder.Default().decode(testEntries[i].radix64Salt, 16), testEntries[i].plainPw.toCharArray());
-            assertArrayEquals("hash does not match: \n\r" + testEntries[i].hash + " was \n\r" + new String(hashed, StandardCharsets.UTF_8), testEntries[i].hash.getBytes(StandardCharsets.UTF_8), hashed);
+        for (BcryptTestEntry testEntry : testEntries) {
+            byte[] hashed = BCrypt.withDefaults().hash(testEntry.cost, new BCryptProtocol.Encoder.Default().decode(testEntry.radix64Salt, 16), testEntry.plainPw.toCharArray());
+            assertArrayEquals("hash does not match: \n\r" + testEntry.hash + " was \n\r" + new String(hashed, StandardCharsets.UTF_8),
+                    testEntry.hash.getBytes(StandardCharsets.UTF_8), hashed);
         }
     }
 

@@ -5,6 +5,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class BcryptTest {
+    // see: https://stackoverflow.com/a/12761326/774398
+    private final BcryptTestEntry unicodeTestEntry = new BcryptTestEntry("ππππππππ", 10, ".TtQJ4Jr6isd4Hp.mVfZeu", "$2a$10$.TtQJ4Jr6isd4Hp.mVfZeuh6Gws4rOQ/vdBczhDx.19NFK0Y84Dle");
+
     @Before
     public void setUp() {
     }
