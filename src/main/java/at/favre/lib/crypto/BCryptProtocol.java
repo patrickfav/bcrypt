@@ -1,6 +1,9 @@
 package at.favre.lib.crypto;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.util.Arrays;
 
 final class BCryptProtocol {
 
@@ -424,8 +427,16 @@ final class BCryptProtocol {
         BcryptHasher() {
         }
 
-        byte[] cryptRaw(int cost, byte[] salt, byte[] password) {
-            return cryptRaw(cost, salt, password, bf_crypt_ciphertext.clone());
+        byte[] cryptRaw(int cost, byte[] salt, char[] password, Charset charset) {
+            byte[] passwordBytes = null;
+            try {
+                passwordBytes = charset.encode(CharBuffer.wrap(password)).array();
+                return cryptRaw(cost, salt, passwordBytes, bf_crypt_ciphertext.clone());
+            } finally {
+                if (passwordBytes != null) {
+                    Arrays.fill(passwordBytes, (byte) 0);
+                }
+            }
         }
 
         /**
@@ -439,7 +450,7 @@ final class BCryptProtocol {
          * @param cdata    the plaintext to encrypt
          * @return an array containing the binary hashed password
          */
-        byte[] cryptRaw(int cost, byte[] salt, byte[] password, int[] cdata) {
+        private byte[] cryptRaw(int cost, byte[] salt, byte[] password, int[] cdata) {
 
             int rounds, i, j;
             int clen = cdata.length;
