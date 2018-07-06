@@ -51,6 +51,12 @@ public final class BCrypt {
         return hash(cost, generateRandomSalt(), password);
     }
 
+    private byte[] generateRandomSalt() {
+        byte[] salt = new byte[SALT_LENGTH];
+        secureRandom.nextBytes(salt);
+        return salt;
+    }
+
     public byte[] hash(int cost, byte[] salt, char[] password) {
 
         if (cost > MAX_COST || cost < MIN_COST) {
@@ -72,6 +78,19 @@ public final class BCrypt {
         byte[] hash = new BCryptProtocol.BcryptHasher().cryptRaw(cost, salt, password, defaultCharset);
 
         return createOutMessage(cost, salt, hash);
+    }
+
+    private byte[] createOutMessage(int cost, byte[] salt, byte[] hash) {
+        byte[] saltEncoded = encoder.encode(salt, salt.length);
+        byte[] hashEncoded = encoder.encode(hash, 24 - 1);
+
+        ByteBuffer byteBuffer = ByteBuffer.allocate(version.versionPrefix.length + 4 + 1 + saltEncoded.length + hashEncoded.length);
+        byteBuffer.put(version.versionPrefix);
+        byteBuffer.put(String.format("%02d", cost).getBytes(defaultCharset));
+        byteBuffer.put(SEPARATOR);
+        byteBuffer.put(saltEncoded);
+        byteBuffer.put(hashEncoded);
+        return byteBuffer.array();
     }
 
     public boolean verify(char[] bcryptHash) {
@@ -106,25 +125,6 @@ public final class BCrypt {
         }
 
         return new Result(usedVersion, 0, null, false);
-    }
-
-    private byte[] generateRandomSalt() {
-        byte[] salt = new byte[SALT_LENGTH];
-        secureRandom.nextBytes(salt);
-        return salt;
-    }
-
-    private byte[] createOutMessage(int cost, byte[] salt, byte[] hash) {
-        byte[] saltEncoded = encoder.encode(salt, salt.length);
-        byte[] hashEncoded = encoder.encode(hash, hash.length);
-
-        ByteBuffer byteBuffer = ByteBuffer.allocate(version.versionPrefix.length + 4 + 1 + saltEncoded.length + hashEncoded.length);
-        byteBuffer.put(version.versionPrefix);
-        byteBuffer.put(String.format("%02d", cost).getBytes(defaultCharset));
-        byteBuffer.put(SEPARATOR);
-        byteBuffer.put(saltEncoded);
-        byteBuffer.put(hashEncoded);
-        return byteBuffer.array();
     }
 
     public static final class Result {

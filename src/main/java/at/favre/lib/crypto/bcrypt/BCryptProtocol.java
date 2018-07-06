@@ -3,6 +3,7 @@ package at.favre.lib.crypto.bcrypt;
 import java.io.ByteArrayOutputStream;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 final class BCryptProtocol {
@@ -43,6 +44,38 @@ final class BCryptProtocol {
                     51, 52, 53, -1, -1, -1, -1, -1
             };
 
+            public byte[] encode(byte[] d, int len) {
+                int off = 0;
+                StringBuilder rs = new StringBuilder();
+                int c1, c2;
+
+                if (len <= 0 || len > d.length)
+                    throw new IllegalArgumentException("Invalid len");
+
+                while (off < len) {
+                    c1 = d[off++] & 0xff;
+                    rs.append(base64_code[(c1 >> 2) & 0x3f]);
+                    c1 = (c1 & 0x03) << 4;
+                    if (off >= len) {
+                        rs.append(base64_code[c1 & 0x3f]);
+                        break;
+                    }
+                    c2 = d[off++] & 0xff;
+                    c1 |= (c2 >> 4) & 0x0f;
+                    rs.append(base64_code[c1 & 0x3f]);
+                    c1 = (c2 & 0x0f) << 2;
+                    if (off >= len) {
+                        rs.append(base64_code[c1 & 0x3f]);
+                        break;
+                    }
+                    c2 = d[off++] & 0xff;
+                    c1 |= (c2 >> 6) & 0x03;
+                    rs.append(base64_code[c1 & 0x3f]);
+                    rs.append(base64_code[c2 & 0x3f]);
+                }
+                return rs.toString().getBytes(StandardCharsets.UTF_8);
+            }
+
             /**
              * Encode a byte array using bcrypt's slightly-modified base64
              * encoding scheme. Note that this is *not* compatible with
@@ -53,7 +86,7 @@ final class BCryptProtocol {
              * @return base64-encoded string
              * @throws IllegalArgumentException if the length is invalid
              */
-            public byte[] encode(byte[] d, int len) {
+            public byte[] encode2(byte[] d, int len) {
                 int off = 0;
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 int c1, c2;
@@ -94,8 +127,9 @@ final class BCryptProtocol {
              * @return the decoded value of x
              */
             private static byte char64(char x) {
-                if ((int) x < 0 || (int) x > index_64.length)
+                if ((int) x >= index_64.length) {
                     return -1;
+                }
                 return index_64[(int) x];
             }
 
@@ -436,7 +470,8 @@ final class BCryptProtocol {
         byte[] cryptRaw(int cost, byte[] salt, char[] password, Charset charset) {
             byte[] passwordBytes = null;
             try {
-                passwordBytes = charset.encode(CharBuffer.wrap(password)).array();
+                //passwordBytes = charset.encode(CharBuffer.wrap(password).put("\000")).array();
+                passwordBytes = String.valueOf(CharBuffer.wrap(password).put("\000")).getBytes(charset);
                 return cryptRaw(cost, salt, passwordBytes, bf_crypt_ciphertext.clone());
             } finally {
                 if (passwordBytes != null) {
@@ -458,17 +493,16 @@ final class BCryptProtocol {
          */
         private byte[] cryptRaw(int cost, byte[] salt, byte[] password, int[] cdata) {
 
-            int rounds, i, j;
             int clen = cdata.length;
 
             if (cost < BCrypt.MIN_COST || cost > BCrypt.MAX_COST) {
-                throw new IllegalArgumentException("Bad number of rounds");
+                throw new IllegalArgumentException("bad number of rounds");
             }
 
-            rounds = 1 << cost;
+            int rounds = 1 << cost;
 
             if (salt.length != BCrypt.SALT_LENGTH) {
-                throw new IllegalArgumentException("Bad salt length");
+                throw new IllegalArgumentException("bad salt length");
             }
 
             int[] P = P_orig.clone();
@@ -476,18 +510,19 @@ final class BCryptProtocol {
 
             enhancedKeySchedule(P, S, salt, password);
 
-            for (i = 0; i != rounds; i++) {
+            for (int i = 0; i != rounds; i++) {
                 key(P, S, password);
                 key(P, S, salt);
             }
 
-            for (i = 0; i < 64; i++) {
-                for (j = 0; j < (clen >> 1); j++)
+            for (int i = 0; i < 64; i++) {
+                for (int j = 0; j < (clen >> 1); j++) {
                     encipher(P, S, cdata, j << 1);
+                }
             }
 
             byte[] ret = new byte[clen * 4];
-            for (i = 0, j = 0; i < clen; i++) {
+            for (int i = 0, j = 0; i < clen; i++) {
                 ret[j++] = (byte) ((cdata[i] >> 24) & 0xff);
                 ret[j++] = (byte) ((cdata[i] >> 16) & 0xff);
                 ret[j++] = (byte) ((cdata[i] >> 8) & 0xff);
