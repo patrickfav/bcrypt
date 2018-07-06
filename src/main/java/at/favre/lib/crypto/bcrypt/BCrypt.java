@@ -86,10 +86,10 @@ public final class BCrypt {
     private byte[] createOutMessage(int cost, byte[] salt, byte[] hash) {
         byte[] saltEncoded = encoder.encode(salt, salt.length);
         byte[] hashEncoded = encoder.encode(hash, 24 - 1);
-
-        ByteBuffer byteBuffer = ByteBuffer.allocate(version.versionPrefix.length + 4 + 1 + saltEncoded.length + hashEncoded.length);
+        byte[] costFactorBytes = String.format("%02d", cost).getBytes(defaultCharset);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(version.versionPrefix.length + costFactorBytes.length + 1 + saltEncoded.length + hashEncoded.length);
         byteBuffer.put(version.versionPrefix);
-        byteBuffer.put(String.format("%02d", cost).getBytes(defaultCharset));
+        byteBuffer.put(costFactorBytes);
         byteBuffer.put(SEPARATOR);
         byteBuffer.put(saltEncoded);
         byteBuffer.put(hashEncoded);

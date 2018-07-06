@@ -21,6 +21,5 @@ public class BcryptTest {
             byte[] hash = bCrypt.hash(i, salt, "1234".toCharArray());
             System.out.println(Bytes.wrap(hash).encodeUtf8());
         }
-
     }
 }
