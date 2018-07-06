@@ -142,7 +142,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <skip>true</skip> <!-- set this to true if fail because of missing credentials -->
+                    <skip>false</skip> <!-- set this to true if fail because of missing credentials -->
                     <keystore>keystore.jks</keystore>
                     <alias>pfopensource</alias>
                     <storepass>${env.OPENSOURCE_PROJECTS_KS_PW}</storepass>
