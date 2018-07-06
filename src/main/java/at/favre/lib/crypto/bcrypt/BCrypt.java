@@ -17,6 +17,7 @@ public final class BCrypt {
      */
     private static final byte MAJOR_VERSION = 0x32;
     static final int SALT_LENGTH = 16;
+    static final int MAX_PW_LENGTH_BYTE = 71;
     static final int MIN_COST = 4;
     static final int MAX_COST = 30;
 
@@ -40,11 +41,13 @@ public final class BCrypt {
     private final Version version;
     private final SecureRandom secureRandom;
     private final BCryptProtocol.Encoder encoder;
+    private final LongPasswordStrategy longPasswordStrategy;
 
     private BCrypt(Version version, SecureRandom secureRandom, BCryptProtocol.Encoder encoder) {
         this.version = version;
         this.secureRandom = secureRandom;
         this.encoder = encoder;
+        this.longPasswordStrategy = new LongPasswordStrategy.StrictMaxPasswordLengthStrategy();
     }
 
     public byte[] hash(int cost, char[] password) {
@@ -71,7 +74,7 @@ public final class BCrypt {
         if (password == null) {
             throw new IllegalArgumentException("provided password must not be null");
         }
-        if (password.length > 72 || password.length < 0) {
+        if (password.length > MAX_PW_LENGTH_BYTE || password.length < 0) {
             throw new IllegalArgumentException("password must be between 1 and 72 bytes encoded in utf-8, was " + password.length);
         }
 
@@ -125,6 +128,18 @@ public final class BCrypt {
         }
 
         return new Result(usedVersion, 0, null, false);
+    }
+
+    /**
+     * Upgrades a bcrypt password hash with a higher cost factor. The current hash will be used and
+     * hashed additional times. This process is not reversible.
+     *
+     * @param currentLowercostBcryptHash the current full hash (including the version identifier etc.)
+     * @param newMinCost                 the new hash will have at least this cost factor
+     * @return the new bcrypt hash or the same if current cost factor is at least newMinCost
+     */
+    public byte[] upgrade(char[] currentLowercostBcryptHash, int newMinCost) {
+        return null;
     }
 
     public static final class Result {
