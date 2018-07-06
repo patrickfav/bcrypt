@@ -1,3 +1,6 @@
+# To let the CI execute the maven wrapper, use this command and push the change:
+#    git update-index --chmod=+x mvnw
+
 language: java
 install: true
 jdk:
