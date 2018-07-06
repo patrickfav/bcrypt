@@ -10,11 +10,11 @@ public final class BCrypt {
     /**
      * Ascii hex pointer for '$'
      */
-    private final static byte SEPARATOR = 0x24;
-    private final static byte MAJOR_VERSION = 0x32;
-    final static int SALT_LENGTH = 16;
-    final static int MIN_COST = 4;
-    final static int MAX_COST = 30;
+    private static final byte SEPARATOR = 0x24;
+    private static final byte MAJOR_VERSION = 0x32;
+    static final int SALT_LENGTH = 16;
+    static final int MIN_COST = 4;
+    static final int MAX_COST = 30;
 
 
     private final Charset defaultCharset = StandardCharsets.UTF_8;
@@ -108,7 +108,7 @@ public final class BCrypt {
         return byteBuffer.array();
     }
 
-    public final static class Result {
+    public static final class Result {
         public final Version version;
         public final int cost;
         public final byte[] salt;
