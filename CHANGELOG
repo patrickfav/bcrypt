@@ -1,34 +1,5 @@
 # Releases
 
-## v1.0.0
-
-* add checkstyle rules
-
-## v0.4.4
-
-* fix signed jar
-
-## v0.4.3
-
-* remove obsolete maven dependencies
-
-## v0.4.2
-
-* make mac factory public
-
-## v0.4.1
-
-* some small bugfixes
-
-## v0.4.0
-
-* change api from `extract(ikm,salt)` to a more RFC compliant `extract(salt,ikm)` (also `extractAndExpand()`)
-
-## v0.3.0
-
-* refactor 'expand' byte handling to use byte buffer
-* rename package to `at.favre.lib.crypto`
-
-## v0.2.1
+## v0.1.0
 
 initial version
