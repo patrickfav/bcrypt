@@ -2,10 +2,6 @@ package at.favre.lib.crypto.bcrypt;
 
 import org.junit.Test;
 
-import java.nio.charset.StandardCharsets;
-
-import static org.junit.Assert.assertArrayEquals;
-
 /**
  * These are the adapted test cases from the 'original' jBcrypt implementation
  * <p>
@@ -45,11 +41,7 @@ public class JBcryptTestCases {
      */
     @Test
     public void testAgainstReferenceHashes() {
-        for (BcryptTestEntry testEntry : testEntries) {
-            byte[] hashed = BCrypt.withDefaults().hash(testEntry.cost, new BCryptProtocol.Encoder.Default().decode(testEntry.radix64Salt, 16), testEntry.plainPw.toCharArray());
-            assertArrayEquals("hash does not match: \n\r" + testEntry.hash + " was \n\r" + new String(hashed, StandardCharsets.UTF_8),
-                    testEntry.hash.getBytes(StandardCharsets.UTF_8), hashed);
-        }
+        BcryptTestEntry.testEntries(testEntries);
     }
 
 //    /**

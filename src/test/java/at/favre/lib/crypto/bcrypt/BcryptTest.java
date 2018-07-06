@@ -5,13 +5,28 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class BcryptTest {
-    // see: https://stackoverflow.com/a/12761326/774398
-    private final BcryptTestEntry unicodeTestEntry = new BcryptTestEntry("ππππππππ", 10, ".TtQJ4Jr6isd4Hp.mVfZeu", "$2a$10$.TtQJ4Jr6isd4Hp.mVfZeuh6Gws4rOQ/vdBczhDx.19NFK0Y84Dle");
+    private BcryptTestEntry[] testEntries = new BcryptTestEntry[]{
+            // see: https://stackoverflow.com/a/12761326/774398
+            new BcryptTestEntry("ππππππππ", 10, ".TtQJ4Jr6isd4Hp.mVfZeu", "$2a$10$.TtQJ4Jr6isd4Hp.mVfZeuh6Gws4rOQ/vdBczhDx.19NFK0Y84Dle"),
+            // see: http://openwall.info/wiki/john/sample-hashes
+            new BcryptTestEntry("password", 5, "bvIG6Nmid91Mu9RcmmWZfO", "$2a$05$bvIG6Nmid91Mu9RcmmWZfO5HJIMCT8riNW0hEp8f6/FuA2/mHZFpe"),
+            // see: http://cvsweb.openwall.com/cgi/cvsweb.cgi/Owl/packages/glibc/crypt_blowfish/wrapper.c?rev=HEAD
+            new BcryptTestEntry("U*U", 5, "CCCCCCCCCCCCCCCCCCCCC.", "$2a$05$CCCCCCCCCCCCCCCCCCCCC.E5YPO9kmyuRGyh0XouQYb4YMJKvyOeW"),
+            new BcryptTestEntry("U*U*", 5, "CCCCCCCCCCCCCCCCCCCCC.", "$2a$05$CCCCCCCCCCCCCCCCCCCCC.VGOzA784oUp/Z0DY336zx7pLYAy0lwK"),
+            new BcryptTestEntry("U*U*U", 5, "XXXXXXXXXXXXXXXXXXXXXO", "$2a$05$XXXXXXXXXXXXXXXXXXXXXOAcXxm9kjPGEMsLznoKqmqw7tc8WCx4a"),
+            // new BcryptTestEntry("\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff", 5, "/OK.fbVrR/bpIqNJ5ianF.", "$2a$05$/OK.fbVrR/bpIqNJ5ianF.9tQZzcJfm3uj2NvJ/n5xkhpqLrMpWCe"),
+            //new BcryptTestEntry("\\xa3", 5, "/OK.fbVrR/bpIqNJ5ianF.", "$2a$05$/OK.fbVrR/bpIqNJ5ianF.CE5elHaaO4EbggVDjb8P19RukzXSM3e"),
+            //new BcryptTestEntry("$_)", 10, "O5lzwORSFzOLA2Ku1vFere", "$2a$10$O5lzwORSFzOLA2Ku1vFereqOia97MSeF8iRIhATzKqk3ozRdXmgS6")
+    };
 
     @Before
     public void setUp() {
     }
 
+    @Test
+    public void testEntriesAgainstRef() {
+        BcryptTestEntry.testEntries(testEntries);
+    }
 
     @Test
     public void simpleTest() {

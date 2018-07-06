@@ -1,5 +1,7 @@
 package at.favre.lib.crypto.bcrypt;
 
+import at.favre.lib.bytes.Bytes;
+
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -87,13 +89,20 @@ public final class BCrypt {
         byte[] saltEncoded = encoder.encode(salt, salt.length);
         byte[] hashEncoded = encoder.encode(hash, 24 - 1);
         byte[] costFactorBytes = String.format("%02d", cost).getBytes(defaultCharset);
-        ByteBuffer byteBuffer = ByteBuffer.allocate(version.versionPrefix.length + costFactorBytes.length + 1 + saltEncoded.length + hashEncoded.length);
-        byteBuffer.put(version.versionPrefix);
-        byteBuffer.put(costFactorBytes);
-        byteBuffer.put(SEPARATOR);
-        byteBuffer.put(saltEncoded);
-        byteBuffer.put(hashEncoded);
-        return byteBuffer.array();
+
+        try {
+            ByteBuffer byteBuffer = ByteBuffer.allocate(version.versionPrefix.length + costFactorBytes.length + 1 + saltEncoded.length + hashEncoded.length);
+            byteBuffer.put(version.versionPrefix);
+            byteBuffer.put(costFactorBytes);
+            byteBuffer.put(SEPARATOR);
+            byteBuffer.put(saltEncoded);
+            byteBuffer.put(hashEncoded);
+            return byteBuffer.array();
+        } finally {
+            Bytes.wrap(saltEncoded).mutable().secureWipe();
+            Bytes.wrap(hashEncoded).mutable().secureWipe();
+            Bytes.wrap(costFactorBytes).mutable().secureWipe();
+        }
     }
 
     public boolean verify(char[] bcryptHash) {
