@@ -470,8 +470,8 @@ final class BCryptProtocol {
         byte[] cryptRaw(int cost, byte[] salt, char[] password, Charset charset) {
             byte[] passwordBytes = null;
             try {
-                //passwordBytes = charset.encode(CharBuffer.wrap(password).put("\000")).array();
-                passwordBytes = String.valueOf(CharBuffer.wrap(password).put("\000")).getBytes(charset);
+                passwordBytes = new String(CharBuffer.allocate(password.length + 1).put(password).put("\000").array())
+                        .getBytes(charset);
                 return cryptRaw(cost, salt, passwordBytes, bf_crypt_ciphertext.clone());
             } finally {
                 if (passwordBytes != null) {
@@ -491,7 +491,7 @@ final class BCryptProtocol {
          * @param cdata    the plaintext to encrypt
          * @return an array containing the binary hashed password
          */
-        private byte[] cryptRaw(int cost, byte[] salt, byte[] password, int[] cdata) {
+        byte[] cryptRaw(int cost, byte[] salt, byte[] password, int[] cdata) {
 
             int clen = cdata.length;
 
