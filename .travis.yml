@@ -4,14 +4,14 @@ jdk:
   - oraclejdk8
 
 script:
-  - mvn clean install -X -Djarsigner.skip=false checkstyle:check
+  - ./mvnw clean install -X -Djarsigner.skip=false checkstyle:check
 
 after_success:
-  - mvn test jacoco:report coveralls:report
+  - ./mvnw test jacoco:report coveralls:report
 
 deploy:
   - provider: script
-    script: mvn -s ci-settings.xml deploy -X checkstyle:checkstyle
+    script: ./mvnw -s ci-settings.xml deploy -X checkstyle:checkstyle
     skip_cleanup: true
     on:
       branch: master
