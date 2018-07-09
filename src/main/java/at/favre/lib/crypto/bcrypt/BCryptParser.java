@@ -1,30 +1,36 @@
 package at.favre.lib.crypto.bcrypt;
 
+import at.favre.lib.bytes.Bytes;
+
 import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.Objects;
 
 import static at.favre.lib.crypto.bcrypt.BCrypt.MAJOR_VERSION;
 import static at.favre.lib.crypto.bcrypt.BCrypt.SEPARATOR;
 
 public interface BCryptParser {
 
-    Parts parse(byte[] bcryptHash);
+    Parts parse(byte[] bcryptHash) throws IllegalBCryptFormatException;
 
     final class Default implements BCryptParser {
 
-        public final Charset defaultCharset;
+        private final Charset defaultCharset;
+        private final BCryptProtocol.Encoder encoder;
 
-        public Default(Charset defaultCharset) {
+        Default(Charset defaultCharset, BCryptProtocol.Encoder encoder) {
             this.defaultCharset = defaultCharset;
+            this.encoder = encoder;
         }
 
         @Override
-        public Parts parse(byte[] bcryptHash) {
+        public Parts parse(byte[] bcryptHash) throws IllegalBCryptFormatException {
             if (bcryptHash == null || bcryptHash.length == 0) {
                 throw new IllegalArgumentException("must provide non-null, non-empty hash");
             }
 
             if (bcryptHash.length < 7) {
-                throw new IllegalBCryptFormatException("hash prefix meta must be at least 6 bytes long e.g. '$2a$10$'");
+                throw new IllegalBCryptFormatException("hash prefix meta must be at least 7 bytes long e.g. '$2a$10$'");
             }
 
             if (bcryptHash[0] != SEPARATOR || bcryptHash[1] != MAJOR_VERSION) {
@@ -44,8 +50,8 @@ public interface BCryptParser {
             }
 
             byte[] costBytes = new byte[2];
-            costBytes[0] = bcryptHash[usedVersion.versionPrefix.length - 1];
-            costBytes[1] = bcryptHash[usedVersion.versionPrefix.length];
+            costBytes[0] = bcryptHash[usedVersion.versionPrefix.length];
+            costBytes[1] = bcryptHash[usedVersion.versionPrefix.length + 1];
 
             int parsedCostFactor;
             try {
@@ -54,15 +60,23 @@ public interface BCryptParser {
                 throw new IllegalBCryptFormatException("cannot parse cost factor '" + new String(costBytes, defaultCharset) + "'");
             }
 
-            if (bcryptHash[usedVersion.versionPrefix.length + 1] != SEPARATOR) {
-                throw new IllegalBCryptFormatException("expected separator " + SEPARATOR + " after cost factor");
+            if (bcryptHash[usedVersion.versionPrefix.length + 2] != SEPARATOR) {
+                throw new IllegalBCryptFormatException("expected separator " + Bytes.from(SEPARATOR).encodeUtf8() + " after cost factor");
             }
 
-            /*for (int i = ; i <; i++) {
+            if (bcryptHash.length != 7 + 22 + 31) {
+                throw new IllegalBCryptFormatException("hash expected to be exactly 60 bytes");
+            }
 
-            }*/
+            byte[] salt = new byte[22];
+            byte[] hash = new byte[31];
 
-            return new Parts(usedVersion, parsedCostFactor, null, null);
+            System.arraycopy(bcryptHash, 7, salt, 0, salt.length);
+            System.arraycopy(bcryptHash, 7 + salt.length, hash, 0, hash.length);
+
+            return new Parts(usedVersion, parsedCostFactor,
+                    encoder.decode(new String(salt), salt.length),
+                    encoder.decode(new String(hash), hash.length));
         }
     }
 
@@ -77,6 +91,36 @@ public interface BCryptParser {
             this.cost = cost;
             this.salt = salt;
             this.hash = hash;
+        }
+
+        @Override
+        public String toString() {
+            return "Parts{" +
+                    "version=" + version +
+                    ", cost=" + cost +
+                    ", salt=" + Bytes.wrap(salt).toString() +
+                    ", hash=" + Bytes.wrap(hash).toString() +
+                    '}';
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Parts parts = (Parts) o;
+            return cost == parts.cost &&
+                    version == parts.version &&
+                    Arrays.equals(salt, parts.salt) &&
+                    Arrays.equals(hash, parts.hash);
+        }
+
+        @Override
+        public int hashCode() {
+
+            int result = Objects.hash(version, cost);
+            result = 31 * result + Arrays.hashCode(salt);
+            result = 31 * result + Arrays.hashCode(hash);
+            return result;
         }
     }
 }

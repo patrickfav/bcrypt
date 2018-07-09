@@ -4,6 +4,8 @@ import at.favre.lib.bytes.Bytes;
 import org.junit.Before;
 import org.junit.Test;
 
+import static junit.framework.TestCase.*;
+
 public class BcryptTest {
     private BcryptTestEntry[] testEntries = new BcryptTestEntry[]{
             // see: https://stackoverflow.com/a/12761326/774398
@@ -33,8 +35,33 @@ public class BcryptTest {
         byte[] salt = new byte[]{(byte) 156, (byte) 234, 33, 0, 5, 69, 7, 18, 9, 10, 11, 0, 13, 99, 42, 16};
         BCrypt bCrypt = BCrypt.withDefaults();
         for (int i = 4; i < 10; i++) {
-            byte[] hash = bCrypt.hash(i, salt, "1234".toCharArray());
+            byte[] hash = bCrypt.hash(i, salt, "1234".getBytes());
+            assertEquals(60, hash.length);
             System.out.println(Bytes.wrap(hash).encodeUtf8());
         }
+    }
+
+    @Test
+    public void verifyWithResult() {
+        BCrypt bCrypt = BCrypt.withDefaults();
+        byte[] pw = "78PHasdhklöALÖö".getBytes();
+        byte[] hash = bCrypt.hash(8, Bytes.random(16).array(), pw);
+
+        BCrypt.Result result = BCrypt.withDefaults().verify(pw, hash, false);
+        assertTrue(result.verified);
+        assertEquals(BCrypt.Version.VERSION_2A, result.details.version);
+        assertEquals(8, result.details.cost);
+    }
+
+    @Test
+    public void verifyIncorrectStrictVersion() {
+        BCrypt bCrypt = BCrypt.with(BCrypt.Version.VERSION_2Y);
+        byte[] pw = "78PHasdhklöALÖö".getBytes();
+        byte[] hash = bCrypt.hash(5, Bytes.random(16).array(), pw);
+
+        BCrypt.Result result = BCrypt.with(BCrypt.Version.VERSION_2A).verify(pw, hash, true);
+        assertFalse(result.verified);
+        assertEquals(BCrypt.Version.VERSION_2Y, result.details.version);
+        assertEquals(5, result.details.cost);
     }
 }
