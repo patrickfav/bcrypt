@@ -12,12 +12,12 @@ public final class BCrypt {
     /**
      * Ascii hex pointer for '$'
      */
-    private static final byte SEPARATOR = 0x24;
+    static final byte SEPARATOR = 0x24;
 
     /**
      * Ascii hex pointer for '2'
      */
-    private static final byte MAJOR_VERSION = 0x32;
+    static final byte MAJOR_VERSION = 0x32;
     static final int SALT_LENGTH = 16;
     static final int MAX_PW_LENGTH_BYTE = 71;
     static final int MIN_COST = 4;
