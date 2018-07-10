@@ -10,6 +10,7 @@ import java.security.SecureRandom;
 import java.util.Objects;
 
 public final class BCrypt {
+    private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
     /**
      * Ascii hex pointer for '$'
      */
@@ -25,154 +26,270 @@ public final class BCrypt {
     static final int MIN_COST = 4;
     static final int MAX_COST = 30;
 
-    public static BCrypt withDefaults() {
-        return new BCrypt(Version.VERSION_2A, new SecureRandom(), new Radix64Encoder.Default());
+    private BCrypt() {
     }
 
-    public static BCrypt with(Version version) {
-        return new BCrypt(version, new SecureRandom(), new Radix64Encoder.Default());
+    /**
+     * Create a new instance of bcrypt hash with default version {@link Version#VERSION_2A}.
+     * Will throw an exception if given password is longer than the max length support for bycrpt of {@link #MAX_PW_LENGTH_BYTE}.
+     *
+     * @return new bcrypt hash instance
+     */
+    public static Hasher defaults() {
+        return new Hasher(Version.VERSION_2A, new SecureRandom(), new LongPasswordStrategy.StrictMaxPasswordLengthStrategy(MAX_PW_LENGTH_BYTE));
     }
 
-    public static BCrypt with(SecureRandom secureRandom) {
-        return new BCrypt(Version.VERSION_2A, secureRandom, new Radix64Encoder.Default());
+    /**
+     * Create a new instance of bcrypt hash with given {@link Version}.
+     * Will throw an exception if given password is longer than the max length support for bycrpt of {@link #MAX_PW_LENGTH_BYTE}.
+     *
+     * @param version defines what version of bcrypt will be generated (mostly the version identifier changes)
+     * @return new bcrypt hash instance
+     */
+    public static Hasher with(Version version) {
+        return new Hasher(version, new SecureRandom(), new LongPasswordStrategy.StrictMaxPasswordLengthStrategy(MAX_PW_LENGTH_BYTE));
     }
 
-    public static BCrypt with(Version version, SecureRandom secureRandom) {
-        return new BCrypt(version, secureRandom, new Radix64Encoder.Default());
+    /**
+     * Create a new instance of bcrypt hash with default version {@link Version#VERSION_2A}.
+     * The passed {@link SecureRandom} is used for generating the random salt.
+     * Will throw an exception if given password is longer than the max length support for bycrpt of {@link #MAX_PW_LENGTH_BYTE}.
+     *
+     * @param secureRandom to use for random salt generation
+     * @return new bcrypt hash instance
+     */
+    public static Hasher with(SecureRandom secureRandom) {
+        return new Hasher(Version.VERSION_2A, secureRandom, new LongPasswordStrategy.StrictMaxPasswordLengthStrategy(MAX_PW_LENGTH_BYTE));
     }
 
-    private final Charset defaultCharset = StandardCharsets.UTF_8;
-    private final Version version;
-    private final SecureRandom secureRandom;
-    private final Radix64Encoder encoder;
-    private final LongPasswordStrategy longPasswordStrategy;
-
-    private BCrypt(Version version, SecureRandom secureRandom, Radix64Encoder encoder) {
-        this.version = version;
-        this.secureRandom = secureRandom;
-        this.encoder = encoder;
-        this.longPasswordStrategy = new LongPasswordStrategy.StrictMaxPasswordLengthStrategy(MAX_PW_LENGTH_BYTE);
+    /**
+     * Create a new instance of bcrypt hash with default version {@link Version#VERSION_2A}.
+     * The passed {@link LongPasswordStrategy} will decide what to do when the password is longer than the supported
+     * {@link #MAX_PW_LENGTH_BYTE}
+     *
+     * @param longPasswordStrategy decides what to do on pw that are too long
+     * @return new bcrypt hash instance
+     */
+    public static Hasher with(LongPasswordStrategy longPasswordStrategy) {
+        return new Hasher(Version.VERSION_2A, new SecureRandom(), longPasswordStrategy);
     }
 
-    public byte[] hash(int cost, char[] password) {
-        byte[] passwordBytes = null;
-        try {
-            passwordBytes = new String(CharBuffer.allocate(password.length + 1).put(password).array())
-                    .getBytes(defaultCharset);
-            return hash(cost, generateRandomSalt(), passwordBytes);
-        } finally {
-            if (passwordBytes != null) {
-                Bytes.wrap(passwordBytes).mutable().secureWipe();
+    /**
+     * Create a new instance with custom version, secureRandom and long password strategy
+     *
+     * @param version              defines what version of bcrypt will be generated (mostly the version identifier changes)
+     * @param secureRandom         to use for random salt generation
+     * @param longPasswordStrategy decides what to do on pw that are too long
+     * @return new bcrypt hash instance
+     */
+    public static Hasher with(Version version, SecureRandom secureRandom, LongPasswordStrategy longPasswordStrategy) {
+        return new Hasher(version, secureRandom, longPasswordStrategy);
+    }
+
+    /**
+     * Creates a new instance of bcrypt verifier to verify a password against a given hash
+     *
+     * @return new verifier instance
+     */
+    public static Verifyer verifyer() {
+        return new Verifyer();
+    }
+
+    /**
+     * Can create bcrypt hashes
+     */
+    public static final class Hasher {
+        private final Charset defaultCharset = DEFAULT_CHARSET;
+        private final Version version;
+        private final SecureRandom secureRandom;
+        private final Radix64Encoder encoder;
+        private final LongPasswordStrategy longPasswordStrategy;
+
+        private Hasher(Version version, SecureRandom secureRandom, LongPasswordStrategy longPasswordStrategy) {
+            this.version = version;
+            this.secureRandom = secureRandom;
+            this.encoder = new Radix64Encoder.Default();
+            this.longPasswordStrategy = longPasswordStrategy;
+        }
+
+        /**
+         * Hashes given password with the OpenBSD bcrypt schema. The cost factor will define how expensive the hash will
+         * be to generate. This method will use a {@link SecureRandom} to generate the internal 16 byte hash.
+         *
+         * @param cost     exponential cost factor between {@link #MIN_COST} and {@link #MAX_COST} e.g. 12 ==> 2^12 = 4,096 iterations
+         * @param password to hash, will be internally converted to a utf-8 byte array representation
+         * @return bcrypt hash utf-8 encoded byte array which includes version, cost-factor, salt and the raw hash (as radix64)
+         */
+        public byte[] hash(int cost, char[] password) {
+            byte[] passwordBytes = null;
+            try {
+                passwordBytes = new String(CharBuffer.allocate(password.length + 1).put(password).array())
+                        .getBytes(defaultCharset);
+                return hash(cost, Bytes.random(SALT_LENGTH, secureRandom).array(), passwordBytes);
+            } finally {
+                if (passwordBytes != null) {
+                    Bytes.wrap(passwordBytes).mutable().secureWipe();
+                }
+            }
+        }
+
+        /**
+         * Hashes given password with the OpenBSD bcrypt schema. The cost factor will define how expensive the hash will
+         * be to generate. This method will use given salt byte array
+         *
+         * @param cost     exponential cost factor between {@link #MIN_COST} and {@link #MAX_COST} e.g. 12 ==> 2^12 = 4,096 iterations
+         * @param salt     a random 16 byte long word, only used once
+         * @param password the utf-8 encoded byte array representation
+         * @return bcrypt hash utf-8 encoded byte array which includes version, cost-factor, salt and the raw hash (as radix64)
+         */
+        public byte[] hash(int cost, byte[] salt, byte[] password) {
+            if (cost > MAX_COST || cost < MIN_COST) {
+                throw new IllegalArgumentException("cost factor must be between " + MIN_COST + " and " + MAX_COST + ", was " + cost);
+            }
+            if (salt == null) {
+                throw new IllegalArgumentException("salt must not be null");
+            }
+            if (salt.length != SALT_LENGTH) {
+                throw new IllegalArgumentException("salt must be exactly " + SALT_LENGTH + " bytes, was " + salt.length);
+            }
+            if (password == null) {
+                throw new IllegalArgumentException("provided password must not be null");
+            }
+            if (password.length > MAX_PW_LENGTH_BYTE) {
+                password = longPasswordStrategy.derive(password);
+            }
+
+            byte[] pwWithNullTerminator = password = Bytes.wrap(password).append((byte) 0).array();
+            try {
+                byte[] hash = new BCryptOpenBSDProtocol().cryptRaw(1 << cost, salt, password);
+                return createOutMessage(cost, salt, hash);
+            } finally {
+                Bytes.wrap(pwWithNullTerminator).mutable().secureWipe();
+            }
+        }
+
+        private byte[] createOutMessage(int cost, byte[] salt, byte[] hash) {
+            byte[] saltEncoded = encoder.encode(salt, salt.length);
+            byte[] hashEncoded = encoder.encode(hash, HASH_OUT_LENGTH);
+            byte[] costFactorBytes = String.format("%02d", cost).getBytes(defaultCharset);
+
+            try {
+                ByteBuffer byteBuffer = ByteBuffer.allocate(version.versionPrefix.length +
+                        costFactorBytes.length + 1 + saltEncoded.length + hashEncoded.length);
+                byteBuffer.put(version.versionPrefix);
+                byteBuffer.put(costFactorBytes);
+                byteBuffer.put(SEPARATOR);
+                byteBuffer.put(saltEncoded);
+                byteBuffer.put(hashEncoded);
+                return byteBuffer.array();
+            } finally {
+                Bytes.wrap(saltEncoded).mutable().secureWipe();
+                Bytes.wrap(hashEncoded).mutable().secureWipe();
+                Bytes.wrap(costFactorBytes).mutable().secureWipe();
             }
         }
     }
 
-    private byte[] generateRandomSalt() {
-        byte[] salt = new byte[SALT_LENGTH];
-        secureRandom.nextBytes(salt);
-        return salt;
-    }
+    /**
+     * Can verify bcrypt hashes
+     */
+    public static final class Verifyer {
+        private final Charset defaultCharset = DEFAULT_CHARSET;
+        private final Radix64Encoder encoder;
 
-    byte[] hash(int cost, byte[] salt, byte[] password) {
-        if (cost > MAX_COST || cost < MIN_COST) {
-            throw new IllegalArgumentException("cost factor must be between " + MIN_COST + " and " + MAX_COST + ", was " + cost);
-        }
-        if (salt == null) {
-            throw new IllegalArgumentException("salt must not be null");
-        }
-        if (salt.length != SALT_LENGTH) {
-            throw new IllegalArgumentException("salt must be exactly " + SALT_LENGTH + " bytes, was " + salt.length);
-        }
-        if (password == null) {
-            throw new IllegalArgumentException("provided password must not be null");
-        }
-        if (password.length > MAX_PW_LENGTH_BYTE) {
-            password = longPasswordStrategy.derive(password);
+        private Verifyer() {
+            this.encoder = new Radix64Encoder.Default();
         }
 
-        byte[] pwWithNullTerminator = password = Bytes.wrap(password).append((byte) 0).array();
-        try {
-            byte[] hash = new BCryptOpenBSDProtocol().cryptRaw(1 << cost, salt, password);
-            return createOutMessage(cost, salt, hash);
-        } finally {
-            Bytes.wrap(pwWithNullTerminator).mutable().secureWipe();
+        public Result verifyStrict(byte[] password, byte[] bcryptHash, Version expectedVersion) {
+            return verify(password, bcryptHash, expectedVersion);
         }
-    }
 
-    private byte[] createOutMessage(int cost, byte[] salt, byte[] hash) {
-        byte[] saltEncoded = encoder.encode(salt, salt.length);
-        byte[] hashEncoded = encoder.encode(hash, HASH_OUT_LENGTH);
-        byte[] costFactorBytes = String.format("%02d", cost).getBytes(defaultCharset);
-
-        try {
-            ByteBuffer byteBuffer = ByteBuffer.allocate(version.versionPrefix.length + costFactorBytes.length + 1 + saltEncoded.length + hashEncoded.length);
-            byteBuffer.put(version.versionPrefix);
-            byteBuffer.put(costFactorBytes);
-            byteBuffer.put(SEPARATOR);
-            byteBuffer.put(saltEncoded);
-            byteBuffer.put(hashEncoded);
-            return byteBuffer.array();
-        } finally {
-            Bytes.wrap(saltEncoded).mutable().secureWipe();
-            Bytes.wrap(hashEncoded).mutable().secureWipe();
-            Bytes.wrap(costFactorBytes).mutable().secureWipe();
+        public Result verify(byte[] password, byte[] bcryptHash) {
+            return verify(password, bcryptHash, null);
         }
-    }
 
-    public Result verifyStrict(char[] password, char[] bcryptHash) {
-        return verify(password, bcryptHash, true);
-    }
+        public Result verifyStrict(char[] password, char[] bcryptHash, Version expectedVersion) {
+            return verify(password, bcryptHash, expectedVersion);
+        }
 
-    public Result verify(char[] password, char[] bcryptHash) {
-        return verify(password, bcryptHash, false);
-    }
+        public Result verify(char[] password, char[] bcryptHash) {
+            return verify(password, bcryptHash, null);
+        }
 
-    private Result verify(char[] password, char[] bcryptHash, boolean strictVersion) {
-        byte[] passwordBytes = null;
-        byte[] bcryptHashBytes = null;
-        try {
-            passwordBytes = new String(CharBuffer.allocate(password.length + 1).put(password).array()).getBytes(defaultCharset);
-            bcryptHashBytes = new String(CharBuffer.allocate(bcryptHash.length + 1).put(bcryptHash).array()).getBytes(defaultCharset);
-            return verify(passwordBytes, bcryptHashBytes, strictVersion);
-        } finally {
-            if (passwordBytes != null) {
-                Bytes.wrap(passwordBytes).mutable().secureWipe();
+        private Result verify(char[] password, char[] bcryptHash, Version requiredVersion) {
+            byte[] passwordBytes = null;
+            byte[] bcryptHashBytes = null;
+            try {
+                passwordBytes = new String(CharBuffer.allocate(password.length + 1).put(password).array()).getBytes(defaultCharset);
+                bcryptHashBytes = new String(CharBuffer.allocate(bcryptHash.length + 1).put(bcryptHash).array()).getBytes(defaultCharset);
+                return verify(passwordBytes, bcryptHashBytes, requiredVersion);
+            } finally {
+                if (passwordBytes != null) {
+                    Bytes.wrap(passwordBytes).mutable().secureWipe();
+                }
+                if (bcryptHashBytes != null) {
+                    Bytes.wrap(bcryptHashBytes).mutable().secureWipe();
+                }
             }
-            if (bcryptHashBytes != null) {
-                Bytes.wrap(bcryptHashBytes).mutable().secureWipe();
+        }
+
+        /**
+         * Verify given password against a bcryptHash
+         *
+         * @param password
+         * @param bcryptHash
+         * @param requiredVersion
+         * @return
+         */
+        private Result verify(byte[] password, byte[] bcryptHash, Version requiredVersion) {
+            Objects.requireNonNull(bcryptHash);
+
+            BCryptParser parser = new BCryptParser.Default(defaultCharset, encoder);
+            try {
+                BCryptParser.Parts parts = parser.parse(bcryptHash);
+
+                if (requiredVersion != null && parts.version != requiredVersion) {
+                    return new Result(parts, false);
+                }
+
+                byte[] refHash = BCrypt.with(parts.version).hash(parts.cost, parts.salt, password);
+                return new Result(parts, Bytes.wrap(refHash).equals(bcryptHash));
+            } catch (IllegalBCryptFormatException e) {
+                return new Result(e);
             }
         }
     }
 
-    public Result verify(byte[] password, byte[] bcryptHash, boolean strictVersion) {
-        Objects.requireNonNull(bcryptHash);
-
-        BCryptParser parser = new BCryptParser.Default(defaultCharset, encoder);
-        try {
-            BCryptParser.Parts parts = parser.parse(bcryptHash);
-
-            if (strictVersion && parts.version != version) {
-                return new Result(parts, false);
-            }
-
-            byte[] refHash = BCrypt.with(parts.version).hash(parts.cost, parts.salt, password);
-            return new Result(parts, Bytes.wrap(refHash).equals(bcryptHash));
-        } catch (IllegalBCryptFormatException e) {
-            return new Result(e);
-        }
-    }
-
+    /**
+     * Result of a bcrypt hash verification
+     */
     public static final class Result {
+        /**
+         * The parts of the modular crypt format (salt, raw hash, cost factor, version)
+         */
         public final BCryptParser.Parts details;
+
+        /**
+         * If the given format was valid. E.g. '$2a$10$k87L/MF28Q673VKh8/cPi.SUl7MU/rWuSiIDDFayrKk/1tBsSQu4u'
+         */
         public final boolean validFormat;
+
+        /**
+         * If the given password matches the hash
+         */
         public final boolean verified;
+
+        /**
+         * Optional error message if {@link #validFormat} is false
+         */
         public final String formatErrorMessage;
 
-        public Result(IllegalBCryptFormatException e) {
+        Result(IllegalBCryptFormatException e) {
             this(null, false, false, e.getMessage());
         }
 
-        public Result(BCryptParser.Parts details, boolean verified) {
+        Result(BCryptParser.Parts details, boolean verified) {
             this(details, true, verified, null);
         }
 
@@ -182,8 +299,39 @@ public final class BCrypt {
             this.verified = verified;
             this.formatErrorMessage = formatErrorMessage;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Result result = (Result) o;
+            return validFormat == result.validFormat &&
+                    verified == result.verified &&
+                    Objects.equals(details, result.details) &&
+                    Objects.equals(formatErrorMessage, result.formatErrorMessage);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(details, validFormat, verified, formatErrorMessage);
+        }
+
+        @Override
+        public String toString() {
+            return "Result{" +
+                    "details=" + details +
+                    ", validFormat=" + validFormat +
+                    ", verified=" + verified +
+                    ", formatErrorMessage='" + formatErrorMessage + '\'' +
+                    '}';
+        }
     }
 
+    /**
+     * The supported version identifiers for bcrypt according to the modular crypt format.
+     * <p>
+     * See: https://passlib.readthedocs.io/en/stable/modular_crypt_format.html
+     */
     public enum Version {
         /**
          * $2a$
@@ -210,6 +358,9 @@ public final class BCrypt {
          * Due to a bug in crypt_blowfish, a PHP implementation of BCrypt, a new version string was introduced to
          * recognize old hashes. It was mis-handling characters with the 8th bit set. Nobody else, including canonical
          * OpenBSD, adopted the idea of 2x/2y so this version marker change was limited to crypt_blowfish.
+         * <p>
+         * Nobody else, including canonical OpenBSD, adopted the idea of 2x/2y. This version marker change was limited
+         * to crypt_blowfish.
          */
         VERSION_2X(new byte[]{SEPARATOR, MAJOR_VERSION, 0x78, SEPARATOR}),
 

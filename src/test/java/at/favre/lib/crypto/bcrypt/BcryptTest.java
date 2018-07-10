@@ -35,7 +35,7 @@ public class BcryptTest {
     @Test
     public void simpleTest() {
         byte[] salt = new byte[]{0x5E, (byte) 0xFA, (byte) 0xA7, (byte) 0xA3, (byte) 0xD9, (byte) 0xDF, 0x6E, (byte) 0x7F, (byte) 0x8C, 0x78, (byte) 0x96, (byte) 0xB1, 0x7B, (byte) 0xA7, 0x6E, 0x01};
-        BCrypt bCrypt = BCrypt.withDefaults();
+        BCrypt.Hasher bCrypt = BCrypt.defaults();
         for (int i = 4; i < 10; i++) {
             byte[] hash = bCrypt.hash(i, salt, "abcdefghijkl1234567öäü-,:".getBytes());
             assertEquals(60, hash.length);
@@ -45,11 +45,11 @@ public class BcryptTest {
 
     @Test
     public void verifyWithResult() {
-        BCrypt bCrypt = BCrypt.withDefaults();
+        BCrypt.Hasher bCrypt = BCrypt.defaults();
         byte[] pw = "78PHasdhklöALÖö".getBytes();
         byte[] hash = bCrypt.hash(8, Bytes.random(16).array(), pw);
 
-        BCrypt.Result result = BCrypt.withDefaults().verify(pw, hash, false);
+        BCrypt.Result result = BCrypt.verifyer().verify(pw, hash);
         assertTrue(result.verified);
         assertEquals(BCrypt.Version.VERSION_2A, result.details.version);
         assertEquals(8, result.details.cost);
@@ -57,11 +57,11 @@ public class BcryptTest {
 
     @Test
     public void verifyIncorrectStrictVersion() {
-        BCrypt bCrypt = BCrypt.with(BCrypt.Version.VERSION_2Y);
+        BCrypt.Hasher bCrypt = BCrypt.with(BCrypt.Version.VERSION_2Y);
         byte[] pw = "78PHasdhklöALÖö".getBytes();
         byte[] hash = bCrypt.hash(5, Bytes.random(16).array(), pw);
 
-        BCrypt.Result result = BCrypt.with(BCrypt.Version.VERSION_2A).verify(pw, hash, true);
+        BCrypt.Result result = BCrypt.verifyer().verifyStrict(pw, hash, BCrypt.Version.VERSION_2A);
         assertFalse(result.verified);
         assertEquals(BCrypt.Version.VERSION_2Y, result.details.version);
         assertEquals(5, result.details.cost);

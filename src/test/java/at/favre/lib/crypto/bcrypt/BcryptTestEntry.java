@@ -19,7 +19,7 @@ final class BcryptTestEntry {
 
     static void testEntries(BcryptTestEntry[] entries) {
         for (BcryptTestEntry testEntry : entries) {
-            byte[] hashed = BCrypt.withDefaults().hash(
+            byte[] hashed = BCrypt.defaults().hash(
                     testEntry.cost,
                     new Radix64Encoder.Default().decode(testEntry.radix64Salt.getBytes(StandardCharsets.UTF_8)),
                     testEntry.plainPw.getBytes(StandardCharsets.UTF_8));
