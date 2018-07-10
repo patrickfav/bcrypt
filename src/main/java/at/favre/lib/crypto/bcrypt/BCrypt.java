@@ -140,6 +140,10 @@ public final class BCrypt {
          * @return bcrypt hash utf-8 encoded byte array which includes version, cost-factor, salt and the raw hash (as radix64)
          */
         public byte[] hash(int cost, char[] password) {
+            if (password == null) {
+                throw new IllegalArgumentException("provided password must not be null");
+            }
+
             byte[] passwordBytes = null;
             try {
                 passwordBytes = new String(CharBuffer.wrap(password).array()).getBytes(defaultCharset);

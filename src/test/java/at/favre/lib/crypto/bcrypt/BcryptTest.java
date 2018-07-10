@@ -10,6 +10,7 @@ import java.security.SecureRandom;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class BcryptTest {
     private BcryptTestEntry[] testEntries = new BcryptTestEntry[]{
@@ -36,7 +37,7 @@ public class BcryptTest {
     }
 
     @Test
-    public void simpleTest() {
+    public void testSimpleBcryptHashes() {
         byte[] salt = new byte[]{0x5E, (byte) 0xFA, (byte) 0xA7, (byte) 0xA3, (byte) 0xD9, (byte) 0xDF, 0x6E, (byte) 0x7F, (byte) 0x8C, 0x78, (byte) 0x96, (byte) 0xB1, 0x7B, (byte) 0xA7, 0x6E, 0x01};
         BCrypt.Hasher bCrypt = BCrypt.withDefaults();
         for (int i = 4; i < 10; i++) {
@@ -81,6 +82,46 @@ public class BcryptTest {
         assertTrue(verifyer.verify(pw.getBytes(StandardCharsets.UTF_8), hash2).verified);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void createHashCostTooSmall() {
+        BCrypt.withDefaults().hash(3, "123".toCharArray());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void createHashCostTooBig() {
+        BCrypt.withDefaults().hash(32, "123".toCharArray());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void createHashWithNullSalt() {
+        BCrypt.withDefaults().hash(6, null, "123".getBytes());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void createHashWithSaltTooShort() {
+        BCrypt.withDefaults().hash(6, new byte[15], "123".getBytes());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void createHashWithSaltTooLong() {
+        BCrypt.withDefaults().hash(6, new byte[17], "123".getBytes());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void createHashWithPwNull() {
+        BCrypt.withDefaults().hash(6, new byte[17], null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void createHashWithCharPwNull() {
+        BCrypt.withDefaults().hash(6, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void createHashWithPwTooLong() {
+        BCrypt.withDefaults().hash(6, new byte[17], new byte[72]);
+    }
+
     @Test
     public void verifyWithResult() {
         BCrypt.Hasher bCrypt = BCrypt.withDefaults();
@@ -89,6 +130,7 @@ public class BcryptTest {
 
         BCrypt.Result result = BCrypt.verifyer().verify(pw, hash);
         assertTrue(result.verified);
+        assertTrue(result.validFormat);
         assertEquals(BCrypt.Version.VERSION_2A, result.details.version);
         assertEquals(8, result.details.cost);
     }
@@ -101,7 +143,17 @@ public class BcryptTest {
 
         BCrypt.Result result = BCrypt.verifyer().verifyStrict(pw, hash, BCrypt.Version.VERSION_2A);
         assertFalse(result.verified);
+        assertTrue(result.validFormat);
         assertEquals(BCrypt.Version.VERSION_2Y, result.details.version);
         assertEquals(5, result.details.cost);
+    }
+
+    @Test
+    public void verifyIncorrectFormat() {
+        BCrypt.Result result = BCrypt.verifyer().verify("78PHasdhklöALÖö".getBytes(), "$2a$6$If6bvum7DFjUnE9p2uDeDu0YHzrHM6tf.iqN8.yx.jNN1ILEf7h0i".getBytes());
+        assertFalse(result.validFormat);
+        assertFalse(result.verified);
+        assertNotNull(result.formatErrorMessage);
+        System.out.println(result.formatErrorMessage);
     }
 }
