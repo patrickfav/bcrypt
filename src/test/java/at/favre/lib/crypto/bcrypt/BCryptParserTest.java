@@ -6,8 +6,7 @@ import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class BCryptParserTest {
     private BCryptParser parser;
@@ -114,5 +113,17 @@ public class BCryptParserTest {
     @Test(expected = IllegalBCryptFormatException.class)
     public void parseErrorTooLong() throws Exception {
         parser.parse("$2a$06$If6bvum7DFjUnE9p2uDeDu0YHzrHM6tf.iqN8.yx.jNN1ILEf7h0i9".getBytes());
+    }
+
+    @Test
+    public void parseErrorTooLongGetExceptionMessage() {
+        try {
+            parser.parse("$2a$06$If6bvum7DFjUnE9p2uDeDu0YHzrHM6tf.iqN8.yx.jNN1ILEf7h0i9".getBytes());
+            fail();
+        } catch (IllegalBCryptFormatException e) {
+            assertNotNull(e.getMessage());
+            assertTrue(e.getMessage().length() > 20);
+            System.out.println(e.getMessage());
+        }
     }
 }

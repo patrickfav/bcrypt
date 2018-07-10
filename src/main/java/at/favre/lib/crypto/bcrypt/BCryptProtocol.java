@@ -543,5 +543,4 @@ final class BCryptProtocol {
             return ret == 0;
         }*/
     }
-
 }
