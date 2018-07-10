@@ -1,9 +1,6 @@
 package at.favre.lib.crypto.bcrypt;
 
 import java.io.ByteArrayOutputStream;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
-import java.util.Arrays;
 
 final class BCryptProtocol {
 
@@ -105,7 +102,7 @@ final class BCryptProtocol {
              * byte array. Note that this is *not* compatible with
              * the standard MIME-base64 encoding.
              *
-             * @param s       the string to decode
+             * @param s      the string to decode
              * @param maxLen the maximum number of bytes to decode
              * @return an array containing the decoded bytes
              * @throws IllegalArgumentException if maxolen is invalid
@@ -434,17 +431,8 @@ final class BCryptProtocol {
         BcryptHasher() {
         }
 
-        byte[] cryptRaw(int cost, byte[] salt, char[] password, Charset charset) {
-            byte[] passwordBytes = null;
-            try {
-                passwordBytes = new String(CharBuffer.allocate(password.length + 1).put(password).put("\000").array())
-                        .getBytes(charset);
-                return cryptRaw(cost, salt, passwordBytes, bf_crypt_ciphertext.clone());
-            } finally {
-                if (passwordBytes != null) {
-                    Arrays.fill(passwordBytes, (byte) 0);
-                }
-            }
+        byte[] cryptRaw(int cost, byte[] salt, byte[] password) {
+            return cryptRaw(cost, salt, password, bf_crypt_ciphertext.clone());
         }
 
         /**

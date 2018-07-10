@@ -7,6 +7,7 @@ import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.util.Objects;
 
 public final class BCrypt {
     /**
@@ -19,7 +20,7 @@ public final class BCrypt {
      */
     static final byte MAJOR_VERSION = 0x32;
     static final int SALT_LENGTH = 16;
-    static final int MAX_PW_LENGTH_BYTE = 71;
+    static final int MAX_PW_LENGTH_BYTE = 72;
     static final int MIN_COST = 4;
     static final int MAX_COST = 30;
 
@@ -53,7 +54,16 @@ public final class BCrypt {
     }
 
     public byte[] hash(int cost, char[] password) {
-        return hash(cost, generateRandomSalt(), password);
+        byte[] passwordBytes = null;
+        try {
+            passwordBytes = new String(CharBuffer.allocate(password.length + 1).put(password).array())
+                    .getBytes(defaultCharset);
+            return hash(cost, generateRandomSalt(), passwordBytes);
+        } finally {
+            if (passwordBytes != null) {
+                Bytes.wrap(passwordBytes).mutable().secureWipe();
+            }
+        }
     }
 
     private byte[] generateRandomSalt() {
@@ -62,8 +72,7 @@ public final class BCrypt {
         return salt;
     }
 
-    public byte[] hash(int cost, byte[] salt, char[] password) {
-
+    byte[] hash(int cost, byte[] salt, byte[] password) {
         if (cost > MAX_COST || cost < MIN_COST) {
             throw new IllegalArgumentException("cost factor must be between " + MIN_COST + " and " + MAX_COST + ", was " + cost);
         }
@@ -76,13 +85,17 @@ public final class BCrypt {
         if (password == null) {
             throw new IllegalArgumentException("provided password must not be null");
         }
-        if (password.length > MAX_PW_LENGTH_BYTE || password.length < 0) {
-            throw new IllegalArgumentException("password must be between 1 and 72 bytes encoded in utf-8, was " + password.length);
+        if (password.length > MAX_PW_LENGTH_BYTE) {
+            throw new IllegalArgumentException("password must be between 0 and 72 bytes encoded in utf-8, was " + password.length);
         }
 
-        byte[] hash = new BCryptProtocol.BcryptHasher().cryptRaw(cost, salt, password, defaultCharset);
-
-        return createOutMessage(cost, salt, hash);
+        byte[] pwWithNullTerminator = password = Bytes.wrap(password).append((byte) 0).array();
+        try {
+            byte[] hash = new BCryptProtocol.BcryptHasher().cryptRaw(cost, salt, password);
+            return createOutMessage(cost, salt, hash);
+        } finally {
+            Bytes.wrap(pwWithNullTerminator).mutable().secureWipe();
+        }
     }
 
     private byte[] createOutMessage(int cost, byte[] salt, byte[] hash) {
@@ -105,38 +118,47 @@ public final class BCrypt {
         }
     }
 
-    public boolean verify(char[] bcryptHash) {
-        return verifyWithResult(bcryptHash).verified;
+    public Result verifyStrict(char[] password, char[] bcryptHash) {
+        return verify(password, bcryptHash, true);
     }
 
-    public Result verifyWithResult(char[] bcryptHash) {
-        if (bcryptHash == null || bcryptHash.length == 0) {
-            throw new IllegalArgumentException("must provide non-null, non-empty hash");
-        }
+    public Result verify(char[] password, char[] bcryptHash) {
+        return verify(password, bcryptHash, false);
+    }
 
-        byte[] hashBytes = defaultCharset.encode(CharBuffer.wrap(bcryptHash)).array();
-
-        if (hashBytes.length < 7) {
-            throw new IllegalBCryptFormatException("hash prefix meta must be at least 6 bytes long e.g. '$2a$10$'");
-        }
-
-        if (hashBytes[0] != SEPARATOR || hashBytes[1] != MAJOR_VERSION) {
-            throw new IllegalBCryptFormatException("hash must start with " + new String(new byte[]{SEPARATOR, MAJOR_VERSION}));
-        }
-
-        Version usedVersion = null;
-        for (Version versionToTest : Version.values()) {
-            if (versionToTest.test(hashBytes, true)) {
-                usedVersion = versionToTest;
-                break;
+    private Result verify(char[] password, char[] bcryptHash, boolean strictVersion) {
+        byte[] passwordBytes = null;
+        byte[] bcryptHashBytes = null;
+        try {
+            passwordBytes = new String(CharBuffer.allocate(password.length + 1).put(password).array()).getBytes(defaultCharset);
+            bcryptHashBytes = new String(CharBuffer.allocate(bcryptHash.length + 1).put(bcryptHash).array()).getBytes(defaultCharset);
+            return verify(passwordBytes, bcryptHashBytes, strictVersion);
+        } finally {
+            if (passwordBytes != null) {
+                Bytes.wrap(passwordBytes).mutable().secureWipe();
+            }
+            if (bcryptHashBytes != null) {
+                Bytes.wrap(bcryptHashBytes).mutable().secureWipe();
             }
         }
+    }
 
-        if (usedVersion == null) {
-            throw new IllegalBCryptFormatException("unknown bcrypt version");
+    public Result verify(byte[] password, byte[] bcryptHash, boolean strictVersion) {
+        Objects.requireNonNull(bcryptHash);
+
+        BCryptParser parser = new BCryptParser.Default(defaultCharset, encoder);
+        try {
+            BCryptParser.Parts parts = parser.parse(bcryptHash);
+
+            if (strictVersion && parts.version != version) {
+                return new Result(parts, false);
+            }
+
+            byte[] refHash = BCrypt.with(parts.version).hash(parts.cost, parts.salt, password);
+            return new Result(parts, Bytes.wrap(refHash).equals(bcryptHash));
+        } catch (IllegalBCryptFormatException e) {
+            return new Result(e);
         }
-
-        return new Result(usedVersion, 0, null, false);
     }
 
     /**
@@ -152,16 +174,24 @@ public final class BCrypt {
     }
 
     public static final class Result {
-        public final Version version;
-        public final int cost;
-        public final byte[] salt;
+        public final BCryptParser.Parts details;
+        public final boolean validFormat;
         public final boolean verified;
+        public final String formatErrorMessage;
 
-        public Result(Version version, int cost, byte[] salt, boolean verified) {
-            this.version = version;
-            this.cost = cost;
-            this.salt = salt;
+        public Result(IllegalBCryptFormatException e) {
+            this(null, false, false, e.getMessage());
+        }
+
+        public Result(BCryptParser.Parts details, boolean verified) {
+            this(details, true, verified, null);
+        }
+
+        private Result(BCryptParser.Parts details, boolean validFormat, boolean verified, String formatErrorMessage) {
+            this.details = details;
+            this.validFormat = validFormat;
             this.verified = verified;
+            this.formatErrorMessage = formatErrorMessage;
         }
     }
 
