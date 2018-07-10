@@ -91,7 +91,7 @@ public final class BCrypt {
 
         byte[] pwWithNullTerminator = password = Bytes.wrap(password).append((byte) 0).array();
         try {
-            byte[] hash = new BCryptProtocol.BcryptHasher().cryptRaw(cost, salt, password);
+            byte[] hash = new BCryptOpenBSDProtocol().cryptRaw(cost, salt, password);
             return createOutMessage(cost, salt, hash);
         } finally {
             Bytes.wrap(pwWithNullTerminator).mutable().secureWipe();
