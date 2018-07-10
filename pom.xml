@@ -11,13 +11,15 @@
 
     <name>BCrypt Password Hashing Function</name>
     <description>bcrypt is a password hashing function designed by Niels Provos and David Mazières, based on the
-        Blowfish
-        cipher, and presented at USENIX in 1999. Besides incorporating a salt to protect against rainbow table attacks,
+        Blowfish cipher, and presented at USENIX in 1999. Besides incorporating a salt to protect against rainbow table
+        attacks,
         bcrypt is an adaptive function: over time, the iteration count can be increased to make it slower, so it remains
-        resistant to brute-force search attacks even with increasing computation power.
+        resistant to brute-force search attacks even with increasing computation power. This is a standalone Java
+        implementaiton
+        based on the popular jBcrypt implementation.
     </description>
     <url>https://github.com/patrickfav/bcrypt</url>
-    <inceptionYear>2017</inceptionYear>
+    <inceptionYear>2018</inceptionYear>
 
     <prerequisites>
         <maven>3.1.0</maven>
