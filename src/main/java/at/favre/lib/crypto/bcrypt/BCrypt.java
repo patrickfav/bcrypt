@@ -20,33 +20,33 @@ public final class BCrypt {
      */
     static final byte MAJOR_VERSION = 0x32;
     static final int SALT_LENGTH = 16;
-    static final int MAX_PW_LENGTH_BYTE = 72;
+    static final int MAX_PW_LENGTH_BYTE = 71;
     static final int MIN_COST = 4;
     static final int MAX_COST = 30;
 
     public static BCrypt withDefaults() {
-        return new BCrypt(Version.VERSION_2A, new SecureRandom(), new BCryptProtocol.Encoder.Default());
+        return new BCrypt(Version.VERSION_2A, new SecureRandom(), new Radix64Encoder.Default());
     }
 
     public static BCrypt with(Version version) {
-        return new BCrypt(version, new SecureRandom(), new BCryptProtocol.Encoder.Default());
+        return new BCrypt(version, new SecureRandom(), new Radix64Encoder.Default());
     }
 
     public static BCrypt with(SecureRandom secureRandom) {
-        return new BCrypt(Version.VERSION_2A, secureRandom, new BCryptProtocol.Encoder.Default());
+        return new BCrypt(Version.VERSION_2A, secureRandom, new Radix64Encoder.Default());
     }
 
     public static BCrypt with(Version version, SecureRandom secureRandom) {
-        return new BCrypt(version, secureRandom, new BCryptProtocol.Encoder.Default());
+        return new BCrypt(version, secureRandom, new Radix64Encoder.Default());
     }
 
     private final Charset defaultCharset = StandardCharsets.UTF_8;
     private final Version version;
     private final SecureRandom secureRandom;
-    private final BCryptProtocol.Encoder encoder;
+    private final Radix64Encoder encoder;
     private final LongPasswordStrategy longPasswordStrategy;
 
-    private BCrypt(Version version, SecureRandom secureRandom, BCryptProtocol.Encoder encoder) {
+    private BCrypt(Version version, SecureRandom secureRandom, Radix64Encoder encoder) {
         this.version = version;
         this.secureRandom = secureRandom;
         this.encoder = encoder;
@@ -86,7 +86,7 @@ public final class BCrypt {
             throw new IllegalArgumentException("provided password must not be null");
         }
         if (password.length > MAX_PW_LENGTH_BYTE) {
-            throw new IllegalArgumentException("password must be between 0 and 72 bytes encoded in utf-8, was " + password.length);
+            password = longPasswordStrategy.derive(password);
         }
 
         byte[] pwWithNullTerminator = password = Bytes.wrap(password).append((byte) 0).array();

@@ -16,9 +16,9 @@ public interface BCryptParser {
     final class Default implements BCryptParser {
 
         private final Charset defaultCharset;
-        private final BCryptProtocol.Encoder encoder;
+        private final Radix64Encoder encoder;
 
-        Default(Charset defaultCharset, BCryptProtocol.Encoder encoder) {
+        Default(Charset defaultCharset, Radix64Encoder encoder) {
             this.defaultCharset = defaultCharset;
             this.encoder = encoder;
         }
@@ -75,8 +75,8 @@ public interface BCryptParser {
             System.arraycopy(bcryptHash, 7 + salt.length, hash, 0, hash.length);
 
             return new Parts(usedVersion, parsedCostFactor,
-                    encoder.decode(new String(salt), salt.length),
-                    encoder.decode(new String(hash), hash.length));
+                    encoder.decode(salt),
+                    encoder.decode(hash));
         }
     }
 

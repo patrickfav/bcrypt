@@ -14,7 +14,7 @@ public class BCryptParserTest {
 
     @Before
     public void setUp() {
-        parser = new BCryptParser.Default(StandardCharsets.UTF_8, new BCryptProtocol.Encoder.Default());
+        parser = new BCryptParser.Default(StandardCharsets.UTF_8, new Radix64Encoder.Default());
     }
 
     @Test

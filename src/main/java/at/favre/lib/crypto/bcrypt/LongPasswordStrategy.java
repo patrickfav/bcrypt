@@ -6,7 +6,7 @@ import at.favre.lib.bytes.BytesTransformer;
 import static at.favre.lib.crypto.bcrypt.BCrypt.MAX_PW_LENGTH_BYTE;
 
 /**
- * Strategy if the password is longer that support by Bcrypt itself (71 bytes + null terminator with $2a$)
+ * Strategy if the password is longer than supported by Bcrypt itself (71 bytes + null terminator with $2a$)
  */
 public interface LongPasswordStrategy {
 

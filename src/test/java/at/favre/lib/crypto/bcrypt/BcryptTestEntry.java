@@ -21,7 +21,7 @@ final class BcryptTestEntry {
         for (BcryptTestEntry testEntry : entries) {
             byte[] hashed = BCrypt.withDefaults().hash(
                     testEntry.cost,
-                    new BCryptProtocol.Encoder.Default().decode(testEntry.radix64Salt, 16),
+                    new Radix64Encoder.Default().decode(testEntry.radix64Salt.getBytes(StandardCharsets.UTF_8)),
                     testEntry.plainPw.getBytes(StandardCharsets.UTF_8));
 
             assertArrayEquals(
