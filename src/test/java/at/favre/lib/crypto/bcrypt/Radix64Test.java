@@ -142,7 +142,7 @@ public class Radix64Test {
         private final String encoded;
         private final byte[] raw;
 
-        public TestCase(String encoded, byte[] raw) {
+        TestCase(String encoded, byte[] raw) {
             this.encoded = encoded;
             this.raw = raw;
         }

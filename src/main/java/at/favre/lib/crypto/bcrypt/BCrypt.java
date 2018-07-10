@@ -50,7 +50,7 @@ public final class BCrypt {
         this.version = version;
         this.secureRandom = secureRandom;
         this.encoder = encoder;
-        this.longPasswordStrategy = new LongPasswordStrategy.StrictMaxPasswordLengthStrategy();
+        this.longPasswordStrategy = new LongPasswordStrategy.StrictMaxPasswordLengthStrategy(MAX_PW_LENGTH_BYTE);
     }
 
     public byte[] hash(int cost, char[] password) {
