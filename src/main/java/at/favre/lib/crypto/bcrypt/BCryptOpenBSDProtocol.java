@@ -302,30 +302,23 @@ final class BCryptOpenBSDProtocol {
     BCryptOpenBSDProtocol() {
     }
 
-    byte[] cryptRaw(int cost, byte[] salt, byte[] password) {
-        return cryptRaw(cost, salt, password, bf_crypt_ciphertext.clone());
+    byte[] cryptRaw(int rounds, byte[] salt, byte[] password) {
+        return cryptRaw(rounds, salt, password, bf_crypt_ciphertext.clone());
     }
 
     /**
      * Perform the central password hashing step in the
      * bcrypt scheme
      *
-     * @param cost     the binary logarithm of the number
+     * @param rounds   the actual rounds, not the binary logarithm
      * @param salt     the binary salt to hash with the password
      * @param password the password to hash
      *                 of rounds of hashing to apply
      * @param cdata    the plaintext to encrypt
      * @return an array containing the binary hashed password
      */
-    byte[] cryptRaw(int cost, byte[] salt, byte[] password, int[] cdata) {
-
+    byte[] cryptRaw(int rounds, byte[] salt, byte[] password, int[] cdata) {
         int clen = cdata.length;
-
-        if (cost < BCrypt.MIN_COST || cost > BCrypt.MAX_COST) {
-            throw new IllegalArgumentException("bad number of rounds");
-        }
-
-        int rounds = 1 << cost;
 
         if (salt.length != BCrypt.SALT_LENGTH) {
             throw new IllegalArgumentException("bad salt length");
@@ -376,6 +369,7 @@ final class BCryptOpenBSDProtocol {
             P[i] = P[i] ^ streamToWord(key, koffp);
         }
 
+        //noinspection Duplicates
         for (i = 0; i < plen; i += 2) {
             lr[0] ^= streamToWord(data, doffp);
             lr[1] ^= streamToWord(data, doffp);
@@ -384,6 +378,7 @@ final class BCryptOpenBSDProtocol {
             P[i + 1] = lr[1];
         }
 
+        //noinspection Duplicates
         for (i = 0; i < slen; i += 2) {
             lr[0] ^= streamToWord(data, doffp);
             lr[1] ^= streamToWord(data, doffp);

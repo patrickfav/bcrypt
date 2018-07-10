@@ -20,6 +20,7 @@ public final class BCrypt {
      */
     static final byte MAJOR_VERSION = 0x32;
     static final int SALT_LENGTH = 16;
+    static final int HASH_OUT_LENGTH = 23;
     static final int MAX_PW_LENGTH_BYTE = 71;
     static final int MIN_COST = 4;
     static final int MAX_COST = 30;
@@ -91,7 +92,7 @@ public final class BCrypt {
 
         byte[] pwWithNullTerminator = password = Bytes.wrap(password).append((byte) 0).array();
         try {
-            byte[] hash = new BCryptOpenBSDProtocol().cryptRaw(cost, salt, password);
+            byte[] hash = new BCryptOpenBSDProtocol().cryptRaw(1 << cost, salt, password);
             return createOutMessage(cost, salt, hash);
         } finally {
             Bytes.wrap(pwWithNullTerminator).mutable().secureWipe();
@@ -100,7 +101,7 @@ public final class BCrypt {
 
     private byte[] createOutMessage(int cost, byte[] salt, byte[] hash) {
         byte[] saltEncoded = encoder.encode(salt, salt.length);
-        byte[] hashEncoded = encoder.encode(hash, 24 - 1);
+        byte[] hashEncoded = encoder.encode(hash, HASH_OUT_LENGTH);
         byte[] costFactorBytes = String.format("%02d", cost).getBytes(defaultCharset);
 
         try {
@@ -168,9 +169,21 @@ public final class BCrypt {
      * @param currentLowercostBcryptHash the current full hash (including the version identifier etc.)
      * @param newMinCost                 the new hash will have at least this cost factor
      * @return the new bcrypt hash or the same if current cost factor is at least newMinCost
+     * @throws IllegalBCryptFormatException if given bcrypt hash could not be parsed
      */
-    public byte[] upgrade(char[] currentLowercostBcryptHash, int newMinCost) {
-        return null;
+    public byte[] upgrade(byte[] currentLowercostBcryptHash, int newMinCost) throws IllegalBCryptFormatException {
+        BCryptParser parser = new BCryptParser.Default(defaultCharset, encoder);
+
+        BCryptParser.Parts parts = parser.parse(currentLowercostBcryptHash);
+        if (parts.cost >= newMinCost) {
+            return currentLowercostBcryptHash;
+        }
+        int roundsNew = 1 << newMinCost;
+        int roundsOld = 1 << parts.cost;
+
+        byte[] hash = new BCryptOpenBSDProtocol().cryptRaw(roundsNew - roundsOld, parts.salt, parts.hash);
+
+        return createOutMessage(newMinCost, parts.salt, hash);
     }
 
     public static final class Result {
