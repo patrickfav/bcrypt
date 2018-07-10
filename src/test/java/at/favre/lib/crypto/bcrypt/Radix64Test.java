@@ -138,16 +138,6 @@ public class Radix64Test {
         testSingleEncode(1024 * 1024 * 10);
     }
 
-    static final class TestCase {
-        private final String encoded;
-        private final byte[] raw;
-
-        TestCase(String encoded, byte[] raw) {
-            this.encoded = encoded;
-            this.raw = raw;
-        }
-    }
-
     @Test(expected = IllegalArgumentException.class)
     public void testErrorNullMaxLength() {
         encoder.encode(new byte[16], 0);
@@ -161,5 +151,15 @@ public class Radix64Test {
     @Test
     public void testEmptyDecode() {
         assertArrayEquals(new byte[0], encoder.decode(new byte[0]));
+    }
+
+    static final class TestCase {
+        private final String encoded;
+        private final byte[] raw;
+
+        TestCase(String encoded, byte[] raw) {
+            this.encoded = encoded;
+            this.raw = raw;
+        }
     }
 }

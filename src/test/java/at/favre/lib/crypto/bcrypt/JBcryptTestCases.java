@@ -2,6 +2,12 @@ package at.favre.lib.crypto.bcrypt;
 
 import org.junit.Test;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Random;
+
+import static at.favre.lib.crypto.bcrypt.BcryptTest.UTF_8;
+import static org.junit.Assert.assertArrayEquals;
+
 /**
  * These are the adapted test cases from the 'original' jBcrypt implementation
  * <p>
@@ -36,95 +42,33 @@ public class JBcryptTestCases {
             new BcryptTestEntry("~!@#$%^&*()      ~!@#$%^&*()PNBFRD", 12, "WApznUOJfkEGSmYRfnkrPO", "$2a$12$WApznUOJfkEGSmYRfnkrPOr466oFDCaj4b6HY3EXGvfxm43seyhgC"),
     };
 
-    /**
-     * Test method for 'BCrypt.hashpw(String, String)'
-     */
     @Test
     public void testAgainstReferenceHashes() {
         BcryptTestEntry.testEntries(testEntries);
     }
 
-//    /**
-//     * Test method for 'BCrypt.gensalt(int)'
-//     */
-//    public void testGensaltInt() {
-//        System.out.print("BCrypt.gensalt(log_rounds):");
-//        for (int i = 4; i <= 12; i++) {
-//            System.out.print(" " + Integer.toString(i) + ":");
-//            for (int j = 0; j < test_vectors.length; j += 4) {
-//                String plain = test_vectors[j][0];
-//                String salt = BCrypt.gensalt(i);
-//                String hashed1 = BCrypt.hashpw(plain, salt);
-//                String hashed2 = BCrypt.hashpw(plain, hashed1);
-//                assertEquals(hashed1, hashed2);
-//                System.out.print(".");
-//            }
-//        }
-//        System.out.println("");
-//    }
-//
-//    /**
-//     * Test method for 'BCrypt.gensalt()'
-//     */
-//    public void testGensalt() {
-//        System.out.print("BCrypt.gensalt(): ");
-//        for (int i = 0; i < test_vectors.length; i += 4) {
-//            String plain = test_vectors[i][0];
-//            String salt = BCrypt.gensalt();
-//            String hashed1 = BCrypt.hashpw(plain, salt);
-//            String hashed2 = BCrypt.hashpw(plain, hashed1);
-//            assertEquals(hashed1, hashed2);
-//            System.out.print(".");
-//        }
-//        System.out.println("");
-//    }
-//
-//    /**
-//     * Test method for 'BCrypt.checkpw(String, String)'
-//     * expecting success
-//     */
-//    public void testCheckpw_success() {
-//        System.out.print("BCrypt.checkpw w/ good passwords: ");
-//        for (int i = 0; i < test_vectors.length; i++) {
-//            String plain = test_vectors[i][0];
-//            String expected = test_vectors[i][2];
-//            assertTrue(BCrypt.checkpw(plain, expected));
-//            System.out.print(".");
-//        }
-//        System.out.println("");
-//    }
-//
-//    /**
-//     * Test method for 'BCrypt.checkpw(String, String)'
-//     * expecting failure
-//     */
-//    public void testCheckpw_failure() {
-//        System.out.print("BCrypt.checkpw w/ bad passwords: ");
-//        for (int i = 0; i < test_vectors.length; i++) {
-//            int broken_index = (i + 4) % test_vectors.length;
-//            String plain = test_vectors[i][0];
-//            String expected = test_vectors[broken_index][2];
-//            assertFalse(BCrypt.checkpw(plain, expected));
-//            System.out.print(".");
-//        }
-//        System.out.println("");
-//    }
-//
-//    /**
-//     * Test for correct hashing of non-US-ASCII passwords
-//     */
-//    public void testInternationalChars() {
-//        System.out.print("BCrypt.hashpw w/ international chars: ");
-//        String pw1 = "\u2605\u2605\u2605\u2605\u2605\u2605\u2605\u2605";
-//        String pw2 = "????????";
-//
-//        String h1 = BCrypt.hashpw(pw1, BCrypt.gensalt());
-//        assertFalse(BCrypt.checkpw(pw2, h1));
-//        System.out.print(".");
-//
-//        String h2 = BCrypt.hashpw(pw2, BCrypt.gensalt());
-//        assertFalse(BCrypt.checkpw(pw1, h2));
-//        System.out.print(".");
-//        System.out.println("");
-//    }
+    @Test
+    public void testRandomAgainstJBcrypt() throws IllegalBCryptFormatException {
+        for (int i = 0; i < 8; i++) {
+            int cost = new Random().nextInt(3) + 4;
+            String pw = "aAöoid98 wh_Asd~!@#$%^&*(kjlöoi" + new Random(999999999);
+            String jbcryptHash = org.mindrot.jbcrypt.BCrypt.hashpw(pw, org.mindrot.jbcrypt.BCrypt.gensalt(cost));
+            BCryptParser.Parts parts = new BCryptParser.Default(StandardCharsets.UTF_8, new Radix64Encoder.Default())
+                    .parse(jbcryptHash.getBytes(UTF_8));
+
+            byte[] hash = BCrypt.with(BCrypt.Version.VERSION_2A).hash(cost, parts.salt, pw.getBytes(UTF_8));
+
+            assertArrayEquals(jbcryptHash.getBytes(UTF_8), hash);
+        }
+    }
+
+    @Test
+    public void testCheckPwAgainstFavreLib() {
+        for (int i = 0; i < 10; i++) {
+            int cost = new Random().nextInt(5) + 4;
+            String pw = "aAöoi. --~!@#$%^&*(kjlöoi" + new Random(999999999);
+            byte[] hash = BCrypt.with(BCrypt.Version.VERSION_2A).hash(cost, pw.toCharArray());
+            org.mindrot.jbcrypt.BCrypt.checkpw(pw, new String(hash, UTF_8));
+        }
+    }
 }
