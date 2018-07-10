@@ -1,7 +1,6 @@
 package at.favre.lib.crypto.bcrypt;
 
 import at.favre.lib.bytes.Bytes;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -9,8 +8,7 @@ import java.security.SecureRandom;
 
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class BcryptTest {
     private BcryptTestEntry[] testEntries = new BcryptTestEntry[]{
@@ -26,10 +24,6 @@ public class BcryptTest {
             //new BcryptTestEntry("\\xa3", 5, "/OK.fbVrR/bpIqNJ5ianF.", "$2a$05$/OK.fbVrR/bpIqNJ5ianF.CE5elHaaO4EbggVDjb8P19RukzXSM3e"),
             //new BcryptTestEntry("$_)", 10, "O5lzwORSFzOLA2Ku1vFere", "$2a$10$O5lzwORSFzOLA2Ku1vFereqOia97MSeF8iRIhATzKqk3ozRdXmgS6")
     };
-
-    @Before
-    public void setUp() {
-    }
 
     @Test
     public void testEntriesAgainstRef() {
@@ -76,10 +70,12 @@ public class BcryptTest {
         byte[] salt = Bytes.random(16).array();
         byte[] hash1 = bCrypt.hash(6, pw.toCharArray());
         byte[] hash2 = bCrypt.hash(7, salt, pw.getBytes(StandardCharsets.UTF_8));
+        char[] hash3 = bCrypt.hashToChar(4, pw.toCharArray());
 
         assertFalse(Bytes.wrap(hash1).equals(hash2));
         assertTrue(verifyer.verify(pw.toCharArray(), new String(hash1, StandardCharsets.UTF_8).toCharArray()).verified);
         assertTrue(verifyer.verify(pw.getBytes(StandardCharsets.UTF_8), hash2).verified);
+        assertTrue(verifyer.verify(pw.toCharArray(), hash3).verified);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -119,7 +115,7 @@ public class BcryptTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void createHashWithPwTooLong() {
-        BCrypt.withDefaults().hash(6, new byte[16], new byte[72]);
+        BCrypt.withDefaults().hash(6, new byte[16], new byte[73]);
     }
 
     @Test
@@ -136,6 +132,19 @@ public class BcryptTest {
     }
 
     @Test
+    public void verifyWithResultChars() {
+        BCrypt.Hasher bCrypt = BCrypt.withDefaults();
+        String pw = "7OHIJAslkjdhö#d";
+        char[] hash = bCrypt.hashToChar(6, pw.toCharArray());
+
+        BCrypt.Result result = BCrypt.verifyer().verify(pw.toCharArray(), hash);
+        assertTrue(result.verified);
+        assertTrue(result.validFormat);
+        assertEquals(BCrypt.Version.VERSION_2A, result.details.version);
+        assertEquals(6, result.details.cost);
+    }
+
+    @Test
     public void verifyIncorrectStrictVersion() {
         BCrypt.Hasher bCrypt = BCrypt.with(BCrypt.Version.VERSION_2Y);
         byte[] pw = "78PHasdhklöALÖö".getBytes();
@@ -149,11 +158,42 @@ public class BcryptTest {
     }
 
     @Test
+    public void verifyIncorrectStrictVersionChars() {
+        BCrypt.Hasher bCrypt = BCrypt.with(BCrypt.Version.VERSION_2X);
+        String pw = "8PAsdjhlkjhkjla_ääas#d";
+        char[] hash = bCrypt.hashToChar(5, pw.toCharArray());
+
+        BCrypt.Result result = BCrypt.verifyer().verifyStrict(pw.toCharArray(), hash, BCrypt.Version.VERSION_2A);
+        assertFalse(result.verified);
+        assertTrue(result.validFormat);
+        assertEquals(BCrypt.Version.VERSION_2X, result.details.version);
+        assertEquals(5, result.details.cost);
+    }
+
+    @Test
     public void verifyIncorrectFormat() {
         BCrypt.Result result = BCrypt.verifyer().verify("78PHasdhklöALÖö".getBytes(), "$2a$6$If6bvum7DFjUnE9p2uDeDu0YHzrHM6tf.iqN8.yx.jNN1ILEf7h0i".getBytes());
         assertFalse(result.validFormat);
         assertFalse(result.verified);
         assertNotNull(result.formatErrorMessage);
         System.out.println(result.formatErrorMessage);
+    }
+
+    @Test
+    public void testPartsPojoMethods() {
+        BCrypt.Result results1 = new BCrypt.Result(null, true);
+        BCrypt.Result results2 = new BCrypt.Result(null, true);
+        BCrypt.Result results3 = new BCrypt.Result(new IllegalBCryptFormatException("test"));
+
+        assertEquals(results1, results2);
+        assertEquals(results1.hashCode(), results2.hashCode());
+        assertNotEquals(results1, results3);
+        assertNotEquals(results1.hashCode(), results3.hashCode());
+        assertNotEquals(results2, results3);
+        assertNotEquals(results2.hashCode(), results3.hashCode());
+
+        assertNotNull(results1.toString());
+        assertNotNull(results2.toString());
+        assertNotNull(results3.toString());
     }
 }
