@@ -4,8 +4,6 @@ import at.favre.lib.bytes.Bytes;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.nio.charset.StandardCharsets;
-
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -67,24 +65,5 @@ public class BcryptTest {
         assertFalse(result.verified);
         assertEquals(BCrypt.Version.VERSION_2Y, result.details.version);
         assertEquals(5, result.details.cost);
-    }
-
-    /**
-     * $2a$04$Vtolm7ldZl8KcHYvc4bs.Of4xph96Wna77pcYfiAPb.XHuDyafqb.
-     * $2a$05$Vtolm7ldZl8KcHYvc4bs.OQ/Yxw6lRLT4OJ0D4eZHyRmxuzAXikLu
-     * $2a$06$Vtolm7ldZl8KcHYvc4bs.OzL977eQ/y8Wr.LPoetNjmI30AcK9oe6
-     * $2a$07$Vtolm7ldZl8KcHYvc4bs.OiJ.hwWocPoz4tzRinv9N0SxtJOfj/u6
-     * $2a$08$Vtolm7ldZl8KcHYvc4bs.ONiul6GViqBqCcF4QkdJdmzcDwkYQW.O
-     * $2a$09$Vtolm7ldZl8KcHYvc4bs.Ov9v2BOw3O9/4bytz2t7pPTL7HTElL1.
-     */
-    @Test
-    public void testSimpleUpgrade() throws IllegalBCryptFormatException {
-        int upgradedCost = 5;
-        byte[] upgrade = BCrypt.withDefaults().upgrade("$2a$04$Vtolm7ldZl8KcHYvc4bs.Of4xph96Wna77pcYfiAPb.XHuDyafqb.".getBytes(StandardCharsets.UTF_8), upgradedCost);
-
-        BCryptParser parser = new BCryptParser.Default(StandardCharsets.UTF_8, new Radix64Encoder.Default());
-        BCryptParser.Parts parts = parser.parse(upgrade);
-        assertEquals(upgradedCost, parts.cost);
-        //assertArrayEquals("$2a$05$Vtolm7ldZl8KcHYvc4bs.OQ/Yxw6lRLT4OJ0D4eZHyRmxuzAXikLu".getBytes(StandardCharsets.UTF_8), upgrade);
     }
 }

@@ -162,30 +162,6 @@ public final class BCrypt {
         }
     }
 
-    /**
-     * Upgrades a bcrypt password hash with a higher cost factor. The current hash will be used and
-     * hashed additional times. This process is not reversible.
-     *
-     * @param currentLowercostBcryptHash the current full hash (including the version identifier etc.)
-     * @param newMinCost                 the new hash will have at least this cost factor
-     * @return the new bcrypt hash or the same if current cost factor is at least newMinCost
-     * @throws IllegalBCryptFormatException if given bcrypt hash could not be parsed
-     */
-    public byte[] upgrade(byte[] currentLowercostBcryptHash, int newMinCost) throws IllegalBCryptFormatException {
-        BCryptParser parser = new BCryptParser.Default(defaultCharset, encoder);
-
-        BCryptParser.Parts parts = parser.parse(currentLowercostBcryptHash);
-        if (parts.cost >= newMinCost) {
-            return currentLowercostBcryptHash;
-        }
-        int roundsNew = 1 << newMinCost;
-        int roundsOld = 1 << parts.cost;
-
-        byte[] hash = new BCryptOpenBSDProtocol().cryptRaw(roundsNew - roundsOld, parts.salt, parts.hash);
-
-        return createOutMessage(newMinCost, parts.salt, hash);
-    }
-
     public static final class Result {
         public final BCryptParser.Parts details;
         public final boolean validFormat;
