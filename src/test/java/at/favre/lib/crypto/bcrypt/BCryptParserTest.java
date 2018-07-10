@@ -115,6 +115,21 @@ public class BCryptParserTest {
         parser.parse("$2a$06$If6bvum7DFjUnE9p2uDeDu0YHzrHM6tf.iqN8.yx.jNN1ILEf7h0i9".getBytes());
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void parseErrorNullHash() throws Exception {
+        parser.parse(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void parseErrorZeroLengthHash() throws Exception {
+        parser.parse(new byte[0]);
+    }
+
+    @Test(expected = IllegalBCryptFormatException.class)
+    public void parseErrorWayTooShort() throws Exception {
+        parser.parse("$2a".getBytes());
+    }
+
     @Test
     public void parseErrorTooLongGetExceptionMessage() {
         try {
@@ -125,5 +140,23 @@ public class BCryptParserTest {
             assertTrue(e.getMessage().length() > 20);
             System.out.println(e.getMessage());
         }
+    }
+
+    @Test
+    public void testPartsPojoMethods() {
+        BCryptParser.Parts parts1 = new BCryptParser.Parts(BCrypt.Version.VERSION_2A, 6, new byte[16], new byte[23]);
+        BCryptParser.Parts parts2 = new BCryptParser.Parts(BCrypt.Version.VERSION_2A, 6, new byte[16], new byte[23]);
+        BCryptParser.Parts parts3 = new BCryptParser.Parts(BCrypt.Version.VERSION_2A, 7, new byte[16], new byte[23]);
+
+        assertEquals(parts1, parts2);
+        assertEquals(parts1.hashCode(), parts2.hashCode());
+        assertNotEquals(parts1, parts3);
+        assertNotEquals(parts1.hashCode(), parts3.hashCode());
+        assertNotEquals(parts2, parts3);
+        assertNotEquals(parts2.hashCode(), parts3.hashCode());
+
+        assertNotNull(parts1.toString());
+        assertNotNull(parts2.toString());
+        assertNotNull(parts3.toString());
     }
 }

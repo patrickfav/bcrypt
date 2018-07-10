@@ -109,7 +109,7 @@ public class BcryptTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void createHashWithPwNull() {
-        BCrypt.withDefaults().hash(6, new byte[17], null);
+        BCrypt.withDefaults().hash(6, new byte[16], null);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -119,7 +119,7 @@ public class BcryptTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void createHashWithPwTooLong() {
-        BCrypt.withDefaults().hash(6, new byte[17], new byte[72]);
+        BCrypt.withDefaults().hash(6, new byte[16], new byte[72]);
     }
 
     @Test
