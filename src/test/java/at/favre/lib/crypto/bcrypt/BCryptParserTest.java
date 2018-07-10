@@ -20,7 +20,7 @@ public class BCryptParserTest {
     public void parseDifferentCostFactors() throws Exception {
         for (int cost = 4; cost < 10; cost++) {
             byte[] salt = Bytes.random(16).array();
-            byte[] hash = BCrypt.defaults().hash(cost, salt, "12345".getBytes());
+            byte[] hash = BCrypt.withDefaults().hash(cost, salt, "12345".getBytes());
 
             BCryptParser.Parts parts = parser.parse(hash);
             assertEquals(cost, parts.cost);

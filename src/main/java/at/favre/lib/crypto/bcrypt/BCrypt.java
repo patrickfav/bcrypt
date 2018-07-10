@@ -11,20 +11,39 @@ import java.util.Objects;
 
 public final class BCrypt {
     private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
+
     /**
-     * Ascii hex pointer for '$'
+     * Fixed lenght of the bcrypt salt
      */
-    static final byte SEPARATOR = 0x24;
+    public static final int SALT_LENGTH = 16;
+    /**
+     * The max length of the password in bytes excluding lats null-terminator byte
+     */
+    public static final int MAX_PW_LENGTH_BYTE = 71;
+
+    /**
+     * Minimum allowed cost factor
+     */
+    public static final int MIN_COST = 4;
+
+    /**
+     * Maximum allowed cost factor
+     */
+    public static final int MAX_COST = 30;
 
     /**
      * Ascii hex pointer for '2'
      */
     static final byte MAJOR_VERSION = 0x32;
-    static final int SALT_LENGTH = 16;
+
+    /**
+     * The raw hash out length in byte
+     */
     static final int HASH_OUT_LENGTH = 23;
-    static final int MAX_PW_LENGTH_BYTE = 71;
-    static final int MIN_COST = 4;
-    static final int MAX_COST = 30;
+    /**
+     * Ascii hex pointer for '$'
+     */
+    static final byte SEPARATOR = 0x24;
 
     private BCrypt() {
     }
@@ -35,7 +54,7 @@ public final class BCrypt {
      *
      * @return new bcrypt hash instance
      */
-    public static Hasher defaults() {
+    public static Hasher withDefaults() {
         return new Hasher(Version.VERSION_2A, new SecureRandom(), new LongPasswordStrategy.StrictMaxPasswordLengthStrategy(MAX_PW_LENGTH_BYTE));
     }
 
@@ -123,8 +142,7 @@ public final class BCrypt {
         public byte[] hash(int cost, char[] password) {
             byte[] passwordBytes = null;
             try {
-                passwordBytes = new String(CharBuffer.allocate(password.length + 1).put(password).array())
-                        .getBytes(defaultCharset);
+                passwordBytes = new String(CharBuffer.wrap(password).array()).getBytes(defaultCharset);
                 return hash(cost, Bytes.random(SALT_LENGTH, secureRandom).array(), passwordBytes);
             } finally {
                 if (passwordBytes != null) {
@@ -221,8 +239,8 @@ public final class BCrypt {
             byte[] passwordBytes = null;
             byte[] bcryptHashBytes = null;
             try {
-                passwordBytes = new String(CharBuffer.allocate(password.length + 1).put(password).array()).getBytes(defaultCharset);
-                bcryptHashBytes = new String(CharBuffer.allocate(bcryptHash.length + 1).put(bcryptHash).array()).getBytes(defaultCharset);
+                passwordBytes = new String(CharBuffer.wrap(password).array()).getBytes(defaultCharset);
+                bcryptHashBytes = new String(CharBuffer.wrap(bcryptHash).array()).getBytes(defaultCharset);
                 return verify(passwordBytes, bcryptHashBytes, requiredVersion);
             } finally {
                 if (passwordBytes != null) {

@@ -4,6 +4,9 @@ import at.favre.lib.bytes.Bytes;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
+
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -35,7 +38,7 @@ public class BcryptTest {
     @Test
     public void simpleTest() {
         byte[] salt = new byte[]{0x5E, (byte) 0xFA, (byte) 0xA7, (byte) 0xA3, (byte) 0xD9, (byte) 0xDF, 0x6E, (byte) 0x7F, (byte) 0x8C, 0x78, (byte) 0x96, (byte) 0xB1, 0x7B, (byte) 0xA7, 0x6E, 0x01};
-        BCrypt.Hasher bCrypt = BCrypt.defaults();
+        BCrypt.Hasher bCrypt = BCrypt.withDefaults();
         for (int i = 4; i < 10; i++) {
             byte[] hash = bCrypt.hash(i, salt, "abcdefghijkl1234567öäü-,:".getBytes());
             assertEquals(60, hash.length);
@@ -44,8 +47,43 @@ public class BcryptTest {
     }
 
     @Test
+    public void testHashAllVersions() {
+        for (BCrypt.Version version : BCrypt.Version.values()) {
+            checkHash(BCrypt.with(version));
+        }
+    }
+
+    @Test
+    public void testSecureRandom() {
+        checkHash(BCrypt.with(new SecureRandom()));
+    }
+
+    @Test
+    public void testLongPasswordStrategy() {
+        checkHash(BCrypt.with(new LongPasswordStrategy.TruncateStrategy(BCrypt.MAX_PW_LENGTH_BYTE)));
+    }
+
+    @Test
+    public void testFullyCustom() {
+        checkHash(BCrypt.with(BCrypt.Version.VERSION_2Y, new SecureRandom(), new LongPasswordStrategy.TruncateStrategy(BCrypt.MAX_PW_LENGTH_BYTE)));
+    }
+
+    private void checkHash(BCrypt.Hasher bCrypt) {
+        BCrypt.Verifyer verifyer = BCrypt.verifyer();
+
+        String pw = "a90üdjanlasdn_asdlk";
+        byte[] salt = Bytes.random(16).array();
+        byte[] hash1 = bCrypt.hash(6, pw.toCharArray());
+        byte[] hash2 = bCrypt.hash(7, salt, pw.getBytes(StandardCharsets.UTF_8));
+
+        assertFalse(Bytes.wrap(hash1).equals(hash2));
+        assertTrue(verifyer.verify(pw.toCharArray(), new String(hash1, StandardCharsets.UTF_8).toCharArray()).verified);
+        assertTrue(verifyer.verify(pw.getBytes(StandardCharsets.UTF_8), hash2).verified);
+    }
+
+    @Test
     public void verifyWithResult() {
-        BCrypt.Hasher bCrypt = BCrypt.defaults();
+        BCrypt.Hasher bCrypt = BCrypt.withDefaults();
         byte[] pw = "78PHasdhklöALÖö".getBytes();
         byte[] hash = bCrypt.hash(8, Bytes.random(16).array(), pw);
 
