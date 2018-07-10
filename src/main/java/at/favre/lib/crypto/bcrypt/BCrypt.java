@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Objects;
 
@@ -235,18 +236,62 @@ public final class BCrypt {
             this.encoder = new Radix64Encoder.Default();
         }
 
+        /**
+         * Verify given bcrypt hash, which includes salt and cost factor with given raw password requiring a specific
+         * version. If the version does not match, {@link Result#verified} will be false, even if the hash matches.
+         * <p>
+         * If given hash has an invalid format {@link Result#validFormat} will be false; see also
+         * {@link Result#formatErrorMessage} for easier debugging.
+         *
+         * @param password        to compare against the hash
+         * @param bcryptHash      to compare against the password
+         * @param expectedVersion will check for this version and wil not verify if versions do not match
+         * @return result object, see {@link Result} for more info
+         */
         public Result verifyStrict(byte[] password, byte[] bcryptHash, Version expectedVersion) {
             return verify(password, bcryptHash, expectedVersion);
         }
 
+        /**
+         * Verify given bcrypt hash, which includes salt and cost factor with given raw password.
+         * The result will have {@link Result#verified} true if they match. If given hash has an
+         * invalid format {@link Result#validFormat} will be false; see also {@link Result#formatErrorMessage}
+         * for easier debugging.
+         *
+         * @param password   to compare against the hash
+         * @param bcryptHash to compare against the password
+         * @return result object, see {@link Result} for more info
+         */
         public Result verify(byte[] password, byte[] bcryptHash) {
             return verify(password, bcryptHash, null);
         }
 
+        /**
+         * Verify given bcrypt hash, which includes salt and cost factor with given raw password requiring a specific
+         * version. If the version does not match, {@link Result#verified} will be false, even if the hash matches.
+         * <p>
+         * If given hash has an invalid format {@link Result#validFormat} will be false; see also
+         * {@link Result#formatErrorMessage} for easier debugging.
+         *
+         * @param password        to compare against the hash
+         * @param bcryptHash      to compare against the password
+         * @param expectedVersion will check for this version and wil not verify if versions do not match
+         * @return result object, see {@link Result} for more info
+         */
         public Result verifyStrict(char[] password, char[] bcryptHash, Version expectedVersion) {
             return verify(password, bcryptHash, expectedVersion);
         }
 
+        /**
+         * Verify given bcrypt hash, which includes salt and cost factor with given raw password.
+         * The result will have {@link Result#verified} true if they match. If given hash has an
+         * invalid format {@link Result#validFormat} will be false; see also {@link Result#formatErrorMessage}
+         * for easier debugging.
+         *
+         * @param password   to compare against the hash
+         * @param bcryptHash to compare against the password
+         * @return result object, see {@link Result} for more info
+         */
         public Result verify(char[] password, char[] bcryptHash) {
             return verify(password, bcryptHash, null);
         }
@@ -270,11 +315,6 @@ public final class BCrypt {
 
         /**
          * Verify given password against a bcryptHash
-         *
-         * @param password
-         * @param bcryptHash
-         * @param requiredVersion
-         * @return
          */
         private Result verify(byte[] password, byte[] bcryptHash, Version requiredVersion) {
             Objects.requireNonNull(bcryptHash);
@@ -288,7 +328,7 @@ public final class BCrypt {
                 }
 
                 byte[] refHash = BCrypt.with(parts.version).hash(parts.cost, parts.salt, password);
-                return new Result(parts, Bytes.wrap(refHash).equals(bcryptHash));
+                return new Result(parts, MessageDigest.isEqual(refHash, bcryptHash));
             } catch (IllegalBCryptFormatException e) {
                 return new Result(e);
             }
