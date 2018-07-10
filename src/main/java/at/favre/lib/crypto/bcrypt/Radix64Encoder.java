@@ -2,18 +2,46 @@ package at.favre.lib.crypto.bcrypt;
 
 import java.io.ByteArrayOutputStream;
 
+/**
+ * Encoder for the custom Base64 variant of BCrypt (called Radix64 here). It has the same rules as Base64 but uses a different
+ * mapping table than the various RFCs
+ * <p>
+ * According to Wikipedia:
+ *
+ * <blockquote>
+ * Unix stores password hashes computed with crypt in the /etc/passwd file using radix-64 encoding called B64. It uses a
+ * mostly-alphanumeric set of characters, plus . and /. Its 64-character set is "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".
+ * Padding is not used.
+ * </blockquote>
+ */
 public interface Radix64Encoder {
 
-    byte[] encode(byte[] d, int len);
+    /**
+     * Encode given raw byte array to a Radix64 style, UTF-8 encoded byte array.
+     *
+     * @param rawBytes          to encode
+     * @param maxLengthToEncode only encode this many bytes
+     * @return UTF-8 encoded string representing radix64 encoded data
+     */
+    byte[] encode(byte[] rawBytes, int maxLengthToEncode);
 
+    /**
+     * From a UTF-8 encoded string representing radix64 encoded data as byte array, decodes the raw bytes from it.
+     *
+     * @param utf8EncodedRadix64String from a string get it with <code>"m0CrhHm10qJ3lXRY.5zDGO".getBytes(StandardCharsets.UTF8)</code>
+     * @return the raw bytes encoded by this utf-8 radix4 string
+     */
     byte[] decode(byte[] utf8EncodedRadix64String);
 
     /**
      * BCrypt's non-standard Radix 64 encoding schema
      */
     final class Default implements Radix64Encoder {
-        // Table for Base64 encoding
-        private static final char[] base64_code = {
+        /**
+         * Custom Bcrypt Base64 encoding table. Same as normal Base64 encoding but different mapping table
+         * see https://en.wikipedia.org/wiki/Base64#Radix-64_applications_not_compatible_with_Base64
+         */
+        private static final char[] BCRYPT_RADIX64_CODE = {
                 '.', '/', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
                 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
                 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
@@ -22,8 +50,10 @@ public interface Radix64Encoder {
                 '6', '7', '8', '9'
         };
 
-        // Table for Base64 decoding
-        private static final byte[] index_64 = {
+        /**
+         * Table for Base64 decoding
+         */
+        private static final byte[] INDEX_64 = {
                 -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
                 -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
                 -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -44,40 +74,40 @@ public interface Radix64Encoder {
          * encoding scheme. Note that this is *not* compatible with
          * the standard MIME-base64 encoding.
          *
-         * @param d   the byte array to encode
-         * @param len the number of bytes to encode
-         * @return base64-encoded string
+         * @param rawBytes          the byte array to encode
+         * @param maxLengthToEncode the number of bytes to encode
+         * @return radix64-encoded string
          * @throws IllegalArgumentException if the length is invalid
          */
-        public byte[] encode(byte[] d, int len) {
+        public byte[] encode(byte[] rawBytes, int maxLengthToEncode) {
             int off = 0;
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             int c1, c2;
 
-            if (len <= 0 || len > d.length) {
+            if (maxLengthToEncode <= 0 || maxLengthToEncode > rawBytes.length) {
                 throw new IllegalArgumentException("Invalid len");
             }
 
-            while (off < len) {
-                c1 = d[off++] & 0xff;
-                bos.write(base64_code[(c1 >> 2) & 0x3f]);
+            while (off < maxLengthToEncode) {
+                c1 = rawBytes[off++] & 0xff;
+                bos.write(BCRYPT_RADIX64_CODE[(c1 >> 2) & 0x3f]);
                 c1 = (c1 & 0x03) << 4;
-                if (off >= len) {
-                    bos.write(base64_code[c1 & 0x3f]);
+                if (off >= maxLengthToEncode) {
+                    bos.write(BCRYPT_RADIX64_CODE[c1 & 0x3f]);
                     break;
                 }
-                c2 = d[off++] & 0xff;
+                c2 = rawBytes[off++] & 0xff;
                 c1 |= (c2 >> 4) & 0x0f;
-                bos.write(base64_code[c1 & 0x3f]);
+                bos.write(BCRYPT_RADIX64_CODE[c1 & 0x3f]);
                 c1 = (c2 & 0x0f) << 2;
-                if (off >= len) {
-                    bos.write(base64_code[c1 & 0x3f]);
+                if (off >= maxLengthToEncode) {
+                    bos.write(BCRYPT_RADIX64_CODE[c1 & 0x3f]);
                     break;
                 }
-                c2 = d[off++] & 0xff;
+                c2 = rawBytes[off++] & 0xff;
                 c1 |= (c2 >> 6) & 0x03;
-                bos.write(base64_code[c1 & 0x3f]);
-                bos.write(base64_code[c2 & 0x3f]);
+                bos.write(BCRYPT_RADIX64_CODE[c1 & 0x3f]);
+                bos.write(BCRYPT_RADIX64_CODE[c2 & 0x3f]);
             }
             return bos.toByteArray();
         }
@@ -90,10 +120,10 @@ public interface Radix64Encoder {
          * @return the decoded value of x
          */
         private static byte char64(byte x) {
-            if ((int) x >= index_64.length) {
+            if ((int) x >= INDEX_64.length) {
                 return -1;
             }
-            return index_64[(int) x];
+            return INDEX_64[(int) x];
         }
 
         /**
