@@ -147,4 +147,19 @@ public class Radix64Test {
             this.raw = raw;
         }
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testErrorNullMaxLength() {
+        encoder.encode(new byte[16], 0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testErrorTooLong() {
+        encoder.encode(new byte[16], 17);
+    }
+
+    @Test
+    public void testEmptyDecode() {
+        assertArrayEquals(new byte[0], encoder.decode(new byte[0]));
+    }
 }

@@ -85,7 +85,7 @@ public interface Radix64Encoder {
             int c1, c2;
 
             if (maxLengthToEncode <= 0 || maxLengthToEncode > rawBytes.length) {
-                throw new IllegalArgumentException("Invalid len");
+                throw new IllegalArgumentException("invalid max length, must be greater 0 and smaller than input length");
             }
 
             while (off < maxLengthToEncode) {
@@ -140,16 +140,16 @@ public interface Radix64Encoder {
         }
 
         private byte[] decode(byte[] utf8EncodedBytes, int maxLen) {
+            if (utf8EncodedBytes.length == 0) {
+                return new byte[0];
+            }
+
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             int off = 0;
             int slen = utf8EncodedBytes.length;
             int olen = 0;
 
             byte c1, c2, c3, c4, o;
-
-            if (maxLen <= 0) {
-                throw new IllegalArgumentException("invalid max length");
-            }
 
             while (off < slen - 1 && olen < maxLen) {
                 c1 = char64(utf8EncodedBytes[off++]);
