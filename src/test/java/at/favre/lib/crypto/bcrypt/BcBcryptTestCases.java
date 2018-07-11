@@ -33,8 +33,8 @@ public class BcBcryptTestCases {
         byte[] bcryptHashOnly = org.bouncycastle.crypto.generators.BCrypt.generate(Bytes.from(pw).append((byte) 0).array(), salt, cost);
 
         byte[] hash = BCrypt.with(BCrypt.Version.VERSION_2A).hash(cost, salt, pw.getBytes(UTF_8));
-        BCryptParser.Parts parts = new BCryptParser.Default(StandardCharsets.UTF_8, new Radix64Encoder.Default()).parse(hash);
+        BCrypt.HashData parts = new BCryptParser.Default(StandardCharsets.UTF_8, new Radix64Encoder.Default()).parse(hash);
 
-        assertArrayEquals(parts.hash, Bytes.wrap(bcryptHashOnly).resize(23, BytesTransformer.ResizeTransformer.Mode.RESIZE_KEEP_FROM_ZERO_INDEX).array());
+        assertArrayEquals(parts.rawHash, Bytes.wrap(bcryptHashOnly).resize(23, BytesTransformer.ResizeTransformer.Mode.RESIZE_KEEP_FROM_ZERO_INDEX).array());
     }
 }

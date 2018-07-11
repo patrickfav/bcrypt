@@ -59,10 +59,10 @@ public class JBcryptTestCases {
         int cost = new Random().nextInt(3) + 4;
         String pw = Bytes.random(8 + new Random().nextInt(24)).encodeBase64();
         String jbcryptHash = org.mindrot.jbcrypt.BCrypt.hashpw(pw, org.mindrot.jbcrypt.BCrypt.gensalt(cost));
-        BCryptParser.Parts parts = new BCryptParser.Default(StandardCharsets.UTF_8, new Radix64Encoder.Default())
+        BCrypt.HashData hashData = new BCryptParser.Default(StandardCharsets.UTF_8, new Radix64Encoder.Default())
                 .parse(jbcryptHash.getBytes(UTF_8));
 
-        byte[] hash = BCrypt.with(BCrypt.Version.VERSION_2A).hash(cost, parts.salt, pw.getBytes(UTF_8));
+        byte[] hash = BCrypt.with(BCrypt.Version.VERSION_2A).hash(cost, hashData.rawSalt, pw.getBytes(UTF_8));
 
         assertArrayEquals(jbcryptHash.getBytes(UTF_8), hash);
     }

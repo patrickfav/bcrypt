@@ -3,15 +3,13 @@ package at.favre.lib.crypto.bcrypt;
 import at.favre.lib.bytes.Bytes;
 
 import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.Objects;
 
 import static at.favre.lib.crypto.bcrypt.BCrypt.MAJOR_VERSION;
 import static at.favre.lib.crypto.bcrypt.BCrypt.SEPARATOR;
 
 public interface BCryptParser {
 
-    Parts parse(byte[] bcryptHash) throws IllegalBCryptFormatException;
+    BCrypt.HashData parse(byte[] bcryptHash) throws IllegalBCryptFormatException;
 
     final class Default implements BCryptParser {
 
@@ -24,7 +22,7 @@ public interface BCryptParser {
         }
 
         @Override
-        public Parts parse(byte[] bcryptHash) throws IllegalBCryptFormatException {
+        public BCrypt.HashData parse(byte[] bcryptHash) throws IllegalBCryptFormatException {
             if (bcryptHash == null || bcryptHash.length == 0) {
                 throw new IllegalArgumentException("must provide non-null, non-empty hash");
             }
@@ -74,53 +72,7 @@ public interface BCryptParser {
             System.arraycopy(bcryptHash, 7, salt, 0, salt.length);
             System.arraycopy(bcryptHash, 7 + salt.length, hash, 0, hash.length);
 
-            return new Parts(usedVersion, parsedCostFactor,
-                    encoder.decode(salt),
-                    encoder.decode(hash));
-        }
-    }
-
-    final class Parts {
-        public final BCrypt.Version version;
-        public final int cost;
-        public final byte[] salt;
-        public final byte[] hash;
-
-        Parts(BCrypt.Version version, int cost, byte[] salt, byte[] hash) {
-            this.version = version;
-            this.cost = cost;
-            this.salt = salt;
-            this.hash = hash;
-        }
-
-        @Override
-        public String toString() {
-            return "Parts{" +
-                    "version=" + version +
-                    ", cost=" + cost +
-                    ", salt=" + Bytes.wrap(salt).toString() +
-                    ", hash=" + Bytes.wrap(hash).toString() +
-                    '}';
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Parts parts = (Parts) o;
-            return cost == parts.cost &&
-                    version == parts.version &&
-                    Arrays.equals(salt, parts.salt) &&
-                    Arrays.equals(hash, parts.hash);
-        }
-
-        @Override
-        public int hashCode() {
-
-            int result = Objects.hash(version, cost);
-            result = 31 * result + Arrays.hashCode(salt);
-            result = 31 * result + Arrays.hashCode(hash);
-            return result;
+            return new BCrypt.HashData(parsedCostFactor, usedVersion, encoder.decode(salt), encoder.decode(hash));
         }
     }
 }

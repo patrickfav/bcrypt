@@ -22,11 +22,11 @@ public class BCryptParserTest {
             byte[] salt = Bytes.random(16).array();
             byte[] hash = BCrypt.withDefaults().hash(cost, salt, "12345".getBytes());
 
-            BCryptParser.Parts parts = parser.parse(hash);
+            BCrypt.HashData parts = parser.parse(hash);
             assertEquals(cost, parts.cost);
             assertEquals(BCrypt.Version.VERSION_2A, parts.version);
-            assertArrayEquals(salt, parts.salt);
-            assertEquals(23, parts.hash.length);
+            assertArrayEquals(salt, parts.rawSalt);
+            assertEquals(23, parts.rawHash.length);
 
             System.out.println(parts);
         }
@@ -37,11 +37,11 @@ public class BCryptParserTest {
         for (BCrypt.Version version : BCrypt.Version.values()) {
             byte[] salt = Bytes.random(16).array();
             byte[] hash = BCrypt.with(version).hash(6, salt, "hs61i1oAJhdasdÄÄ".getBytes(StandardCharsets.UTF_8));
-            BCryptParser.Parts parts = parser.parse(hash);
+            BCrypt.HashData parts = parser.parse(hash);
             assertEquals(version, parts.version);
             assertEquals(6, parts.cost);
-            assertArrayEquals(salt, parts.salt);
-            assertEquals(23, parts.hash.length);
+            assertArrayEquals(salt, parts.rawSalt);
+            assertEquals(23, parts.rawHash.length);
 
             System.out.println(parts);
         }
@@ -51,11 +51,11 @@ public class BCryptParserTest {
     public void parseDoubleDigitCost() throws Exception {
         byte[] salt = Bytes.random(16).array();
         byte[] hash = BCrypt.with(BCrypt.Version.VERSION_2A).hash(11, salt, "i27ze8172eaidh asdhsd".getBytes(StandardCharsets.UTF_8));
-        BCryptParser.Parts parts = parser.parse(hash);
+        BCrypt.HashData parts = parser.parse(hash);
         assertEquals(BCrypt.Version.VERSION_2A, parts.version);
         assertEquals(11, parts.cost);
-        assertArrayEquals(salt, parts.salt);
-        assertEquals(23, parts.hash.length);
+        assertArrayEquals(salt, parts.rawSalt);
+        assertEquals(23, parts.rawHash.length);
 
         System.out.println(parts);
     }
@@ -140,23 +140,5 @@ public class BCryptParserTest {
             assertTrue(e.getMessage().length() > 20);
             System.out.println(e.getMessage());
         }
-    }
-
-    @Test
-    public void testPartsPojoMethods() {
-        BCryptParser.Parts parts1 = new BCryptParser.Parts(BCrypt.Version.VERSION_2A, 6, new byte[16], new byte[23]);
-        BCryptParser.Parts parts2 = new BCryptParser.Parts(BCrypt.Version.VERSION_2A, 6, new byte[16], new byte[23]);
-        BCryptParser.Parts parts3 = new BCryptParser.Parts(BCrypt.Version.VERSION_2A, 7, new byte[16], new byte[23]);
-
-        assertEquals(parts1, parts2);
-        assertEquals(parts1.hashCode(), parts2.hashCode());
-        assertNotEquals(parts1, parts3);
-        assertNotEquals(parts1.hashCode(), parts3.hashCode());
-        assertNotEquals(parts2, parts3);
-        assertNotEquals(parts2.hashCode(), parts3.hashCode());
-
-        assertNotNull(parts1.toString());
-        assertNotNull(parts2.toString());
-        assertNotNull(parts3.toString());
     }
 }
