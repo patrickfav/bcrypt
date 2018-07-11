@@ -103,7 +103,7 @@ BCrypt.with(new SecureRandom()).hash(6, password.getBytes(StandardCharsets.UTF_8
 ### Retrieve and Verify the Raw Hash
 
 Per default the result of `hash()` methods will return in the [Modular Crypt Format](https://passlib.readthedocs.io/en/stable/modular_crypt_format.html)
-(e.g. `$2y$06$doGnefu9cbLkJTn8sef7U.dynHJFe5hS6xp7vLWb2Zu7e8cOuMVmS`)`, but if you prefer encoding the hash yourself you can just use
+(e.g. `$2y$06$doGnefu9cbLkJTn8sef7U.dynHJFe5hS6xp7vLWb2Zu7e8cOuMVmS`), but if you prefer encoding the hash yourself you can just use
 
 ```java
 BCrypt.HashData hashData = BCrypt.withDefaults().hashRaw(6, salt, password.getBytes(StandardCharsets.UTF_8));
