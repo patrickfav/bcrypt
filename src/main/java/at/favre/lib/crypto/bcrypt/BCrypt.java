@@ -357,6 +357,20 @@ public final class BCrypt {
                 return new Result(e);
             }
         }
+
+        private Result verify(byte[] password, int cost, byte[] salt, byte[] rawBcryptHash23Bytes) {
+            Objects.requireNonNull(rawBcryptHash23Bytes);
+            Objects.requireNonNull(salt);
+
+            try {
+                byte[] refHash = BCrypt.withDefaults().hash(cost, salt, password);
+                BCryptParser parser = new BCryptParser.Default(defaultCharset, encoder);
+                BCryptParser.Parts parts = parser.parse(refHash);
+                return new Result(parts, MessageDigest.isEqual(parts.hash, rawBcryptHash23Bytes));
+            } catch (IllegalBCryptFormatException e) {
+                return new Result(e);
+            }
+        }
     }
 
     /**
