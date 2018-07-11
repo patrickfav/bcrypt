@@ -22,20 +22,48 @@ Add dependency to your `pom.xml`:
 A simple example:
 
 ```java
-    String password = "1234";
-    char[] bcryptChars = BCrypt.withDefaults().hashToChar(12, password.toCharArray());
-    String bcryptHashString = new String(bcryptChars);
-    // $2a$12$US00g/uMhoSBm.HiuieBjeMtoN69SN.GE25fCpldebzkryUyopws6
+String password = "1234";
+char[] bcryptChars = BCrypt.withDefaults().hashToChar(12, password.toCharArray());
+String bcryptHashString = new String(bcryptChars);
+// $2a$12$US00g/uMhoSBm.HiuieBjeMtoN69SN.GE25fCpldebzkryUyopws6
     ...
-    BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), bcryptChars);
-    // result.verified == true
+BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), bcryptChars);
+// result.verified == true
 ```
 
 ### API Description
 
+### Bcrypt Versions
+This implementation supports the various versions, which basically only differ through their identifier:
+
 ```java
-tbd
+char[] bcryptChars = BCrypt.with(BCrypt.Version.VERSION_2Y).hashToChar(6, password.toCharArray());
+// $2y$06$doGnefu9cbLkJTn8sef7U.dynHJFe5hS6xp7vLWb2Zu7e8cOuMVmS
+
+char[] bcryptChars = BCrypt.with(BCrypt.Version.VERSION_2B).hashToChar(6, password.toCharArray());
+// $2b$06$GskjDDM9oejRN8pxNhiSZuIw/cnjbsNb8IfWGd3TFQXtRfKTN95r.
 ```
+
+By using `BCrypt.withDefaults()` it will default to version `$2a$`. The older `$2$` version is not supported.
+
+### byte[] vs char[] API
+
+You can use either a `char[]` array or `byte[]` as input or output parameter. The reason `String` is usually omitted in security
+relevant APIs is, that a primitive array can usually be overwritten, as to discard it immediately after use. It is however 
+not possible to wipe the content of the immutable `String`. As encoding `UTF-8` is used in the whole lib.
+
+```java
+byte[] bcryptHashBytes = BCrypt.withDefaults().hash(6, password.getBytes(StandardCharsets.UTF_8));
+    ...
+BCrypt.Result result = BCrypt.verifyer().verify(password.getBytes(StandardCharsets.UTF_8), bcryptHashBytes);
+```
+
+### Strict Verification
+
+```java
+tbd.
+```
+
 
 ## Download
 
@@ -63,6 +91,11 @@ Add to your `build.gradle` module dependencies:
 
 
 ## Description
+
+### Test Vectors and Reference Implementations
+
+This implementation is tested against the bcrypt implementation jBcrypt and Bouncy Castle. It includes test vectors
+found in the test cases of bcrypt and [various](https://stackoverflow.com/a/12761326/774398) [places](http://openwall.info/wiki/john/sample-hashes) [on](http://cvsweb.openwall.com/cgi/cvsweb.cgi/Owl/packages/glibc/crypt_blowfish/wrapper.c?rev=HEAD) the web.
 
 ### Enhancements over jBcrypt
 
