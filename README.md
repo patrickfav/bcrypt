@@ -19,12 +19,16 @@ Add dependency to your `pom.xml`:
         <version>{latest-version}</version>
     </dependency>
 
-A very simple example:
+A simple example:
 
 ```java
     String password = "1234";
-    char[] hash = BCrypt.withDefaults().hashToChar(12, password.toCharArray());
-    String hashString = new String(hash);
+    char[] bcryptChars = BCrypt.withDefaults().hashToChar(12, password.toCharArray());
+    String bcryptHashString = new String(bcryptChars);
+    // $2a$12$US00g/uMhoSBm.HiuieBjeMtoN69SN.GE25fCpldebzkryUyopws6
+    ...
+    BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), bcryptChars);
+    // result.verified == true
 ```
 
 ### API Description

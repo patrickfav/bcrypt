@@ -35,9 +35,11 @@ public class BcryptTest {
     @Test
     public void quickStart() {
         String password = "1234";
-        char[] hash = BCrypt.withDefaults().hashToChar(12, password.toCharArray());
-        String hashString = new String(hash);
-
+        char[] bcryptChars = BCrypt.withDefaults().hashToChar(12, password.toCharArray());
+        String bcryptHashString = new String(bcryptChars);
+        System.out.println(bcryptHashString);
+        BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), bcryptChars);
+        assertTrue(result.verified);
     }
 
     @Test
