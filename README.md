@@ -1,13 +1,13 @@
 # Bcrypt
 
-This is an implementation the OpenBSD Blowfish password hashing algorithm, as described in "[A Future-Adaptable Password Scheme](http://www.openbsd.org/papers/bcrypt-paper.ps)" by Niels Provos and David Mazieres. It's core is based upon [jBcrypt](https://github.com/jeremyh/jBCrypt) heavily refactored, modernized and with a lot of updates and enhancements. It supports all common [versions](https://en.wikipedia.org/wiki/Bcrypt#Versioning_history), has a security sensitive API and is fully tested against a range of test vectors.
+This is an implementation the OpenBSD Blowfish password hashing algorithm, as described in "[A Future-Adaptable Password Scheme](http://www.openbsd.org/papers/bcrypt-paper.ps)" by Niels Provos and David Mazieres. It's core is based upon [jBcrypt](https://github.com/jeremyh/jBCrypt) heavily refactored, modernized and with a lot of updates and enhancements. It supports all common [versions](https://en.wikipedia.org/wiki/Bcrypt#Versioning_history), has a security sensitive API and is fully tested against a range of test vectors and reference implementations.
 
 [![Download](https://api.bintray.com/packages/patrickfav/maven/bcrypt/images/download.svg)](https://bintray.com/patrickfav/maven/bcrypt/_latestVersion)
 [![Build Status](https://travis-ci.org/patrickfav/bcrypt.svg?branch=master)](https://travis-ci.org/patrickfav/bcrypt)
 [![Javadocs](https://www.javadoc.io/badge/at.favre.lib/bcrypt.svg)](https://www.javadoc.io/doc/at.favre.lib/bcrypt)
 [![Coverage Status](https://coveralls.io/repos/github/patrickfav/bcrypt/badge.svg?branch=master)](https://coveralls.io/github/patrickfav/bcrypt?branch=master)
 
-The code is compiled with [Java 7](https://en.wikipedia.org/wiki/Java_version_history#Java_SE_7) to be compatible with most [_Android_](https://www.android.com/) versions as well as normal Java applications.
+The code is compiled with for [Java 7](https://en.wikipedia.org/wiki/Java_version_history#Java_SE_7) to be compatible with most [_Android_](https://www.android.com/) versions as well as normal Java applications.
 
 ## Quickstart
 
@@ -32,6 +32,8 @@ BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), bcryptCh
 ```
 
 ### API Description
+
+In the following, the main features and use cases are explained.
 
 ### Bcrypt Versions
 This implementation supports the various versions, which basically only differ through their identifier:
@@ -60,10 +62,43 @@ BCrypt.Result result = BCrypt.verifyer().verify(password.getBytes(StandardCharse
 
 ### Strict Verification
 
+If you want the hash verification to only verify for a specific version you can use `verifyStrict()`
+
 ```java
-tbd.
+byte[] hash2y =  BCrypt.with(BCrypt.Version.VERSION_2Y).hash(6, password.getBytes(StandardCharsets.UTF_8));
+BCrypt.Result resultStrict = BCrypt.verifyer().verifyStrict(password.getBytes(StandardCharsets.UTF_8), hash2y, BCrypt.Version.VERSION_2A);
+// resultStrict.verified == false
 ```
 
+### Handling for overlong passwords
+
+Due to the limited in Blowfish, the maximum password length is 72 bytes (note that UTF-8 encoded, a character can be as 
+much as 4 bytes). Including the null-terminator byte, this will be reduced to 71 bytes. Per default, the `hash()` method will throw an exception if the provided password is too long. 
+
+The API supports passing a custom handling in that case, to mimic the behaviour of some popular implementations to just
+truncate the password.
+
+```java
+BCrypt.with(LongPasswordStrategies.truncate()).hash(6, new byte[100]);
+BCrypt.with(LongPasswordStrategies.hashSha512()).hash(6, new byte[100]); //allows to honour all pw bytes
+```
+
+The password will only be transformed if it is longer than 71 bytes. *It is important to note, however, that using any
+of these techniques will essentially create a custom flavor of Bcrypt possibly not compatible with other implementations.*
+
+ ### Custom Salt or SecureRandom
+ 
+ The caller may provide their own salt (which must be exactly 16 bytes) with:
+ 
+```java
+BCrypt.withDefaults().hash(6, salt16Bytes, password.getBytes(StandardCharsets.UTF_8));
+```
+
+or provide a custom instance of CPRNG which is used for the internal secure creation of the salt if none is passed:
+
+```java
+BCrypt.with(new SecureRandom()).hash(6, password.getBytes(StandardCharsets.UTF_8));
+```
 
 ## Download
 
@@ -100,7 +135,8 @@ found in the test cases of bcrypt and [various](https://stackoverflow.com/a/1276
 ### Enhancements over jBcrypt
 
 * Optimized and fixed implementation (e.g. uses `StringBuilder` instead of `StringBuffer`)
-* Support of most [version](https://en.wikipedia.org/wiki/Bcrypt#Versioning_history) variations (`$2a$`, `$2b$`, `$2x$`, `$2y$`) 
+* Support of most [version](https://en.wikipedia.org/wiki/Bcrypt#Versioning_history) variations (`$2a$`, `$2b$`, `$2x$`, `$2y$`)
+* Customizable handling for passwords over 72 bytes
 * Only uses byte and char arrays which can be wiped after use
 * Provide your own salt
 * Provide your own `SecureRandom` for salt generation

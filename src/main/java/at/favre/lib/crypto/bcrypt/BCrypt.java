@@ -138,6 +138,8 @@ public final class BCrypt {
          * <p>
          * This implementation will add a null-terminator to the password and return a 23 byte length hash in accordance
          * with the OpenBSD implementation.
+         * <p>
+         * The random salt will be created internally with a {@link SecureRandom} instance.
          *
          * @param cost     exponential cost factor between {@link #MIN_COST} and {@link #MAX_COST} e.g. 12 --&gt; 2^12 = 4,096 iterations
          * @param password to hash, will be internally converted to a utf-8 byte array representation
@@ -153,6 +155,8 @@ public final class BCrypt {
          * <p>
          * This implementation will add a null-terminator to the password and return a 23 byte length hash in accordance
          * with the OpenBSD implementation.
+         * <p>
+         * The random salt will be created internally with a {@link SecureRandom} instance.
          *
          * @param cost     exponential cost factor between {@link #MIN_COST} and {@link #MAX_COST} e.g. 12 --&gt; 2^12 = 4,096 iterations
          * @param password to hash, will be internally converted to a utf-8 byte array representation
@@ -180,6 +184,8 @@ public final class BCrypt {
          * <p>
          * This implementation will add a null-terminator to the password and return a 23 byte length hash in accordance
          * with the OpenBSD implementation.
+         * <p>
+         * The random salt will be created internally with a {@link SecureRandom} instance.
          *
          * @param cost     exponential cost factor between {@link #MIN_COST} and {@link #MAX_COST} e.g. 12 --&gt; 2^12 = 4,096 iterations
          * @param password the utf-8 encoded byte array representation

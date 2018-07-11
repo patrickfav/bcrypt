@@ -1,18 +1,25 @@
 package at.favre.lib.crypto.bcrypt;
 
 import at.favre.lib.bytes.Bytes;
+import at.favre.lib.crypto.bcrypt.misc.Repeat;
+import at.favre.lib.crypto.bcrypt.misc.RepeatRule;
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.util.Random;
 
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.*;
 
 public class BcryptTest {
+    @Rule
+    public RepeatRule repeatRule = new RepeatRule();
     public final static Charset UTF_8 = StandardCharsets.UTF_8;
+
     private BcryptTestEntry[] testEntries = new BcryptTestEntry[]{
             // see: https://stackoverflow.com/a/12761326/774398
             new BcryptTestEntry("ππππππππ", 10, ".TtQJ4Jr6isd4Hp.mVfZeu", "$2a$10$.TtQJ4Jr6isd4Hp.mVfZeuh6Gws4rOQ/vdBczhDx.19NFK0Y84Dle"),
@@ -53,7 +60,15 @@ public class BcryptTest {
         //byte[] vs char[]
         byte[] bcryptHashBytes = BCrypt.withDefaults().hash(6, password.getBytes(StandardCharsets.UTF_8));
         BCrypt.Result result = BCrypt.verifyer().verify(password.getBytes(StandardCharsets.UTF_8), bcryptHashBytes);
-
+        //verify strict
+        byte[] hash2y = BCrypt.with(BCrypt.Version.VERSION_2Y).hash(6, password.getBytes(StandardCharsets.UTF_8));
+        BCrypt.Result resultStrict = BCrypt.verifyer().verifyStrict(password.getBytes(StandardCharsets.UTF_8), hash2y, BCrypt.Version.VERSION_2A);
+        //overlong passwords
+        BCrypt.with(LongPasswordStrategies.truncate()).hash(6, new byte[100]);
+        BCrypt.with(LongPasswordStrategies.hashSha512()).hash(6, new byte[100]);
+        //custom salt and secure random
+        BCrypt.withDefaults().hash(6, Bytes.random(16).array(), password.getBytes(StandardCharsets.UTF_8));
+        BCrypt.with(new SecureRandom()).hash(6, password.getBytes(StandardCharsets.UTF_8));
     }
 
     @Test
@@ -95,13 +110,22 @@ public class BcryptTest {
         String pw = "a90üdjanlasdn_asdlk";
         byte[] salt = Bytes.random(16).array();
         byte[] hash1 = bCrypt.hash(6, pw.toCharArray());
-        byte[] hash2 = bCrypt.hash(7, salt, pw.getBytes(StandardCharsets.UTF_8));
+        byte[] hash2 = bCrypt.hash(7, salt, pw.getBytes(UTF_8));
         char[] hash3 = bCrypt.hashToChar(4, pw.toCharArray());
 
         assertFalse(Bytes.wrap(hash1).equals(hash2));
-        assertTrue(verifyer.verify(pw.toCharArray(), new String(hash1, StandardCharsets.UTF_8).toCharArray()).verified);
-        assertTrue(verifyer.verify(pw.getBytes(StandardCharsets.UTF_8), hash2).verified);
+        assertTrue(verifyer.verify(pw.toCharArray(), new String(hash1, UTF_8).toCharArray()).verified);
+        assertTrue(verifyer.verify(pw.getBytes(UTF_8), hash2).verified);
         assertTrue(verifyer.verify(pw.toCharArray(), hash3).verified);
+    }
+
+    @Test
+    @Repeat(20)
+    public void hashRandomByteArrays() {
+        byte[] pw = Bytes.random(new Random().nextInt(68) + 2).array();
+        byte[] hash = BCrypt.withDefaults().hash(4, pw);
+        assertTrue(BCrypt.verifyer().verify(pw, hash).verified);
+        System.out.println(Bytes.wrap(hash).encodeUtf8());
     }
 
     @Test(expected = IllegalArgumentException.class)
