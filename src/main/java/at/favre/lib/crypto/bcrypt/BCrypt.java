@@ -136,6 +136,9 @@ public final class BCrypt {
          * Hashes given password with the OpenBSD bcrypt schema. The cost factor will define how expensive the hash will
          * be to generate. This method will use a {@link SecureRandom} to generate the internal 16 byte hash.
          *
+         * This implementation will add a null-terminator to the password and return a 23 byte length hash in accordance
+         * with the OpenBSD implementation.
+         *
          * @param cost     exponential cost factor between {@link #MIN_COST} and {@link #MAX_COST} e.g. 12 --&gt; 2^12 = 4,096 iterations
          * @param password to hash, will be internally converted to a utf-8 byte array representation
          * @return bcrypt hash as a char array utf-8 encoded which includes version, cost-factor, salt and the raw hash (as radix64)
@@ -147,6 +150,9 @@ public final class BCrypt {
         /**
          * Hashes given password with the OpenBSD bcrypt schema. The cost factor will define how expensive the hash will
          * be to generate. This method will use a {@link SecureRandom} to generate the internal 16 byte hash.
+         *
+         * This implementation will add a null-terminator to the password and return a 23 byte length hash in accordance
+         * with the OpenBSD implementation.
          *
          * @param cost     exponential cost factor between {@link #MIN_COST} and {@link #MAX_COST} e.g. 12 --&gt; 2^12 = 4,096 iterations
          * @param password to hash, will be internally converted to a utf-8 byte array representation
@@ -172,6 +178,9 @@ public final class BCrypt {
          * Hashes given password with the OpenBSD bcrypt schema. The cost factor will define how expensive the hash will
          * be to generate. This method will use given salt byte array
          *
+         * This implementation will add a null-terminator to the password and return a 23 byte length hash in accordance
+         * with the OpenBSD implementation.
+         *
          * @param cost     exponential cost factor between {@link #MIN_COST} and {@link #MAX_COST} e.g. 12 --&gt; 2^12 = 4,096 iterations
          * @param salt     a random 16 byte long word, only used once
          * @param password the utf-8 encoded byte array representation
@@ -194,9 +203,9 @@ public final class BCrypt {
                 password = longPasswordStrategy.derive(password);
             }
 
-            byte[] pwWithNullTerminator = password = Bytes.wrap(password).append((byte) 0).array();
+            byte[] pwWithNullTerminator = Bytes.wrap(password).append((byte) 0).array();
             try {
-                byte[] hash = new BCryptOpenBSDProtocol().cryptRaw(1 << cost, salt, password);
+                byte[] hash = new BCryptOpenBSDProtocol().cryptRaw(1 << cost, salt, pwWithNullTerminator);
                 return createOutMessage(cost, salt, hash);
             } finally {
                 Bytes.wrap(pwWithNullTerminator).mutable().secureWipe();

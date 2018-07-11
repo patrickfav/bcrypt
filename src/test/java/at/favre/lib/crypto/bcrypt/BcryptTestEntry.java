@@ -5,12 +5,12 @@ import java.nio.charset.StandardCharsets;
 import static org.junit.Assert.assertArrayEquals;
 
 final class BcryptTestEntry {
-    public final String plainPw;
-    public final int cost;
-    public final String radix64Salt;
-    public final String hash;
+    final String plainPw;
+    final int cost;
+    final String radix64Salt;
+    final String hash;
 
-    public BcryptTestEntry(String plainPw, int cost, String radix64Salt, String hash) {
+    BcryptTestEntry(String plainPw, int cost, String radix64Salt, String hash) {
         this.plainPw = plainPw;
         this.cost = cost;
         this.radix64Salt = radix64Salt;

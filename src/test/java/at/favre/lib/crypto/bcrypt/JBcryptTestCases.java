@@ -1,5 +1,9 @@
 package at.favre.lib.crypto.bcrypt;
 
+import at.favre.lib.bytes.Bytes;
+import at.favre.lib.crypto.bcrypt.misc.Repeat;
+import at.favre.lib.crypto.bcrypt.misc.RepeatRule;
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -14,6 +18,8 @@ import static org.junit.Assert.assertArrayEquals;
  * See: https://github.com/jeremyh/jBCrypt/blob/master/src/test/java/org/mindrot/TestBCrypt.java
  */
 public class JBcryptTestCases {
+    @Rule
+    public RepeatRule repeatRule = new RepeatRule();
 
     private final BcryptTestEntry[] testEntries = new BcryptTestEntry[]{
             new BcryptTestEntry("abc", 6, "If6bvum7DFjUnE9p2uDeDu", "$2a$06$If6bvum7DFjUnE9p2uDeDu0YHzrHM6tf.iqN8.yx.jNN1ILEf7h0i"),
@@ -48,27 +54,25 @@ public class JBcryptTestCases {
     }
 
     @Test
+    @Repeat(8)
     public void testRandomAgainstJBcrypt() throws IllegalBCryptFormatException {
-        for (int i = 0; i < 8; i++) {
-            int cost = new Random().nextInt(3) + 4;
-            String pw = "aAöoid98 wh_Asd~!@#$%^&*(kjlöoi" + new Random(999999999);
-            String jbcryptHash = org.mindrot.jbcrypt.BCrypt.hashpw(pw, org.mindrot.jbcrypt.BCrypt.gensalt(cost));
-            BCryptParser.Parts parts = new BCryptParser.Default(StandardCharsets.UTF_8, new Radix64Encoder.Default())
-                    .parse(jbcryptHash.getBytes(UTF_8));
+        int cost = new Random().nextInt(3) + 4;
+        String pw = Bytes.random(8 + new Random().nextInt(24)).encodeBase64();
+        String jbcryptHash = org.mindrot.jbcrypt.BCrypt.hashpw(pw, org.mindrot.jbcrypt.BCrypt.gensalt(cost));
+        BCryptParser.Parts parts = new BCryptParser.Default(StandardCharsets.UTF_8, new Radix64Encoder.Default())
+                .parse(jbcryptHash.getBytes(UTF_8));
 
-            byte[] hash = BCrypt.with(BCrypt.Version.VERSION_2A).hash(cost, parts.salt, pw.getBytes(UTF_8));
+        byte[] hash = BCrypt.with(BCrypt.Version.VERSION_2A).hash(cost, parts.salt, pw.getBytes(UTF_8));
 
-            assertArrayEquals(jbcryptHash.getBytes(UTF_8), hash);
-        }
+        assertArrayEquals(jbcryptHash.getBytes(UTF_8), hash);
     }
 
     @Test
+    @Repeat(8)
     public void testCheckPwAgainstFavreLib() {
-        for (int i = 0; i < 10; i++) {
-            int cost = new Random().nextInt(5) + 4;
-            String pw = "aAöoi. --~!@#$%^&*(kjlöoi" + new Random(999999999);
-            byte[] hash = BCrypt.with(BCrypt.Version.VERSION_2A).hash(cost, pw.toCharArray());
-            org.mindrot.jbcrypt.BCrypt.checkpw(pw, new String(hash, UTF_8));
-        }
+        int cost = new Random().nextInt(5) + 4;
+        String pw = "aAöoi. --~!@#$%^&*(kjlöoi" + new Random(999999999);
+        byte[] hash = BCrypt.with(BCrypt.Version.VERSION_2A).hash(cost, pw.toCharArray());
+        org.mindrot.jbcrypt.BCrypt.checkpw(pw, new String(hash, UTF_8));
     }
 }
