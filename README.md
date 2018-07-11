@@ -70,7 +70,7 @@ BCrypt.Result resultStrict = BCrypt.verifyer().verifyStrict(password.getBytes(St
 // resultStrict.verified == false
 ```
 
-### Handling for overlong passwords
+### Handling for Overlong passwords
 
 Due to the limited in Blowfish, the maximum password length is 72 bytes (note that UTF-8 encoded, a character can be as 
 much as 4 bytes). Including the null-terminator byte, this will be reduced to 71 bytes. Per default, the `hash()` method will throw an exception if the provided password is too long. 
@@ -86,9 +86,9 @@ BCrypt.with(LongPasswordStrategies.hashSha512()).hash(6, new byte[100]); //allow
 The password will only be transformed if it is longer than 71 bytes. *It is important to note, however, that using any
 of these techniques will essentially create a custom flavor of Bcrypt possibly not compatible with other implementations.*
 
- ### Custom Salt or SecureRandom
+### Custom Salt or SecureRandom
  
- The caller may provide their own salt (which must be exactly 16 bytes) with:
+The caller may provide their own salt (which must be exactly 16 bytes) with:
  
 ```java
 BCrypt.withDefaults().hash(6, salt16Bytes, password.getBytes(StandardCharsets.UTF_8));
@@ -98,6 +98,21 @@ or provide a custom instance of CPRNG which is used for the internal secure crea
 
 ```java
 BCrypt.with(new SecureRandom()).hash(6, password.getBytes(StandardCharsets.UTF_8));
+```
+
+### Retrieve and Verify the Raw Hash
+
+Per default the result of `hash()` methods will return in the [Modular Crypt Format](https://passlib.readthedocs.io/en/stable/modular_crypt_format.html)
+(e.g. `$2y$06$doGnefu9cbLkJTn8sef7U.dynHJFe5hS6xp7vLWb2Zu7e8cOuMVmS`)`, but if you prefer encoding the hash yourself you can just use
+
+```java
+BCrypt.HashData hashData = BCrypt.withDefaults().hashRaw(6, salt, password.getBytes(StandardCharsets.UTF_8));
+```
+
+there is even a verify method optimized for this use-case:
+
+```java
+BCrypt.Result result = BCrypt.verifyer().verify(pw, hashData);
 ```
 
 ## Download
@@ -134,10 +149,14 @@ found in the test cases of bcrypt and [various](https://stackoverflow.com/a/1276
 
 ### Enhancements over jBcrypt
 
+The core of this implementation is based on the popular jBcrypt. Many things around if have been heavily refactored and various new
+features and APIs have been added:
+
 * Optimized and fixed implementation (e.g. uses `StringBuilder` instead of `StringBuffer`)
 * Support of most [version](https://en.wikipedia.org/wiki/Bcrypt#Versioning_history) variations (`$2a$`, `$2b$`, `$2x$`, `$2y$`)
 * Customizable handling for passwords over 72 bytes
 * Only uses byte and char arrays which can be wiped after use
+* Easily get the raw hash
 * Provide your own salt
 * Provide your own `SecureRandom` for salt generation
 * Clearer and easier API
