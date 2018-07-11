@@ -184,6 +184,32 @@ public class BcryptTest {
     }
 
     @Test
+    public void verifyRawByteArrays() {
+        BCrypt.Hasher bCrypt = BCrypt.withDefaults();
+        byte[] pw = Bytes.random(24).encodeBase36().getBytes();
+        BCrypt.HashData hash = bCrypt.hashRaw(6, Bytes.random(16).array(), pw);
+
+        BCrypt.Result result = BCrypt.verifyer().verify(pw, hash);
+        assertTrue(result.verified);
+        assertTrue(result.validFormat);
+        assertEquals(BCrypt.Version.VERSION_2A, result.details.version);
+        assertEquals(6, result.details.cost);
+    }
+
+    @Test
+    public void verifyRawByteArrays2() {
+        BCrypt.Hasher bCrypt = BCrypt.withDefaults();
+        byte[] pw = Bytes.random(24).encodeBase36().getBytes();
+        BCrypt.HashData hash = bCrypt.hashRaw(7, Bytes.random(16).array(), pw);
+
+        BCrypt.Result result = BCrypt.verifyer().verify(pw, hash.cost, hash.rawSalt, hash.rawHash);
+        assertTrue(result.verified);
+        assertTrue(result.validFormat);
+        assertEquals(BCrypt.Version.VERSION_2A, result.details.version);
+        assertEquals(7, result.details.cost);
+    }
+
+    @Test
     public void verifyWithResultChars() {
         BCrypt.Hasher bCrypt = BCrypt.withDefaults();
         String pw = "7OHIJAslkjdhö#d";
