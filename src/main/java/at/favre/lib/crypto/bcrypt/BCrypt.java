@@ -135,7 +135,7 @@ public final class BCrypt {
         /**
          * Hashes given password with the OpenBSD bcrypt schema. The cost factor will define how expensive the hash will
          * be to generate. This method will use a {@link SecureRandom} to generate the internal 16 byte hash.
-         *
+         * <p>
          * This implementation will add a null-terminator to the password and return a 23 byte length hash in accordance
          * with the OpenBSD implementation.
          *
@@ -150,7 +150,7 @@ public final class BCrypt {
         /**
          * Hashes given password with the OpenBSD bcrypt schema. The cost factor will define how expensive the hash will
          * be to generate. This method will use a {@link SecureRandom} to generate the internal 16 byte hash.
-         *
+         * <p>
          * This implementation will add a null-terminator to the password and return a 23 byte length hash in accordance
          * with the OpenBSD implementation.
          *
@@ -176,8 +176,23 @@ public final class BCrypt {
 
         /**
          * Hashes given password with the OpenBSD bcrypt schema. The cost factor will define how expensive the hash will
-         * be to generate. This method will use given salt byte array
+         * be to generate. This method will use a {@link SecureRandom} to generate the internal 16 byte hash.
+         * <p>
+         * This implementation will add a null-terminator to the password and return a 23 byte length hash in accordance
+         * with the OpenBSD implementation.
          *
+         * @param cost     exponential cost factor between {@link #MIN_COST} and {@link #MAX_COST} e.g. 12 --&gt; 2^12 = 4,096 iterations
+         * @param password the utf-8 encoded byte array representation
+         * @return bcrypt hash utf-8 encoded byte array which includes version, cost-factor, salt and the raw hash (as radix64)
+         */
+        public byte[] hash(int cost, byte[] password) {
+            return hash(cost, Bytes.random(SALT_LENGTH, secureRandom).array(), password);
+        }
+
+        /**
+         * Hashes given password with the OpenBSD bcrypt schema. The cost factor will define how expensive the hash will
+         * be to generate. This method will use given salt byte array
+         * <p>
          * This implementation will add a null-terminator to the password and return a 23 byte length hash in accordance
          * with the OpenBSD implementation.
          *
