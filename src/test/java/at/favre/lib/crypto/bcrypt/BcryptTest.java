@@ -1,18 +1,25 @@
 package at.favre.lib.crypto.bcrypt;
 
 import at.favre.lib.bytes.Bytes;
+import at.favre.lib.crypto.bcrypt.misc.Repeat;
+import at.favre.lib.crypto.bcrypt.misc.RepeatRule;
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.util.Random;
 
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.*;
 
 public class BcryptTest {
+    @Rule
+    public RepeatRule repeatRule = new RepeatRule();
     public final static Charset UTF_8 = StandardCharsets.UTF_8;
+
     private BcryptTestEntry[] testEntries = new BcryptTestEntry[]{
             // see: https://stackoverflow.com/a/12761326/774398
             new BcryptTestEntry("ππππππππ", 10, ".TtQJ4Jr6isd4Hp.mVfZeu", "$2a$10$.TtQJ4Jr6isd4Hp.mVfZeuh6Gws4rOQ/vdBczhDx.19NFK0Y84Dle"),
@@ -53,7 +60,15 @@ public class BcryptTest {
         //byte[] vs char[]
         byte[] bcryptHashBytes = BCrypt.withDefaults().hash(6, password.getBytes(StandardCharsets.UTF_8));
         BCrypt.Result result = BCrypt.verifyer().verify(password.getBytes(StandardCharsets.UTF_8), bcryptHashBytes);
-
+        //verify strict
+        byte[] hash2y = BCrypt.with(BCrypt.Version.VERSION_2Y).hash(6, password.getBytes(StandardCharsets.UTF_8));
+        BCrypt.Result resultStrict = BCrypt.verifyer().verifyStrict(password.getBytes(StandardCharsets.UTF_8), hash2y, BCrypt.Version.VERSION_2A);
+        //overlong passwords
+        BCrypt.with(LongPasswordStrategies.truncate()).hash(6, new byte[100]);
+        BCrypt.with(LongPasswordStrategies.hashSha512()).hash(6, new byte[100]);
+        //custom salt and secure random
+        BCrypt.withDefaults().hash(6, Bytes.random(16).array(), password.getBytes(StandardCharsets.UTF_8));
+        BCrypt.with(new SecureRandom()).hash(6, password.getBytes(StandardCharsets.UTF_8));
     }
 
     @Test
@@ -68,40 +83,51 @@ public class BcryptTest {
     }
 
     @Test
-    public void testHashAllVersions() {
+    public void testHashAllVersions() throws Exception {
         for (BCrypt.Version version : BCrypt.Version.values()) {
             checkHash(BCrypt.with(version));
         }
     }
 
     @Test
-    public void testSecureRandom() {
+    public void testSecureRandom() throws Exception {
         checkHash(BCrypt.with(new SecureRandom()));
     }
 
     @Test
-    public void testLongPasswordStrategy() {
+    public void testLongPasswordStrategy() throws Exception {
         checkHash(BCrypt.with(new LongPasswordStrategy.TruncateStrategy(BCrypt.MAX_PW_LENGTH_BYTE)));
     }
 
     @Test
-    public void testFullyCustom() {
+    public void testFullyCustom() throws Exception {
         checkHash(BCrypt.with(BCrypt.Version.VERSION_2Y, new SecureRandom(), new LongPasswordStrategy.TruncateStrategy(BCrypt.MAX_PW_LENGTH_BYTE)));
     }
 
-    private void checkHash(BCrypt.Hasher bCrypt) {
+    private void checkHash(BCrypt.Hasher bCrypt) throws Exception {
         BCrypt.Verifyer verifyer = BCrypt.verifyer();
 
         String pw = "a90üdjanlasdn_asdlk";
         byte[] salt = Bytes.random(16).array();
         byte[] hash1 = bCrypt.hash(6, pw.toCharArray());
-        byte[] hash2 = bCrypt.hash(7, salt, pw.getBytes(StandardCharsets.UTF_8));
+        byte[] hash2 = bCrypt.hash(7, salt, pw.getBytes(UTF_8));
+        BCrypt.HashData hashData = bCrypt.hashRaw(7, salt, pw.getBytes(UTF_8));
         char[] hash3 = bCrypt.hashToChar(4, pw.toCharArray());
 
         assertFalse(Bytes.wrap(hash1).equals(hash2));
-        assertTrue(verifyer.verify(pw.toCharArray(), new String(hash1, StandardCharsets.UTF_8).toCharArray()).verified);
-        assertTrue(verifyer.verify(pw.getBytes(StandardCharsets.UTF_8), hash2).verified);
+        assertTrue(verifyer.verify(pw.toCharArray(), new String(hash1, UTF_8).toCharArray()).verified);
+        assertTrue(verifyer.verify(pw.getBytes(UTF_8), hash2).verified);
         assertTrue(verifyer.verify(pw.toCharArray(), hash3).verified);
+        assertEquals(new BCryptParser.Default(UTF_8, new Radix64Encoder.Default()).parse(hash2), hashData);
+    }
+
+    @Test
+    @Repeat(20)
+    public void hashRandomByteArrays() {
+        byte[] pw = Bytes.random(new Random().nextInt(68) + 2).array();
+        byte[] hash = BCrypt.withDefaults().hash(4, pw);
+        assertTrue(BCrypt.verifyer().verify(pw, hash).verified);
+        System.out.println(Bytes.wrap(hash).encodeUtf8());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -158,6 +184,32 @@ public class BcryptTest {
     }
 
     @Test
+    public void verifyRawByteArrays() {
+        BCrypt.Hasher bCrypt = BCrypt.withDefaults();
+        byte[] pw = Bytes.random(24).encodeBase36().getBytes();
+        BCrypt.HashData hash = bCrypt.hashRaw(6, Bytes.random(16).array(), pw);
+
+        BCrypt.Result result = BCrypt.verifyer().verify(pw, hash);
+        assertTrue(result.verified);
+        assertTrue(result.validFormat);
+        assertEquals(BCrypt.Version.VERSION_2A, result.details.version);
+        assertEquals(6, result.details.cost);
+    }
+
+    @Test
+    public void verifyRawByteArrays2() {
+        BCrypt.Hasher bCrypt = BCrypt.withDefaults();
+        byte[] pw = Bytes.random(24).encodeBase36().getBytes();
+        BCrypt.HashData hash = bCrypt.hashRaw(7, Bytes.random(16).array(), pw);
+
+        BCrypt.Result result = BCrypt.verifyer().verify(pw, hash.cost, hash.rawSalt, hash.rawHash);
+        assertTrue(result.verified);
+        assertTrue(result.validFormat);
+        assertEquals(BCrypt.Version.VERSION_2A, result.details.version);
+        assertEquals(7, result.details.cost);
+    }
+
+    @Test
     public void verifyWithResultChars() {
         BCrypt.Hasher bCrypt = BCrypt.withDefaults();
         String pw = "7OHIJAslkjdhö#d";
@@ -206,7 +258,7 @@ public class BcryptTest {
     }
 
     @Test
-    public void testPartsPojoMethods() {
+    public void testResultPojoMethods() {
         BCrypt.Result results1 = new BCrypt.Result(null, true);
         BCrypt.Result results2 = new BCrypt.Result(null, true);
         BCrypt.Result results3 = new BCrypt.Result(new IllegalBCryptFormatException("test"));
@@ -221,5 +273,38 @@ public class BcryptTest {
         assertNotNull(results1.toString());
         assertNotNull(results2.toString());
         assertNotNull(results3.toString());
+    }
+
+    @Test
+    public void testHashDataPojoMethods() {
+        BCrypt.HashData hd1 = new BCrypt.HashData(6, BCrypt.Version.VERSION_2A, new byte[16], new byte[23]);
+        BCrypt.HashData hd2 = new BCrypt.HashData(6, BCrypt.Version.VERSION_2A, new byte[16], new byte[23]);
+        BCrypt.HashData hd3 = new BCrypt.HashData(7, BCrypt.Version.VERSION_2A, new byte[16], new byte[23]);
+
+        assertEquals(hd1, hd2);
+        assertEquals(hd1.hashCode(), hd2.hashCode());
+        assertNotEquals(hd1, hd3);
+        assertNotEquals(hd1.hashCode(), hd3.hashCode());
+        assertNotEquals(hd2, hd3);
+        assertNotEquals(hd2.hashCode(), hd3.hashCode());
+
+        assertNotNull(hd1.toString());
+        assertNotNull(hd2.toString());
+        assertNotNull(hd3.toString());
+    }
+
+    @Test
+    public void testHashDataWipe() {
+        Bytes salt = Bytes.random(16);
+        Bytes hash = Bytes.random(23);
+        BCrypt.HashData hashData = new BCrypt.HashData(6, BCrypt.Version.VERSION_2A, salt.copy().array(), hash.copy().array());
+
+        assertTrue(hash.equals(hashData.rawHash));
+        assertTrue(salt.equals(hashData.rawSalt));
+
+        hashData.wipe();
+
+        assertFalse(hash.equals(hashData.rawHash));
+        assertFalse(salt.equals(hashData.rawSalt));
     }
 }

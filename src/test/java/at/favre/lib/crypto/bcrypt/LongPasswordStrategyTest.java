@@ -11,6 +11,17 @@ public class LongPasswordStrategyTest {
     private final int maxLength = 72;
 
     @Test
+    public void testFactory() {
+        assertNotNull(LongPasswordStrategies.hashSha512().derive(Bytes.random(100).array()));
+        assertNotNull(LongPasswordStrategies.truncate().derive(Bytes.random(100).array()));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testFactoryForStrictShouldThrowException() {
+        LongPasswordStrategies.strict().derive(Bytes.random(100).array());
+    }
+
+    @Test
     public void testStrictLengthStrategy() {
         LongPasswordStrategy strategy = new LongPasswordStrategy.StrictMaxPasswordLengthStrategy(maxLength);
         byte[] byteArray;

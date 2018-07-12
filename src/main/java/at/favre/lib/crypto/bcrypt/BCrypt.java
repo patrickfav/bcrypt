@@ -1,6 +1,8 @@
 package at.favre.lib.crypto.bcrypt;
 
 import at.favre.lib.bytes.Bytes;
+import at.favre.lib.bytes.BytesTransformer;
+import at.favre.lib.bytes.BytesValidators;
 
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -8,6 +10,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Objects;
 
 public final class BCrypt {
@@ -138,8 +141,10 @@ public final class BCrypt {
          * <p>
          * This implementation will add a null-terminator to the password and return a 23 byte length hash in accordance
          * with the OpenBSD implementation.
+         * <p>
+         * The random salt will be created internally with a {@link SecureRandom} instance.
          *
-         * @param cost     exponential cost factor between {@link #MIN_COST} and {@link #MAX_COST} e.g. 12 --&gt; 2^12 = 4,096 iterations
+         * @param cost     exponential cost (log2 factor) between {@link #MIN_COST} and {@link #MAX_COST} e.g. 12 --&gt; 2^12 = 4,096 iterations
          * @param password to hash, will be internally converted to a utf-8 byte array representation
          * @return bcrypt hash as a char array utf-8 encoded which includes version, cost-factor, salt and the raw hash (as radix64)
          */
@@ -153,8 +158,10 @@ public final class BCrypt {
          * <p>
          * This implementation will add a null-terminator to the password and return a 23 byte length hash in accordance
          * with the OpenBSD implementation.
+         * <p>
+         * The random salt will be created internally with a {@link SecureRandom} instance.
          *
-         * @param cost     exponential cost factor between {@link #MIN_COST} and {@link #MAX_COST} e.g. 12 --&gt; 2^12 = 4,096 iterations
+         * @param cost     exponential cost (log2 factor) between {@link #MIN_COST} and {@link #MAX_COST} e.g. 12 --&gt; 2^12 = 4,096 iterations
          * @param password to hash, will be internally converted to a utf-8 byte array representation
          * @return bcrypt hash utf-8 encoded byte array which includes version, cost-factor, salt and the raw hash (as radix64)
          */
@@ -180,8 +187,10 @@ public final class BCrypt {
          * <p>
          * This implementation will add a null-terminator to the password and return a 23 byte length hash in accordance
          * with the OpenBSD implementation.
+         * <p>
+         * The random salt will be created internally with a {@link SecureRandom} instance.
          *
-         * @param cost     exponential cost factor between {@link #MIN_COST} and {@link #MAX_COST} e.g. 12 --&gt; 2^12 = 4,096 iterations
+         * @param cost     exponential cost (log2 factor) between {@link #MIN_COST} and {@link #MAX_COST} e.g. 12 --&gt; 2^12 = 4,096 iterations
          * @param password the utf-8 encoded byte array representation
          * @return bcrypt hash utf-8 encoded byte array which includes version, cost-factor, salt and the raw hash (as radix64)
          */
@@ -195,6 +204,8 @@ public final class BCrypt {
          * <p>
          * This implementation will add a null-terminator to the password and return a 23 byte length hash in accordance
          * with the OpenBSD implementation.
+         * <p>
+         * Note: This is part of the advanced APIs, only use if you know what you are doing.
          *
          * @param cost     exponential cost factor between {@link #MIN_COST} and {@link #MAX_COST} e.g. 12 --&gt; 2^12 = 4,096 iterations
          * @param salt     a random 16 byte long word, only used once
@@ -202,6 +213,24 @@ public final class BCrypt {
          * @return bcrypt hash utf-8 encoded byte array which includes version, cost-factor, salt and the raw hash (as radix64)
          */
         public byte[] hash(int cost, byte[] salt, byte[] password) {
+            return createOutMessage(hashRaw(cost, salt, password));
+        }
+
+        /**
+         * Hashes given password with the OpenBSD bcrypt schema. The cost factor will define how expensive the hash will
+         * be to generate. This method will use given salt byte array
+         * <p>
+         * This implementation will add a null-terminator to the password and return a 23 byte length hash in accordance
+         * with the OpenBSD implementation.
+         * <p>
+         * Note: This is part of the advanced APIs, only use if you know what you are doing.
+         *
+         * @param cost     exponential cost (log2 factor) between {@link #MIN_COST} and {@link #MAX_COST} e.g. 12 --&gt; 2^12 = 4,096 iterations
+         * @param salt     a random 16 byte long word, only used once
+         * @param password the utf-8 encoded byte array representation
+         * @return the parts needed to parse the bcrypt hash message as raw byte arrays (salt, hash, cost, etc.)
+         */
+        public HashData hashRaw(int cost, byte[] salt, byte[] password) {
             if (cost > MAX_COST || cost < MIN_COST) {
                 throw new IllegalArgumentException("cost factor must be between " + MIN_COST + " and " + MAX_COST + ", was " + cost);
             }
@@ -221,16 +250,16 @@ public final class BCrypt {
             byte[] pwWithNullTerminator = Bytes.wrap(password).append((byte) 0).array();
             try {
                 byte[] hash = new BCryptOpenBSDProtocol().cryptRaw(1 << cost, salt, pwWithNullTerminator);
-                return createOutMessage(cost, salt, hash);
+                return new HashData(cost, version, salt, Bytes.wrap(hash).resize(HASH_OUT_LENGTH, BytesTransformer.ResizeTransformer.Mode.RESIZE_KEEP_FROM_ZERO_INDEX).array());
             } finally {
                 Bytes.wrap(pwWithNullTerminator).mutable().secureWipe();
             }
         }
 
-        private byte[] createOutMessage(int cost, byte[] salt, byte[] hash) {
-            byte[] saltEncoded = encoder.encode(salt, salt.length);
-            byte[] hashEncoded = encoder.encode(hash, HASH_OUT_LENGTH);
-            byte[] costFactorBytes = String.format("%02d", cost).getBytes(defaultCharset);
+        private byte[] createOutMessage(HashData hashData) {
+            byte[] saltEncoded = encoder.encode(hashData.rawSalt, hashData.rawSalt.length);
+            byte[] hashEncoded = encoder.encode(hashData.rawHash, hashData.rawHash.length);
+            byte[] costFactorBytes = String.format("%02d", hashData.cost).getBytes(defaultCharset);
 
             try {
                 ByteBuffer byteBuffer = ByteBuffer.allocate(version.versionPrefix.length +
@@ -246,6 +275,70 @@ public final class BCrypt {
                 Bytes.wrap(hashEncoded).mutable().secureWipe();
                 Bytes.wrap(costFactorBytes).mutable().secureWipe();
             }
+        }
+    }
+
+    /**
+     * Holds the raw data of a bcrypt hash
+     */
+    public static final class HashData {
+        /**
+         * The cost (log2 factor) used to create the hash
+         */
+        public final int cost;
+        /**
+         * The used version
+         */
+        public final Version version;
+        /**
+         * The raw 16 bytes of the salt (not the radix64 encoded version)
+         */
+        public final byte[] rawSalt;
+        /**
+         * The raw 23 bytes of hash (not the radix64 encoded version)
+         */
+        public final byte[] rawHash;
+
+        public HashData(int cost, Version version, byte[] rawSalt, byte[] rawHash) {
+            Objects.requireNonNull(rawHash);
+            Objects.requireNonNull(rawSalt);
+            Objects.requireNonNull(version);
+            if (!Bytes.wrap(rawSalt).validate(BytesValidators.exactLength(16)) ||
+                    !Bytes.wrap(rawHash).validate(BytesValidators.or(BytesValidators.exactLength(23)))) {
+                throw new IllegalArgumentException("salt must be exactly 16 bytes and hash 23 bytes long");
+            }
+            this.cost = cost;
+            this.version = version;
+            this.rawSalt = rawSalt;
+            this.rawHash = rawHash;
+        }
+
+        /**
+         * Internally wipe the salt and hash byte arrays
+         */
+        public void wipe() {
+            Bytes.wrap(rawSalt).mutable().secureWipe();
+            Bytes.wrap(rawHash).mutable().secureWipe();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            HashData hashData = (HashData) o;
+            return cost == hashData.cost &&
+                    version == hashData.version &&
+                    Arrays.equals(rawSalt, hashData.rawSalt) &&
+                    Arrays.equals(rawHash, hashData.rawHash);
+        }
+
+        @Override
+        public int hashCode() {
+
+            int result = Objects.hash(cost, version);
+            result = 31 * result + Arrays.hashCode(rawSalt);
+            result = 31 * result + Arrays.hashCode(rawHash);
+            return result;
         }
     }
 
@@ -345,31 +438,59 @@ public final class BCrypt {
 
             BCryptParser parser = new BCryptParser.Default(defaultCharset, encoder);
             try {
-                BCryptParser.Parts parts = parser.parse(bcryptHash);
+                HashData hashData = parser.parse(bcryptHash);
 
-                if (requiredVersion != null && parts.version != requiredVersion) {
-                    return new Result(parts, false);
+                if (requiredVersion != null && hashData.version != requiredVersion) {
+                    return new Result(hashData, false);
                 }
 
-                byte[] refHash = BCrypt.with(parts.version).hash(parts.cost, parts.salt, password);
-                return new Result(parts, MessageDigest.isEqual(refHash, bcryptHash));
+                return verify(password, hashData.cost, hashData.rawSalt, hashData.rawHash);
             } catch (IllegalBCryptFormatException e) {
                 return new Result(e);
             }
         }
 
-        private Result verify(byte[] password, int cost, byte[] salt, byte[] rawBcryptHash23Bytes) {
+        /**
+         * Verify given raw byte arrays of salt, 23 byte bcrypt hash and password. This is handy if the bcrypt messages are not packaged
+         * in the default Modular Crypt Format (see also {@link Hasher#hashRaw(int, byte[], byte[])}.
+         * <p>
+         * The result will have {@link Result#verified} true if they match. If given hash has an
+         * invalid format {@link Result#validFormat} will be false; see also {@link Result#formatErrorMessage}
+         * for easier debugging.
+         * <p>
+         * Note: This is part of the advanced APIs, only use if you know what you are doing.
+         *
+         * @param password       to compare against the hash
+         * @param bcryptHashData containing the data of the bcrypt hash (cost, salt, version, etc.)
+         * @return result object, see {@link Result} for more info
+         */
+        public Result verify(byte[] password, HashData bcryptHashData) {
+            return verify(password, bcryptHashData.cost, bcryptHashData.rawSalt, bcryptHashData.rawHash);
+        }
+
+        /**
+         * Verify given raw byte arrays of salt, 23 byte bcrypt hash and password. This is handy if the bcrypt messages are not packaged
+         * in the default Modular Crypt Format (see also {@link Hasher#hashRaw(int, byte[], byte[])}.
+         * <p>
+         * The result will have {@link Result#verified} true if they match. If given hash has an
+         * invalid format {@link Result#validFormat} will be false; see also {@link Result#formatErrorMessage}
+         * for easier debugging.
+         * <p>
+         * Note: This is part of the advanced APIs, only use if you know what you are doing.
+         *
+         * @param password             to compare against the hash
+         * @param cost                 cost (log2 factor) which was used to create the hash
+         * @param salt                 16 byte raw hash value (not radix64 version) which was used to create the hash
+         * @param rawBcryptHash23Bytes 23 byte raw bcrypt hash value (not radix64 version)
+         * @return result object, see {@link Result} for more info
+         */
+        public Result verify(byte[] password, int cost, byte[] salt, byte[] rawBcryptHash23Bytes) {
+            Objects.requireNonNull(password);
             Objects.requireNonNull(rawBcryptHash23Bytes);
             Objects.requireNonNull(salt);
 
-            try {
-                byte[] refHash = BCrypt.withDefaults().hash(cost, salt, password);
-                BCryptParser parser = new BCryptParser.Default(defaultCharset, encoder);
-                BCryptParser.Parts parts = parser.parse(refHash);
-                return new Result(parts, MessageDigest.isEqual(parts.hash, rawBcryptHash23Bytes));
-            } catch (IllegalBCryptFormatException e) {
-                return new Result(e);
-            }
+            HashData hashData = BCrypt.withDefaults().hashRaw(cost, salt, password);
+            return new Result(hashData, MessageDigest.isEqual(hashData.rawHash, rawBcryptHash23Bytes));
         }
     }
 
@@ -380,7 +501,7 @@ public final class BCrypt {
         /**
          * The parts of the modular crypt format (salt, raw hash, cost factor, version)
          */
-        public final BCryptParser.Parts details;
+        public final HashData details;
 
         /**
          * If the given format was valid. E.g. '$2a$10$k87L/MF28Q673VKh8/cPi.SUl7MU/rWuSiIDDFayrKk/1tBsSQu4u'
@@ -401,11 +522,11 @@ public final class BCrypt {
             this(null, false, false, e.getMessage());
         }
 
-        Result(BCryptParser.Parts details, boolean verified) {
+        Result(HashData details, boolean verified) {
             this(details, true, verified, null);
         }
 
-        private Result(BCryptParser.Parts details, boolean validFormat, boolean verified, String formatErrorMessage) {
+        private Result(HashData details, boolean validFormat, boolean verified, String formatErrorMessage) {
             this.details = details;
             this.validFormat = validFormat;
             this.verified = verified;
