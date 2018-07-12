@@ -129,13 +129,11 @@ public final class BCrypt {
         private final Charset defaultCharset = DEFAULT_CHARSET;
         private final Version version;
         private final SecureRandom secureRandom;
-        private final Radix64Encoder encoder;
         private final LongPasswordStrategy longPasswordStrategy;
 
         private Hasher(Version version, SecureRandom secureRandom, LongPasswordStrategy longPasswordStrategy) {
             this.version = version;
             this.secureRandom = secureRandom;
-            this.encoder = new Radix64Encoder.Default();
             this.longPasswordStrategy = longPasswordStrategy;
         }
 
@@ -154,6 +152,25 @@ public final class BCrypt {
          */
         public char[] hashToChar(int cost, char[] password) {
             return defaultCharset.decode(ByteBuffer.wrap(hash(cost, password))).array();
+        }
+
+        /**
+         * Hashes given password with the OpenBSD bcrypt schema. The cost factor will define how expensive the hash will
+         * be to generate. This method will use a {@link SecureRandom} to generate the internal 16 byte hash.
+         * <p>
+         * This implementation will add a null-terminator to the password and return a 23 byte length hash in accordance
+         * with the OpenBSD implementation.
+         * <p>
+         * The random salt will be created internally with a {@link SecureRandom} instance.
+         * <p>
+         * This is the same as calling <code>new String(hash(cost, password), StandardCharsets.UTF-8)</code>
+         *
+         * @param cost     exponential cost (log2 factor) between {@link #MIN_COST} and {@link #MAX_COST} e.g. 12 --&gt; 2^12 = 4,096 iterations
+         * @param password to hash, will be internally converted to a utf-8 byte array representation
+         * @return bcrypt as utf-8 encoded String, which includes version, cost-factor, salt and the raw hash (as radix64)
+         */
+        public String hashToString(int cost, char[] password) {
+            return new String(hash(cost, password), defaultCharset);
         }
 
         /**
@@ -217,7 +234,7 @@ public final class BCrypt {
          * @return bcrypt hash utf-8 encoded byte array which includes version, cost-factor, salt and the raw hash (as radix64)
          */
         public byte[] hash(int cost, byte[] salt, byte[] password) {
-            return version.bCryptFormatter.createHashMessage(hashRaw(cost, salt, password));
+            return version.formatter.createHashMessage(hashRaw(cost, salt, password));
         }
 
         /**
@@ -330,10 +347,8 @@ public final class BCrypt {
      */
     public static final class Verifyer {
         private final Charset defaultCharset = DEFAULT_CHARSET;
-        private final Radix64Encoder encoder;
 
         private Verifyer() {
-            this.encoder = new Radix64Encoder.Default();
         }
 
         /**
@@ -396,6 +411,22 @@ public final class BCrypt {
             return verify(password, bcryptHash, null);
         }
 
+        /**
+         * Verify given bcrypt hash, which includes salt and cost factor with given raw password.
+         * The result will have {@link Result#verified} true if they match. If given hash has an
+         * invalid format {@link Result#validFormat} will be false; see also {@link Result#formatErrorMessage}
+         * for easier debugging.
+         * <p>
+         * Same as calling <code>verify(password, bcryptHash.toCharArray())</code>
+         *
+         * @param password   to compare against the hash
+         * @param bcryptHash to compare against the password
+         * @return result object, see {@link Result} for more info
+         */
+        public Result verify(char[] password, String bcryptHash) {
+            return verify(password, bcryptHash.toCharArray(), null);
+        }
+
         private Result verify(char[] password, char[] bcryptHash, Version requiredVersion) {
             byte[] passwordBytes = null;
             byte[] bcryptHashBytes = null;
@@ -419,7 +450,7 @@ public final class BCrypt {
         private Result verify(byte[] password, byte[] bcryptHash, Version requiredVersion) {
             Objects.requireNonNull(bcryptHash);
 
-            BCryptParser parser = new BCryptParser.Default(encoder, defaultCharset);
+            BCryptParser parser = requiredVersion == null ? Version.VERSION_2A.parser : requiredVersion.parser;
             try {
                 HashData hashData = parser.parse(bcryptHash);
 
@@ -549,7 +580,8 @@ public final class BCrypt {
      * See: https://passlib.readthedocs.io/en/stable/modular_crypt_format.html
      */
     public static final class Version {
-        private static final BCryptFormatter formatter = new BCryptFormatter.Default(new Radix64Encoder.Default(), BCrypt.DEFAULT_CHARSET);
+        private static final BCryptFormatter DEFAULT_FORMATTER = new BCryptFormatter.Default(new Radix64Encoder.Default(), BCrypt.DEFAULT_CHARSET);
+        private static final BCryptParser DEFAULT_PARSER = new BCryptParser.Default(new Radix64Encoder.Default(), BCrypt.DEFAULT_CHARSET);
 
         /**
          * $2a$
@@ -559,7 +591,7 @@ public final class BCrypt {
          * - the string must be UTF-8 encoded
          * - the null terminator must be included
          */
-        public static final Version VERSION_2A = new Version(new byte[]{MAJOR_VERSION, 0x61}, formatter);
+        public static final Version VERSION_2A = new Version(new byte[]{MAJOR_VERSION, 0x61}, DEFAULT_FORMATTER, DEFAULT_PARSER);
 
         /**
          * $2b$ (2014/02)
@@ -568,7 +600,7 @@ public final class BCrypt {
          * in an unsigned char (i.e. 8-bit Byte). If a password was longer than 255 characters, it would overflow
          * and wrap at 255. To recognize possible incorrect hashes, a new version was created.
          */
-        public static final Version VERSION_2B = new Version(new byte[]{MAJOR_VERSION, 0x62}, formatter);
+        public static final Version VERSION_2B = new Version(new byte[]{MAJOR_VERSION, 0x62}, DEFAULT_FORMATTER, DEFAULT_PARSER);
 
         /**
          * $2x$ (2011)
@@ -580,14 +612,14 @@ public final class BCrypt {
          * Nobody else, including canonical OpenBSD, adopted the idea of 2x/2y. This version marker change was limited
          * to crypt_blowfish.
          */
-        public static final Version VERSION_2X = new Version(new byte[]{MAJOR_VERSION, 0x78}, formatter);
+        public static final Version VERSION_2X = new Version(new byte[]{MAJOR_VERSION, 0x78}, DEFAULT_FORMATTER, DEFAULT_PARSER);
 
         /**
          * $2y$ (2011)
          * <p>
          * See {@link #VERSION_2X}
          */
-        public static final Version VERSION_2Y = new Version(new byte[]{MAJOR_VERSION, 0x79}, formatter);
+        public static final Version VERSION_2Y = new Version(new byte[]{MAJOR_VERSION, 0x79}, DEFAULT_FORMATTER, DEFAULT_PARSER);
 
         /**
          * List of supported versions
@@ -601,18 +633,24 @@ public final class BCrypt {
         /**
          * The formatter for the bcrypt message digest
          */
-        public final BCryptFormatter bCryptFormatter;
+        public final BCryptFormatter formatter;
+
+        /**
+         * The parser used to parse a bcrypt message
+         */
+        public final BCryptParser parser;
 
         /**
          * Create a new version. Only use this if you are know what you are doing, most common versions are already available with
          * {@link Version#VERSION_2A}, {@link Version#VERSION_2Y} etc.
          *
          * @param versionIdentifier version as UTF-8 encoded byte array, e.g. '2a' = new byte[]{0x32, 0x61}, do not included the separator '$'
-         * @param bCryptFormatter   the formatter responsible for formatting the out hash message digest
+         * @param formatter         the formatter responsible for formatting the out hash message digest
          */
-        public Version(byte[] versionIdentifier, BCryptFormatter bCryptFormatter) {
+        public Version(byte[] versionIdentifier, BCryptFormatter formatter, BCryptParser parser) {
             this.versionIdentifier = versionIdentifier;
-            this.bCryptFormatter = bCryptFormatter;
+            this.formatter = formatter;
+            this.parser = parser;
         }
 
         @Override
