@@ -50,7 +50,7 @@ By using `BCrypt.withDefaults()` it will default to version `$2a$`. The older `$
 For advanced use cases you may add your own version by providing a version identifier and a custom message formatter.
 
 ```java
-Version customVersion2f = new Version(new byte[]{0x32, 0x66}, myCustomFormatter);
+Version customVersion2f = new Version(new byte[]{0x32, 0x66} /* 2f */, myCustomFormatter);
 ```
 
 ### byte[] vs char[] API

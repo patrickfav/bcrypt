@@ -594,11 +594,24 @@ public final class BCrypt {
          */
         public static final List<Version> SUPPORTED_VERSIONS = Collections.unmodifiableList(Arrays.asList(VERSION_2A, VERSION_2B, VERSION_2X, VERSION_2Y));
 
+        /**
+         * Version identifier byte array, eg.{0x32, 0x61} for '2a'
+         */
         public final byte[] versionIdentifier;
+        /**
+         * The formatter for the bcrypt message digest
+         */
         public final BCryptFormatter bCryptFormatter;
 
-        public Version(byte[] verionIdentifier, BCryptFormatter bCryptFormatter) {
-            this.versionIdentifier = verionIdentifier;
+        /**
+         * Create a new version. Only use this if you are know what you are doing, most common versions are already available with
+         * {@link Version#VERSION_2A}, {@link Version#VERSION_2Y} etc.
+         *
+         * @param versionIdentifier version as UTF-8 encoded byte array, e.g. '2a' = new byte[]{0x32, 0x61}, do not included the separator '$'
+         * @param bCryptFormatter   the formatter responsible for formatting the out hash message digest
+         */
+        public Version(byte[] versionIdentifier, BCryptFormatter bCryptFormatter) {
+            this.versionIdentifier = versionIdentifier;
             this.bCryptFormatter = bCryptFormatter;
         }
 
