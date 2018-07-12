@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Random;
 
+import static at.favre.lib.crypto.bcrypt.BCrypt.MAJOR_VERSION;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.*;
@@ -337,5 +338,22 @@ public class BcryptTest {
 
         assertFalse(hash.equals(hashData.rawHash));
         assertFalse(salt.equals(hashData.rawSalt));
+    }
+
+    @Test
+    public void testVersionPojoMethods() {
+        assertEquals(BCrypt.Version.VERSION_2A, BCrypt.Version.VERSION_2A);
+        assertEquals(BCrypt.Version.VERSION_2A, new BCrypt.Version(new byte[]{MAJOR_VERSION, 0x61}, null));
+        assertEquals(BCrypt.Version.VERSION_2Y, new BCrypt.Version(new byte[]{MAJOR_VERSION, 0x79}, null));
+        assertNotEquals(BCrypt.Version.VERSION_2Y, BCrypt.Version.VERSION_2A);
+        assertNotEquals(BCrypt.Version.VERSION_2A, BCrypt.Version.VERSION_2B);
+        assertNotEquals(BCrypt.Version.VERSION_2X, BCrypt.Version.VERSION_2Y);
+
+        assertEquals(BCrypt.Version.VERSION_2A.hashCode(), BCrypt.Version.VERSION_2A.hashCode());
+        assertEquals(BCrypt.Version.VERSION_2A.hashCode(), new BCrypt.Version(new byte[]{MAJOR_VERSION, 0x61}, null).hashCode());
+
+        assertNotEquals(BCrypt.Version.VERSION_2Y.hashCode(), BCrypt.Version.VERSION_2A.hashCode());
+        assertNotEquals(BCrypt.Version.VERSION_2A.hashCode(), BCrypt.Version.VERSION_2B.hashCode());
+        assertNotEquals(BCrypt.Version.VERSION_2X.hashCode(), BCrypt.Version.VERSION_2Y.hashCode());
     }
 }
