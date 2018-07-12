@@ -65,6 +65,19 @@ byte[] bcryptHashBytes = BCrypt.withDefaults().hash(6, password.getBytes(Standar
 BCrypt.Result result = BCrypt.verifyer().verify(password.getBytes(StandardCharsets.UTF_8), bcryptHashBytes);
 ```
 
+and
+
+```java
+char[] bcryptChars = BCrypt.withDefaults().hashToChar(12, password.toCharArray());
+    ...
+BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), bcryptChars);
+```
+
+Note, that there are APIs that return `String` type hash and can verify it directly. This is done
+out of convenience and to present easy to understand API for all audiences. Usually the hash is 
+not as critical as the raw password, so it might be ok to not be able to wipe it immediately. But 
+usually you should prefer `char[]` or `byte[]` APIs.
+
 ### Strict Verification
 
 If you want the hash verification to only verify for a specific version you can use `verifyStrict()`
