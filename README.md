@@ -47,6 +47,11 @@ char[] bcryptChars = BCrypt.with(BCrypt.Version.VERSION_2B).hashToChar(6, passwo
 ```
 
 By using `BCrypt.withDefaults()` it will default to version `$2a$`. The older `$2$` version is not supported.
+For advanced use cases you may add your own version by providing a version identifier and a custom message formatter.
+
+```java
+Version customVersion2f = new Version(new byte[]{0x32, 0x66}, myCustomFormatter);
+```
 
 ### byte[] vs char[] API
 

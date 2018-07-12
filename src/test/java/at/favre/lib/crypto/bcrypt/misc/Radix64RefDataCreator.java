@@ -29,7 +29,7 @@ public class Radix64RefDataCreator {
         System.out.println("new EncodeTestCase(\"" + Bytes.wrap(encoded).encodeUtf8() + "\"," + new JavaByteArrayEncoder().encode(rnd) + "),");
     }
 
-    static final class JavaByteArrayEncoder {
+    public static final class JavaByteArrayEncoder {
         interface ByteEncoder {
             String encodeByte(byte b);
         }
@@ -44,7 +44,7 @@ public class Radix64RefDataCreator {
             return sb.toString();
         }
 
-        String encode(byte[] array) {
+        public String encode(byte[] array) {
             return encodeInternal(array, "new byte[]{", "}", ",", new ByteEncoder() {
                 @Override
                 public String encodeByte(byte b) {

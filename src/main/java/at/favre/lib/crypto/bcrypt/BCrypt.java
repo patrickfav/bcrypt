@@ -11,8 +11,11 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
+@SuppressWarnings("WeakerAccess")
 public final class BCrypt {
     private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
@@ -20,6 +23,7 @@ public final class BCrypt {
      * Fixed lenght of the bcrypt salt
      */
     public static final int SALT_LENGTH = 16;
+
     /**
      * The max length of the password in bytes excluding lats null-terminator byte
      */
@@ -213,7 +217,7 @@ public final class BCrypt {
          * @return bcrypt hash utf-8 encoded byte array which includes version, cost-factor, salt and the raw hash (as radix64)
          */
         public byte[] hash(int cost, byte[] salt, byte[] password) {
-            return createOutMessage(hashRaw(cost, salt, password));
+            return version.bCryptFormatter.createHashMessage(hashRaw(cost, salt, password));
         }
 
         /**
@@ -253,27 +257,6 @@ public final class BCrypt {
                 return new HashData(cost, version, salt, Bytes.wrap(hash).resize(HASH_OUT_LENGTH, BytesTransformer.ResizeTransformer.Mode.RESIZE_KEEP_FROM_ZERO_INDEX).array());
             } finally {
                 Bytes.wrap(pwWithNullTerminator).mutable().secureWipe();
-            }
-        }
-
-        private byte[] createOutMessage(HashData hashData) {
-            byte[] saltEncoded = encoder.encode(hashData.rawSalt, hashData.rawSalt.length);
-            byte[] hashEncoded = encoder.encode(hashData.rawHash, hashData.rawHash.length);
-            byte[] costFactorBytes = String.format("%02d", hashData.cost).getBytes(defaultCharset);
-
-            try {
-                ByteBuffer byteBuffer = ByteBuffer.allocate(version.versionPrefix.length +
-                        costFactorBytes.length + 1 + saltEncoded.length + hashEncoded.length);
-                byteBuffer.put(version.versionPrefix);
-                byteBuffer.put(costFactorBytes);
-                byteBuffer.put(SEPARATOR);
-                byteBuffer.put(saltEncoded);
-                byteBuffer.put(hashEncoded);
-                return byteBuffer.array();
-            } finally {
-                Bytes.wrap(saltEncoded).mutable().secureWipe();
-                Bytes.wrap(hashEncoded).mutable().secureWipe();
-                Bytes.wrap(costFactorBytes).mutable().secureWipe();
             }
         }
     }
@@ -436,7 +419,7 @@ public final class BCrypt {
         private Result verify(byte[] password, byte[] bcryptHash, Version requiredVersion) {
             Objects.requireNonNull(bcryptHash);
 
-            BCryptParser parser = new BCryptParser.Default(defaultCharset, encoder);
+            BCryptParser parser = new BCryptParser.Default(encoder, defaultCharset);
             try {
                 HashData hashData = parser.parse(bcryptHash);
 
@@ -565,7 +548,9 @@ public final class BCrypt {
      * <p>
      * See: https://passlib.readthedocs.io/en/stable/modular_crypt_format.html
      */
-    public enum Version {
+    public static final class Version {
+        private static final BCryptFormatter formatter = new BCryptFormatter.Default(new Radix64Encoder.Default(), BCrypt.DEFAULT_CHARSET);
+
         /**
          * $2a$
          * <p>
@@ -574,7 +559,7 @@ public final class BCrypt {
          * - the string must be UTF-8 encoded
          * - the null terminator must be included
          */
-        VERSION_2A(new byte[]{SEPARATOR, MAJOR_VERSION, 0x61, SEPARATOR}),
+        public static final Version VERSION_2A = new Version(new byte[]{MAJOR_VERSION, 0x61}, formatter);
 
         /**
          * $2b$ (2014/02)
@@ -583,7 +568,7 @@ public final class BCrypt {
          * in an unsigned char (i.e. 8-bit Byte). If a password was longer than 255 characters, it would overflow
          * and wrap at 255. To recognize possible incorrect hashes, a new version was created.
          */
-        VERSION_2B(new byte[]{SEPARATOR, MAJOR_VERSION, 0x62, SEPARATOR}),
+        public static final Version VERSION_2B = new Version(new byte[]{MAJOR_VERSION, 0x62}, formatter);
 
         /**
          * $2x$ (2011)
@@ -595,36 +580,44 @@ public final class BCrypt {
          * Nobody else, including canonical OpenBSD, adopted the idea of 2x/2y. This version marker change was limited
          * to crypt_blowfish.
          */
-        VERSION_2X(new byte[]{SEPARATOR, MAJOR_VERSION, 0x78, SEPARATOR}),
+        public static final Version VERSION_2X = new Version(new byte[]{MAJOR_VERSION, 0x78}, formatter);
 
         /**
          * $2y$ (2011)
          * <p>
          * See {@link #VERSION_2X}
          */
-        VERSION_2Y(new byte[]{SEPARATOR, MAJOR_VERSION, 0x79, SEPARATOR});
+        public static final Version VERSION_2Y = new Version(new byte[]{MAJOR_VERSION, 0x79}, formatter);
 
-        public final byte[] versionPrefix;
+        /**
+         * List of supported versions
+         */
+        public static final List<Version> SUPPORTED_VERSIONS = Collections.unmodifiableList(Arrays.asList(VERSION_2A, VERSION_2B, VERSION_2X, VERSION_2Y));
 
-        Version(byte[] versionPrefix) {
-            this.versionPrefix = versionPrefix;
+        public final byte[] versionIdentifier;
+        public final BCryptFormatter bCryptFormatter;
+
+        public Version(byte[] verionIdentifier, BCryptFormatter bCryptFormatter) {
+            this.versionIdentifier = verionIdentifier;
+            this.bCryptFormatter = bCryptFormatter;
         }
 
-        public boolean test(byte[] data, boolean skipDollarTwo) {
-            if (data.length >= versionPrefix.length) {
-                for (int i = skipDollarTwo ? 2 : 0; i < versionPrefix.length; i++) {
-                    if (data[i] != versionPrefix[i]) {
-                        return false;
-                    }
-                }
-                return true;
-            }
-            return false;
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Version version = (Version) o;
+            return Arrays.equals(versionIdentifier, version.versionIdentifier);
+        }
+
+        @Override
+        public int hashCode() {
+            return Arrays.hashCode(versionIdentifier);
         }
 
         @Override
         public String toString() {
-            return new String(versionPrefix, StandardCharsets.UTF_8);
+            return "$" + new String(versionIdentifier) + "$";
         }
     }
 }

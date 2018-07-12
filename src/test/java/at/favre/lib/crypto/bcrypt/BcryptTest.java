@@ -19,7 +19,7 @@ import static org.junit.Assert.*;
 public class BcryptTest {
     @Rule
     public RepeatRule repeatRule = new RepeatRule();
-    public final static Charset UTF_8 = StandardCharsets.UTF_8;
+    public static final Charset UTF_8 = StandardCharsets.UTF_8;
 
     private BcryptTestEntry[] testEntries = new BcryptTestEntry[]{
             // see: https://stackoverflow.com/a/12761326/774398
@@ -69,7 +69,6 @@ public class BcryptTest {
         BCrypt.with(new SecureRandom()).hash(6, password.getBytes(StandardCharsets.UTF_8));
     }
 
-
     @Test
     public void testSimpleBcryptHashes() {
         byte[] salt = new byte[]{0x5E, (byte) 0xFA, (byte) 0xA7, (byte) 0xA3, (byte) 0xD9, (byte) 0xDF, 0x6E, (byte) 0x7F, (byte) 0x8C, 0x78, (byte) 0x96, (byte) 0xB1, 0x7B, (byte) 0xA7, 0x6E, 0x01};
@@ -83,7 +82,7 @@ public class BcryptTest {
 
     @Test
     public void testHashAllVersions() throws Exception {
-        for (BCrypt.Version version : BCrypt.Version.values()) {
+        for (BCrypt.Version version : BCrypt.Version.SUPPORTED_VERSIONS) {
             checkHash(BCrypt.with(version));
         }
     }
@@ -117,7 +116,7 @@ public class BcryptTest {
         assertTrue(verifyer.verify(pw.toCharArray(), new String(hash1, UTF_8).toCharArray()).verified);
         assertTrue(verifyer.verify(pw.getBytes(UTF_8), hash2).verified);
         assertTrue(verifyer.verify(pw.toCharArray(), hash3).verified);
-        assertEquals(new BCryptParser.Default(UTF_8, new Radix64Encoder.Default()).parse(hash2), hashData);
+        assertEquals(new BCryptParser.Default(new Radix64Encoder.Default(), UTF_8).parse(hash2), hashData);
     }
 
     @Test

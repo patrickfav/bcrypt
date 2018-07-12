@@ -72,7 +72,7 @@
             <property name="packageAllowed" value="true"/>
             <property name="allowPublicImmutableFields" value="true"/>
             <property name="allowPublicFinalFields" value="true"/>
-            <property name="publicMemberPattern" value="^TAG$|^CREATOR$"/>
+            <property name="publicMemberPattern" value="^TAG$|^CREATOR$|^VERSION"/>
         </module>
 
         <!-- Coding -->

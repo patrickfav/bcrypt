@@ -13,7 +13,7 @@ public class BCryptParserTest {
 
     @Before
     public void setUp() {
-        parser = new BCryptParser.Default(StandardCharsets.UTF_8, new Radix64Encoder.Default());
+        parser = new BCryptParser.Default(new Radix64Encoder.Default(), StandardCharsets.UTF_8);
     }
 
     @Test
@@ -34,7 +34,7 @@ public class BCryptParserTest {
 
     @Test
     public void parseDifferentVersions() throws Exception {
-        for (BCrypt.Version version : BCrypt.Version.values()) {
+        for (BCrypt.Version version : BCrypt.Version.SUPPORTED_VERSIONS) {
             byte[] salt = Bytes.random(16).array();
             byte[] hash = BCrypt.with(version).hash(6, salt, "hs61i1oAJhdasdÄÄ".getBytes(StandardCharsets.UTF_8));
             BCrypt.HashData parts = parser.parse(hash);

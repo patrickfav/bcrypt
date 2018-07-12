@@ -44,7 +44,7 @@ public class LongPasswordStrategyTest {
             byteArray = Bytes.random(maxLength).array();
             assertArrayEquals(byteArray, strategy.derive(byteArray));
             fail();
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException ignored) {
         } catch (Exception e) {
             fail();
         }
