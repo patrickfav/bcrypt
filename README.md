@@ -151,7 +151,7 @@ Add to your `build.gradle` module dependencies:
 ### Performance
 
 Compared to 2 other implementations in Java they all compare pretty well. Using the simple micro benchmark in this repo
-(see `BcryptMicroBenchmark`), I got the following results with a Intel Core i7-7700K:
+(see `BcryptMicroBenchmark`), I got the following results with a Intel Core i7-7700K, Win 10, Java 8 (172):
 
 
 |              | cost 10  | cost 12   |
