@@ -148,6 +148,26 @@ Add to your `build.gradle` module dependencies:
 
 ## Description
 
+### Performance
+
+Compared to 2 other implementations in Java they all compare pretty well. Using the simple micro benchmark in this repo
+(see `BcryptMicroBenchmark`), I got the following results with a Intel Core i7-7700K:
+
+
+|              | cost 10  | cost 12   |
+|--------------|----------|-----------|
+| favreBcrypt  | 54.53 ms | 217.22 ms |
+| jBcrypt      | 53.24 ms | 213.42 ms |
+| BouncyCastle | 50.27 ms | 202.67 ms |
+
+So it makes sense that mine and jBcrypt is pretty the same performance as it is the same core
+implementation. Bouncy Castle is _slightly_ faster, but keep in mind that they do a little less work (only generating the hash, not the whole out message).
+
+Compared to some other benchmarks, [like this one in node.js](https://github.com/dcodeIO/bcrypt.js/wiki/Benchmark) where a hash is with cost 12 is between 300-400ms (but with a weaker CPU).
+
+**Disclaimer:** Micro benchmarks are [usually a really bad way to measure performance](https://mrale.ph/blog/2012/12/15/microbenchmarks-fairy-tale.html). These numbers are only informal tests
+and should not be used to derive any security relevant decisions.
+
 ### Test Vectors and Reference Implementations
 
 This implementation is tested against the bcrypt implementation jBcrypt and Bouncy Castle. It includes test vectors
