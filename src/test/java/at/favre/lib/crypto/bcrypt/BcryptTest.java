@@ -1,6 +1,7 @@
 package at.favre.lib.crypto.bcrypt;
 
 import at.favre.lib.bytes.Bytes;
+import at.favre.lib.bytes.BytesTransformer;
 import at.favre.lib.crypto.bcrypt.misc.Repeat;
 import at.favre.lib.crypto.bcrypt.misc.RepeatRule;
 import org.junit.Rule;
@@ -28,10 +29,7 @@ public class BcryptTest {
             // see: http://cvsweb.openwall.com/cgi/cvsweb.cgi/Owl/packages/glibc/crypt_blowfish/wrapper.c?rev=HEAD
             new BcryptTestEntry("U*U", 5, "CCCCCCCCCCCCCCCCCCCCC.", "$2a$05$CCCCCCCCCCCCCCCCCCCCC.E5YPO9kmyuRGyh0XouQYb4YMJKvyOeW"),
             new BcryptTestEntry("U*U*", 5, "CCCCCCCCCCCCCCCCCCCCC.", "$2a$05$CCCCCCCCCCCCCCCCCCCCC.VGOzA784oUp/Z0DY336zx7pLYAy0lwK"),
-            new BcryptTestEntry("U*U*U", 5, "XXXXXXXXXXXXXXXXXXXXXO", "$2a$05$XXXXXXXXXXXXXXXXXXXXXOAcXxm9kjPGEMsLznoKqmqw7tc8WCx4a"),
-            // new BcryptTestEntry("\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff\u0055\u00aa\u00ff", 5, "/OK.fbVrR/bpIqNJ5ianF.", "$2a$05$/OK.fbVrR/bpIqNJ5ianF.9tQZzcJfm3uj2NvJ/n5xkhpqLrMpWCe"),
-            //new BcryptTestEntry("\\xa3", 5, "/OK.fbVrR/bpIqNJ5ianF.", "$2a$05$/OK.fbVrR/bpIqNJ5ianF.CE5elHaaO4EbggVDjb8P19RukzXSM3e"),
-            //new BcryptTestEntry("$_)", 10, "O5lzwORSFzOLA2Ku1vFere", "$2a$10$O5lzwORSFzOLA2Ku1vFereqOia97MSeF8iRIhATzKqk3ozRdXmgS6")
+            new BcryptTestEntry("U*U*U", 5, "XXXXXXXXXXXXXXXXXXXXXO", "$2a$05$XXXXXXXXXXXXXXXXXXXXXOAcXxm9kjPGEMsLznoKqmqw7tc8WCx4a")
     };
 
     @Test
@@ -70,6 +68,7 @@ public class BcryptTest {
         BCrypt.withDefaults().hash(6, Bytes.random(16).array(), password.getBytes(StandardCharsets.UTF_8));
         BCrypt.with(new SecureRandom()).hash(6, password.getBytes(StandardCharsets.UTF_8));
     }
+
 
     @Test
     public void testSimpleBcryptHashes() {
@@ -167,7 +166,40 @@ public class BcryptTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void createHashWithPwTooLong() {
-        BCrypt.withDefaults().hash(6, new byte[16], new byte[73]);
+        BCrypt.withDefaults().hash(6, new byte[16], new byte[BCrypt.MAX_PW_LENGTH_BYTE + 1]);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void createHashWithPwTooLong2() {
+        BCrypt.withDefaults().hash(6, new byte[16], new byte[BCrypt.MAX_PW_LENGTH_BYTE + 2]);
+    }
+
+    @Test
+    public void testLongPassword() {
+        byte[] pw = Bytes.random(BCrypt.MAX_PW_LENGTH_BYTE).array();
+        byte[] bcryptHashBytes = BCrypt.withDefaults().hash(4, pw);
+        assertTrue(BCrypt.verifyer().verify(pw, bcryptHashBytes).verified);
+    }
+
+    @Test
+    public void testLongTruncatedPassword() {
+        byte[] pw = Bytes.random(BCrypt.MAX_PW_LENGTH_BYTE + 2).array();
+        byte[] salt = Bytes.random(16).array();
+        byte[] bcryptHashBytes1a = BCrypt.with(LongPasswordStrategies.truncate()).hash(4, salt, pw);
+        byte[] bcryptHashBytes1b = BCrypt.with(LongPasswordStrategies.truncate()).hash(4, salt, Bytes.wrap(pw).resize(BCrypt.MAX_PW_LENGTH_BYTE + 1, BytesTransformer.ResizeTransformer.Mode.RESIZE_KEEP_FROM_ZERO_INDEX).array());
+        byte[] bcryptHashBytes2 = BCrypt.withDefaults().hash(4, salt, Bytes.wrap(pw).resize(BCrypt.MAX_PW_LENGTH_BYTE, BytesTransformer.ResizeTransformer.Mode.RESIZE_KEEP_FROM_ZERO_INDEX).array());
+
+        assertArrayEquals(bcryptHashBytes1a, bcryptHashBytes1b);
+        assertArrayEquals(bcryptHashBytes1a, bcryptHashBytes2);
+    }
+
+    @Test
+    public void testLongHashedPassword() {
+        byte[] pw = Bytes.random(BCrypt.MAX_PW_LENGTH_BYTE + 2).array();
+        byte[] salt = Bytes.random(16).array();
+        byte[] bcryptHashBytes1 = BCrypt.with(LongPasswordStrategies.hashSha512()).hash(4, salt, pw);
+        byte[] bcryptHashBytes2 = BCrypt.with(LongPasswordStrategies.hashSha512()).hash(4, salt, Bytes.wrap(pw).resize(BCrypt.MAX_PW_LENGTH_BYTE + 1, BytesTransformer.ResizeTransformer.Mode.RESIZE_KEEP_FROM_ZERO_INDEX).array());
+        assertFalse(Bytes.wrap(bcryptHashBytes1).equals(bcryptHashBytes2));
     }
 
     @Test

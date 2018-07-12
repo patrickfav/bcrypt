@@ -69,6 +69,7 @@ public interface LongPasswordStrategy {
      * if you need to support passwords with arbitrary lengths.
      */
     final class TruncateStrategy extends BaseLongPasswordStrategy {
+
         TruncateStrategy(int maxLength) {
             super(maxLength);
         }
