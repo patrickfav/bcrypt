@@ -130,6 +130,13 @@ public class BcryptTest {
         System.out.println(Bytes.wrap(hash).encodeUtf8());
     }
 
+    @Test
+    public void testEmptyPw() {
+        byte[] hash = BCrypt.with(BCrypt.Version.VERSION_2A).hash(4, new byte[0]);
+        assertTrue(BCrypt.verifyer().verify(new byte[0], hash).verified);
+        System.out.println(Bytes.wrap(hash).encodeUtf8());
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void createHashCostTooSmall() {
         BCrypt.withDefaults().hash(3, "123".toCharArray());
@@ -158,6 +165,11 @@ public class BcryptTest {
     @Test(expected = IllegalArgumentException.class)
     public void createHashWithPwNull() {
         BCrypt.withDefaults().hash(6, new byte[16], null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void createHashWithPwEmptyNoNullTerm() {
+        BCrypt.with(BCrypt.Version.VERSION_BC).hash(6, new byte[16], new byte[0]);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -344,14 +356,14 @@ public class BcryptTest {
     @Test
     public void testVersionPojoMethods() {
         assertEquals(BCrypt.Version.VERSION_2A, BCrypt.Version.VERSION_2A);
-        assertEquals(BCrypt.Version.VERSION_2A, new BCrypt.Version(new byte[]{MAJOR_VERSION, 0x61}, null, null));
-        assertEquals(BCrypt.Version.VERSION_2Y, new BCrypt.Version(new byte[]{MAJOR_VERSION, 0x79}, null, null));
+        assertEquals(BCrypt.Version.VERSION_2A, new BCrypt.Version(new byte[]{MAJOR_VERSION, 0x61}, true, true, null, null));
+        assertEquals(BCrypt.Version.VERSION_2Y, new BCrypt.Version(new byte[]{MAJOR_VERSION, 0x79}, true, true, null, null));
         assertNotEquals(BCrypt.Version.VERSION_2Y, BCrypt.Version.VERSION_2A);
         assertNotEquals(BCrypt.Version.VERSION_2A, BCrypt.Version.VERSION_2B);
         assertNotEquals(BCrypt.Version.VERSION_2X, BCrypt.Version.VERSION_2Y);
 
         assertEquals(BCrypt.Version.VERSION_2A.hashCode(), BCrypt.Version.VERSION_2A.hashCode());
-        assertEquals(BCrypt.Version.VERSION_2A.hashCode(), new BCrypt.Version(new byte[]{MAJOR_VERSION, 0x61}, null, null).hashCode());
+        assertEquals(BCrypt.Version.VERSION_2A.hashCode(), new BCrypt.Version(new byte[]{MAJOR_VERSION, 0x61}, true, true, null, null).hashCode());
 
         assertNotEquals(BCrypt.Version.VERSION_2Y.hashCode(), BCrypt.Version.VERSION_2A.hashCode());
         assertNotEquals(BCrypt.Version.VERSION_2A.hashCode(), BCrypt.Version.VERSION_2B.hashCode());

@@ -1,5 +1,9 @@
 # Releases
 
+## v0.3.0
+
+* support 24byte hash out and make null terminator optional (BC style) #3
+
 ## v0.2.0
 
 * add String API

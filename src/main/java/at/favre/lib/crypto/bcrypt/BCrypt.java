@@ -264,14 +264,22 @@ public final class BCrypt {
             if (password == null) {
                 throw new IllegalArgumentException("provided password must not be null");
             }
-            if (password.length > MAX_PW_LENGTH_BYTE) {
+
+            if (!version.appendNullTerminator && password.length == 0) {
+                throw new IllegalArgumentException("provided password must at least be length 1 if no null terminator is appended");
+            }
+
+            if (password.length > MAX_PW_LENGTH_BYTE + (version.appendNullTerminator ? 0 : 1)) {
                 password = longPasswordStrategy.derive(password);
             }
 
-            byte[] pwWithNullTerminator = Bytes.wrap(password).append((byte) 0).array();
+            byte[] pwWithNullTerminator = version.appendNullTerminator ? Bytes.wrap(password).append((byte) 0).array() : Bytes.wrap(password).copy().array();
             try {
                 byte[] hash = new BCryptOpenBSDProtocol().cryptRaw(1 << cost, salt, pwWithNullTerminator);
-                return new HashData(cost, version, salt, Bytes.wrap(hash).resize(HASH_OUT_LENGTH, BytesTransformer.ResizeTransformer.Mode.RESIZE_KEEP_FROM_ZERO_INDEX).array());
+                return new HashData(cost, version, salt, version.useOnly23bytesForHash ?
+                        Bytes.wrap(hash).resize(HASH_OUT_LENGTH, BytesTransformer.ResizeTransformer.Mode.RESIZE_KEEP_FROM_ZERO_INDEX).array() :
+                        hash
+                );
             } finally {
                 Bytes.wrap(pwWithNullTerminator).mutable().secureWipe();
             }
@@ -304,7 +312,7 @@ public final class BCrypt {
             Objects.requireNonNull(rawSalt);
             Objects.requireNonNull(version);
             if (!Bytes.wrap(rawSalt).validate(BytesValidators.exactLength(16)) ||
-                    !Bytes.wrap(rawHash).validate(BytesValidators.or(BytesValidators.exactLength(23)))) {
+                    !Bytes.wrap(rawHash).validate(BytesValidators.or(BytesValidators.exactLength(23), BytesValidators.exactLength(24)))) {
                 throw new IllegalArgumentException("salt must be exactly 16 bytes and hash 23 bytes long");
             }
             this.cost = cost;
@@ -622,6 +630,12 @@ public final class BCrypt {
         public static final Version VERSION_2Y = new Version(new byte[]{MAJOR_VERSION, 0x79}, DEFAULT_FORMATTER, DEFAULT_PARSER);
 
         /**
+         * This mirrors how Bouncy Castle creates bcrypt hashes: with 24 byte out and without null-terminator. Gets a fake
+         * version descriptor.
+         */
+        public static final Version VERSION_BC = new Version(new byte[]{MAJOR_VERSION, 0x63}, false, false, DEFAULT_FORMATTER, DEFAULT_PARSER);
+
+        /**
          * List of supported versions
          */
         public static final List<Version> SUPPORTED_VERSIONS = Collections.unmodifiableList(Arrays.asList(VERSION_2A, VERSION_2B, VERSION_2X, VERSION_2Y));
@@ -630,6 +644,19 @@ public final class BCrypt {
          * Version identifier byte array, eg.{0x32, 0x61} for '2a'
          */
         public final byte[] versionIdentifier;
+
+        /**
+         * Due to a bug the OpenBSD implemenation only uses 23 bytes (184 bit) of the possible 24 byte output from
+         * blowfish. Set this to false if you want the full 24 byte out (which makes it incompatible with most other impl)
+         */
+        public final boolean useOnly23bytesForHash;
+
+        /**
+         * Since OpenBSD bcrypt version $2a$ a null-terminator byte must be append to the hash. This flag decides if
+         * that will be done during hashing.
+         */
+        public final boolean appendNullTerminator;
+
         /**
          * The formatter for the bcrypt message digest
          */
@@ -640,15 +667,23 @@ public final class BCrypt {
          */
         public final BCryptParser parser;
 
+        private Version(byte[] versionIdentifier, BCryptFormatter formatter, BCryptParser parser) {
+            this(versionIdentifier, true, true, formatter, parser);
+        }
+
         /**
          * Create a new version. Only use this if you are know what you are doing, most common versions are already available with
          * {@link Version#VERSION_2A}, {@link Version#VERSION_2Y} etc.
          *
-         * @param versionIdentifier version as UTF-8 encoded byte array, e.g. '2a' = new byte[]{0x32, 0x61}, do not included the separator '$'
-         * @param formatter         the formatter responsible for formatting the out hash message digest
+         * @param versionIdentifier     version as UTF-8 encoded byte array, e.g. '2a' = new byte[]{0x32, 0x61}, do not included the separator '$'
+         * @param useOnly23bytesForHash set to false if you want the full 24 byte out for the hash (otherwise will be truncated to 23 byte according to OpenBSD impl)
+         * @param appendNullTerminator  as defined in $2a$+ a null terminator is appended to the password, pass false if you want avoid this
+         * @param formatter             the formatter responsible for formatting the out hash message digest
          */
-        public Version(byte[] versionIdentifier, BCryptFormatter formatter, BCryptParser parser) {
+        public Version(byte[] versionIdentifier, boolean useOnly23bytesForHash, boolean appendNullTerminator, BCryptFormatter formatter, BCryptParser parser) {
             this.versionIdentifier = versionIdentifier;
+            this.useOnly23bytesForHash = useOnly23bytesForHash;
+            this.appendNullTerminator = appendNullTerminator;
             this.formatter = formatter;
             this.parser = parser;
         }
@@ -658,12 +693,17 @@ public final class BCrypt {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Version version = (Version) o;
-            return Arrays.equals(versionIdentifier, version.versionIdentifier);
+            return useOnly23bytesForHash == version.useOnly23bytesForHash &&
+                    appendNullTerminator == version.appendNullTerminator &&
+                    Arrays.equals(versionIdentifier, version.versionIdentifier);
         }
 
         @Override
         public int hashCode() {
-            return Arrays.hashCode(versionIdentifier);
+
+            int result = Objects.hash(useOnly23bytesForHash, appendNullTerminator);
+            result = 31 * result + Arrays.hashCode(versionIdentifier);
+            return result;
         }
 
         @Override
