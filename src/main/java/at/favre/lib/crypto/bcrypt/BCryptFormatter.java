@@ -65,8 +65,8 @@ public interface BCryptFormatter {
 
         @Override
         public byte[] createHashMessage(BCrypt.HashData hashData) {
-            byte[] saltEncoded = encoder.encode(hashData.rawSalt, hashData.rawSalt.length);
-            byte[] hashEncoded = encoder.encode(hashData.rawHash, hashData.rawHash.length);
+            byte[] saltEncoded = encoder.encode(hashData.rawSalt);
+            byte[] hashEncoded = encoder.encode(hashData.rawHash);
             byte[] costFactorBytes = String.format("%02d", hashData.cost).getBytes(defaultCharset);
 
             try {
