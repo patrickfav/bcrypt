@@ -81,9 +81,9 @@ public interface BCryptFormatter {
                 byteBuffer.put(hashEncoded);
                 return byteBuffer.array();
             } finally {
-                Bytes.wrap(saltEncoded).mutable().secureWipe();
-                Bytes.wrap(hashEncoded).mutable().secureWipe();
-                Bytes.wrap(costFactorBytes).mutable().secureWipe();
+                Bytes.wrapNullSafe(saltEncoded).mutable().secureWipe();
+                Bytes.wrapNullSafe(hashEncoded).mutable().secureWipe();
+                Bytes.wrapNullSafe(costFactorBytes).mutable().secureWipe();
             }
         }
     }

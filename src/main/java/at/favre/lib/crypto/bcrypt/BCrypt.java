@@ -206,9 +206,7 @@ public final class BCrypt {
                 passwordBytes = charArrayToByteArray(password, defaultCharset);
                 return hash(cost, Bytes.random(SALT_LENGTH, secureRandom).array(), passwordBytes);
             } finally {
-                if (passwordBytes != null) {
-                    Bytes.wrap(passwordBytes).mutable().secureWipe();
-                }
+                Bytes.wrapNullSafe(passwordBytes).mutable().secureWipe();
             }
         }
 
@@ -291,7 +289,7 @@ public final class BCrypt {
                         hash
                 );
             } finally {
-                Bytes.wrap(pwWithNullTerminator).mutable().secureWipe();
+                Bytes.wrapNullSafe(pwWithNullTerminator).mutable().secureWipe();
             }
         }
     }
@@ -335,8 +333,8 @@ public final class BCrypt {
          * Internally wipe the salt and hash byte arrays
          */
         public void wipe() {
-            Bytes.wrap(rawSalt).mutable().secureWipe();
-            Bytes.wrap(rawHash).mutable().secureWipe();
+            Bytes.wrapNullSafe(rawSalt).mutable().secureWipe();
+            Bytes.wrapNullSafe(rawHash).mutable().secureWipe();
         }
 
         @Override
@@ -453,12 +451,8 @@ public final class BCrypt {
                 bcryptHashBytes = charArrayToByteArray(bcryptHash, defaultCharset);
                 return verify(passwordBytes, bcryptHashBytes, requiredVersion);
             } finally {
-                if (passwordBytes != null) {
-                    Bytes.wrap(passwordBytes).mutable().secureWipe();
-                }
-                if (bcryptHashBytes != null) {
-                    Bytes.wrap(bcryptHashBytes).mutable().secureWipe();
-                }
+                Bytes.wrapNullSafe(passwordBytes).mutable().secureWipe();
+                Bytes.wrapNullSafe(bcryptHashBytes).mutable().secureWipe();
             }
         }
 
