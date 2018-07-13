@@ -1,5 +1,12 @@
 # Releases
 
+## v0.2.0
+
+* add String API
+* refactor Version to be POJO (so caller can provide own impl)
+* add BcryptFormtter
+* add more tests
+
 ## v0.1.0
 
 initial version
