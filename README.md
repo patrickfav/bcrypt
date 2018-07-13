@@ -223,13 +223,12 @@ The core of this implementation is based on the popular jBcrypt. Many things aro
 features and APIs have been added:
 
 * Optimized and fixed implementation (e.g. uses `StringBuilder` instead of `StringBuffer`)
-* Support of most [version](https://en.wikipedia.org/wiki/Bcrypt#Versioning_history) variations (`$2a$`, `$2b$`, `$2x$`, `$2y$`)
+* Support of most [version](https://en.wikipedia.org/wiki/Bcrypt#Versioning_history) variations (`$2a$`, `$2b$`, `$2x$`, `$2y$`) with support of custom versions
 * Customizable handling for passwords over 72 bytes
 * Only uses byte and char arrays which can be wiped after use
 * Faster Radix64 implementation
 * Easily get the raw hash
-* Provide your own salt
-* Provide your own `SecureRandom` for salt generation
+* Provide your own salt or `SecureRandom` for salt generation
 * Clearer and easier API
 * Signed Jar and signed commits
 * More tests (and probably higher coverage)
@@ -281,7 +280,7 @@ Use maven (3.1+) to create a jar including all dependencies
 
 ## Libraries & Credits
 
-* [jBcrypt](https://github.com/jeremyh/jBCrypt) (derived the "Blowfish Expensive key setup ")
+* [jBcrypt](https://github.com/jeremyh/jBCrypt) (derived the "Blowfish Expensive key setup")
 * Radix64 implementation derived from [OpenJDK 8 Base64](http://hg.openjdk.java.net/jdk8/jdk8/jdk/file/687fd7c7986d/src/share/classes/java/util/Base64.java) (under GPL-2.0)
 
 ## BCrypt Implementations in Java

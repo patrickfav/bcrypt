@@ -243,6 +243,4 @@ public interface Radix64Encoder {
             return dp;
         }
     }
-
-
 }
