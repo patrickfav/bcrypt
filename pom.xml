@@ -6,7 +6,7 @@
 
     <groupId>at.favre.lib</groupId>
     <artifactId>bcrypt</artifactId>
-    <version>0.2.0</version>
+    <version>0.3.0</version>
     <packaging>jar</packaging>
 
     <name>BCrypt Password Hashing Function</name>
