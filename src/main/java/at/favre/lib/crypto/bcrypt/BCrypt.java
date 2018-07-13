@@ -125,6 +125,13 @@ public final class BCrypt {
         return new Verifyer();
     }
 
+    private static byte[] charArrayToByteArray(char[] charArray, Charset charset) {
+        ByteBuffer bb = charset.encode(CharBuffer.wrap(charArray));
+        byte[] bytes = new byte[bb.remaining()];
+        bb.get(bytes);
+        return bytes;
+    }
+
     /**
      * Can create bcrypt hashes
      */
@@ -196,7 +203,7 @@ public final class BCrypt {
 
             byte[] passwordBytes = null;
             try {
-                passwordBytes = new String(CharBuffer.wrap(password).array()).getBytes(defaultCharset);
+                passwordBytes = charArrayToByteArray(password, defaultCharset);
                 return hash(cost, Bytes.random(SALT_LENGTH, secureRandom).array(), passwordBytes);
             } finally {
                 if (passwordBytes != null) {
@@ -442,8 +449,8 @@ public final class BCrypt {
             byte[] passwordBytes = null;
             byte[] bcryptHashBytes = null;
             try {
-                passwordBytes = new String(CharBuffer.wrap(password).array()).getBytes(defaultCharset);
-                bcryptHashBytes = new String(CharBuffer.wrap(bcryptHash).array()).getBytes(defaultCharset);
+                passwordBytes = charArrayToByteArray(password, defaultCharset);
+                bcryptHashBytes = charArrayToByteArray(bcryptHash, defaultCharset);
                 return verify(passwordBytes, bcryptHashBytes, requiredVersion);
             } finally {
                 if (passwordBytes != null) {
