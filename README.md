@@ -30,7 +30,7 @@ BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), bcryptHa
 // result.verified == true
 ```
 
-### API Description
+## API Description
 
 In the following, the main features and use cases are explained.
 
@@ -134,6 +134,12 @@ there is even a verify method optimized for this use-case:
 BCrypt.Result result = BCrypt.verifyer().verify(pw, hashData);
 ```
 
+You could even use the default formatter later on:
+
+```java
+byet[] hashMsg = Version.VERSION_2A.formatter.createHashMessage(hashData);
+```
+
 ## Download
 
 The artifacts are deployed to [jcenter](https://bintray.com/bintray/jcenter) and [Maven Central](https://search.maven.org/).
@@ -163,7 +169,7 @@ Add to your `build.gradle` module dependencies:
 
 ### Performance
 
-Compared to 2 other implementations in Java they all compare pretty well. Using the simple micro benchmark in this repo
+Compared to two other implementations in Java they all compare pretty well. Using the simple micro benchmark in this repo
 (see `BcryptMicroBenchmark`), I got the following results with a Intel Core i7-7700K, Win 10, Java 8 (172):
 
 
@@ -173,13 +179,13 @@ Compared to 2 other implementations in Java they all compare pretty well. Using 
 | jBcrypt      | 53.24 ms | 213.42 ms |
 | BouncyCastle | 50.27 ms | 202.67 ms |
 
-So it makes sense that mine and jBcrypt is pretty the same performance as it is the same core
+So it makes sense that this implementation and jBcrypt's has the same performance as it is the same core
 implementation. Bouncy Castle is _slightly_ faster, but keep in mind that they do a little less work (only generating the hash, not the whole out message).
 
-Compared to some other benchmarks, [like this one in node.js](https://github.com/dcodeIO/bcrypt.js/wiki/Benchmark) where a hash is with cost 12 is between 300-400ms (but with a weaker CPU).
+Compare this to other benchmarks, [like this one in node.js](https://github.com/dcodeIO/bcrypt.js/wiki/Benchmark) where a bcrypt hash with cost factor 12 is between 300-400ms (but with a weaker CPU).
 
-**Disclaimer:** Micro benchmarks are [usually a really bad way to measure performance](https://mrale.ph/blog/2012/12/15/microbenchmarks-fairy-tale.html). These numbers are only informal tests
-and should not be used to derive any security relevant decisions.
+**Disclaimer:** Micro benchmarks are [usually a really bad way to measure performance](https://mrale.ph/blog/2012/12/15/microbenchmarks-fairy-tale.html). 
+These numbers are only informal tests and should not be used to derive any security relevant decisions.
 
 ### Test Vectors and Reference Implementations
 
