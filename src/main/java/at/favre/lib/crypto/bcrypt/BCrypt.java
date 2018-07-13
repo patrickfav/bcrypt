@@ -15,6 +15,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * The main access point the the Bcrypt APIs
+ */
 @SuppressWarnings("WeakerAccess")
 public final class BCrypt {
     private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;

@@ -1,5 +1,10 @@
 package at.favre.lib.crypto.bcrypt;
 
+/**
+ * Exception thrown on parsing if an illegal format has been detected.
+ * <p>
+ * Heavily used in {@link BCryptParser}
+ */
 public class IllegalBCryptFormatException extends Exception {
 
     public IllegalBCryptFormatException(String s) {
