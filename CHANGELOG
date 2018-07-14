@@ -4,6 +4,7 @@
 
 * support 24byte hash out and make null terminator optional (BC style) #3
 * use OpenJDK Radix64 encoder implementation #2
+* fix issue where string was created internally which cannot be wiped
 
 ## v0.2.0
 
