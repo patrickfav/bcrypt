@@ -4,6 +4,7 @@ import at.favre.lib.bytes.Bytes;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.util.Locale;
 
 /**
  * Formats the out hash message of bcrypt. Usually this is the Modular Crypt Format.
@@ -67,7 +68,7 @@ public interface BCryptFormatter {
         public byte[] createHashMessage(BCrypt.HashData hashData) {
             byte[] saltEncoded = encoder.encode(hashData.rawSalt);
             byte[] hashEncoded = encoder.encode(hashData.rawHash);
-            byte[] costFactorBytes = String.format("%02d", hashData.cost).getBytes(defaultCharset);
+            byte[] costFactorBytes = String.format(Locale.US, "%02d", hashData.cost).getBytes(defaultCharset);
 
             try {
                 ByteBuffer byteBuffer = ByteBuffer.allocate(hashData.version.versionIdentifier.length +
