@@ -11,7 +11,7 @@ The code is compiled with target [Java 7](https://en.wikipedia.org/wiki/Java_ver
 
 ## Quickstart
 
-Add dependency to your `pom.xml`:
+Add dependency to your `pom.xml` ([check for latest release](https://github.com/patrickfav/bcrypt/releases)):
 
     <dependency>
         <groupId>at.favre.lib</groupId>
