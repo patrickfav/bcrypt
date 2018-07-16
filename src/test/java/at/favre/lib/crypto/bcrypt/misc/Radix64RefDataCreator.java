@@ -21,7 +21,7 @@ public class Radix64RefDataCreator {
 
     private void testSingleEncode(int length) {
         byte[] rnd = Bytes.random(length).array();
-        byte[] encoded = encoder.encode(rnd, rnd.length);
+        byte[] encoded = encoder.encode(rnd);
         byte[] decoded = encoder.decode(encoded);
 
         if (!Bytes.wrap(rnd).equals(decoded)) throw new IllegalStateException("encoded/decoded does not match");

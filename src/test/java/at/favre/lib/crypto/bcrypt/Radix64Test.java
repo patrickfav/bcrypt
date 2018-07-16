@@ -105,7 +105,7 @@ public class Radix64Test {
 
     private void testSingleEncode(int length) {
         byte[] rnd = Bytes.random(length).array();
-        byte[] encoded = encoder.encode(rnd, rnd.length);
+        byte[] encoded = encoder.encode(rnd);
         byte[] decoded = encoder.decode(encoded);
 
         assertArrayEquals(rnd, decoded);
@@ -120,7 +120,7 @@ public class Radix64Test {
     @Test
     public void testEncodeAgainstRefTable() {
         for (TestCase encodeTestCase : referenceRadix64Table) {
-            byte[] encoded = encoder.encode(encodeTestCase.raw, encodeTestCase.raw.length);
+            byte[] encoded = encoder.encode(encodeTestCase.raw);
             assertArrayEquals(encodeTestCase.encoded.getBytes(StandardCharsets.UTF_8), encoded);
         }
     }
@@ -136,16 +136,6 @@ public class Radix64Test {
     @Test
     public void testBigBlob() {
         testSingleEncode(1024 * 1024 * 10);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testErrorNullMaxLength() {
-        encoder.encode(new byte[16], 0);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testErrorTooLong() {
-        encoder.encode(new byte[16], 17);
     }
 
     @Test

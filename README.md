@@ -11,7 +11,7 @@ The code is compiled with target [Java 7](https://en.wikipedia.org/wiki/Java_ver
 
 ## Quickstart
 
-Add dependency to your `pom.xml`:
+Add dependency to your `pom.xml` ([check latest release](https://github.com/patrickfav/bcrypt/releases)):
 
     <dependency>
         <groupId>at.favre.lib</groupId>
@@ -23,15 +23,14 @@ A simple example:
 
 ```java
 String password = "1234";
-char[] bcryptChars = BCrypt.withDefaults().hashToChar(12, password.toCharArray());
-String bcryptHashString = new String(bcryptChars);
+String bcryptHashString = BCrypt.withDefaults().hashToString(12, password.toCharArray());
 // $2a$12$US00g/uMhoSBm.HiuieBjeMtoN69SN.GE25fCpldebzkryUyopws6
     ...
-BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), bcryptChars);
+BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), bcryptHashString);
 // result.verified == true
 ```
 
-### API Description
+## API Description
 
 In the following, the main features and use cases are explained.
 
@@ -47,10 +46,11 @@ char[] bcryptChars = BCrypt.with(BCrypt.Version.VERSION_2B).hashToChar(6, passwo
 ```
 
 By using `BCrypt.withDefaults()` it will default to version `$2a$`. The older `$2$` version is not supported.
-For advanced use cases you may add your own version by providing a version identifier and a custom message formatter.
+For advanced use cases you may add your own version by providing a version identifier and a custom message formatter 
+as well as parser.
 
 ```java
-Version customVersion2f = new Version(new byte[]{0x32, 0x66} /* 2f */, myCustomFormatter);
+Version customVersion2f = new Version(new byte[]{0x32, 0x66} /* 2f */, myCustomFormatter, myCustomParser);
 ```
 
 ### byte[] vs char[] API
@@ -64,6 +64,19 @@ byte[] bcryptHashBytes = BCrypt.withDefaults().hash(6, password.getBytes(Standar
     ...
 BCrypt.Result result = BCrypt.verifyer().verify(password.getBytes(StandardCharsets.UTF_8), bcryptHashBytes);
 ```
+
+and
+
+```java
+char[] bcryptChars = BCrypt.withDefaults().hashToChar(12, password.toCharArray());
+    ...
+BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), bcryptChars);
+```
+
+Note, that there are APIs that return `String` type hash and can verify it directly. This is done
+out of convenience and to present easy to understand API for all audiences. Usually the hash is 
+not as critical as the raw password, so it might be ok to not be able to wipe it immediately. But 
+usually you should prefer `char[]` or `byte[]` APIs.
 
 ### Strict Verification
 
@@ -121,6 +134,12 @@ there is even a verify method optimized for this use-case:
 BCrypt.Result result = BCrypt.verifyer().verify(pw, hashData);
 ```
 
+You could even use the default formatter later on:
+
+```java
+byet[] hashMsg = Version.VERSION_2A.formatter.createHashMessage(hashData);
+```
+
 ## Download
 
 The artifacts are deployed to [jcenter](https://bintray.com/bintray/jcenter) and [Maven Central](https://search.maven.org/).
@@ -148,6 +167,51 @@ Add to your `build.gradle` module dependencies:
 
 ## Description
 
+### Security Analysis
+
+I'll quote secuirty expert [Thomas Porin](http://www.bolet.org/~pornin/) on this (an excerpt [from this post](https://security.stackexchange.com/a/6415/60108)):
+
+**tl;dr bcrypt is better than PBKDF2 because PBKDF2 can be better accelerated with GPUs. As such, PBKDF2 is easier to brute force offline with consumer hardware. srcypt tried to address bcrypt's shortcommings, but didn't succeed all the way.**
+
+> Bcrypt has the best kind of repute that can be achieved for a cryptographic algorithm: it has been around for quite some time, used quite widely, "attracted attention", and yet remains unbroken to date.
+>
+>
+> Why bcrypt is somewhat better than PBKDF2
+>
+> If you look at the situation in details, you can actually see some points where bcrypt is better than, say, PBKDF2. Bcrypt is a password hashing function which aims at being slow. To be precise, we want the password hashing function to be as slow as possible for the attacker while not being intolerably slow for the honest systems. (...)
+> What we want to avoid is that an attacker might use some non-PC hardware which would allow him to suffer less than us from the extra work implied by bcrypt or PBKDF2. In particular, an industrious attacker may want to use a GPU or a FPGA. SHA-256, for instance, can be very efficiently implemented on a GPU, since it uses only 32-bit logic and arithmetic operations that GPU are very good at. (...)
+> Bcrypt happens to heavily rely on accesses to a table which is constantly altered throughout the algorithm execution. This is very fast on a PC, much less so on a GPU, where memory is shared and all cores compete for control of the internal memory bus. Thus, the boost that an attacker can get from using GPU is quite reduced, compared to what the attacker gets with PBKDF2 or similar designs.
+> 
+>
+> Why bcrypt is not optimally secure
+>
+> Bcrypt needs only 4 kB of fast RAM. While bcrypt does a decent job at making life difficult for a GPU-enhanced attacker, it does little against a FPGA-wielding attacker.
+>
+>
+> What NIST recommends
+>
+> NIST has issued Special Publication SP 800-132 on the subject of storing hashed passwords. Basically they recommend PBKDF2. This does not mean that they deem bcrypt insecure; they say nothing at all about bcrypt. It just means that NIST deems PBKDF2 "secure enough" (and it certainly is much better than a simple hash !). Also, NIST is an administrative organization, so they are bound to just love anything which builds on already "Approved" algorithms like SHA-256. On the other hand, bcrypt comes from Blowfish which has never received any kind of NIST blessing (or curse).
+
+### Performance
+
+Compared to two other implementations in Java they all compare pretty well. Using the simple micro benchmark in this repo
+(see `BcryptMicroBenchmark`), I got the following results with a Intel Core i7-7700K, Win 10, Java 8 (172):
+
+
+|              | cost 10  | cost 12   |
+|--------------|----------|-----------|
+| favreBcrypt  | 54.53 ms | 217.22 ms |
+| jBcrypt      | 53.24 ms | 213.42 ms |
+| BouncyCastle | 50.27 ms | 202.67 ms |
+
+So it makes sense that this implementation and jBcrypt's has the same performance as it is the same core
+implementation. Bouncy Castle is _slightly_ faster, but keep in mind that they do a little less work (only generating the hash, not the whole out message).
+
+Compare this to other benchmarks, [like this one in node.js](https://github.com/dcodeIO/bcrypt.js/wiki/Benchmark) where a bcrypt hash with cost factor 12 is between 300-400ms (but with a weaker CPU).
+
+**Disclaimer:** Micro benchmarks are [usually a really bad way to measure performance](https://mrale.ph/blog/2012/12/15/microbenchmarks-fairy-tale.html). 
+These numbers are only informal tests and should not be used to derive any security relevant decisions.
+
 ### Test Vectors and Reference Implementations
 
 This implementation is tested against the bcrypt implementation jBcrypt and Bouncy Castle. It includes test vectors
@@ -159,12 +223,12 @@ The core of this implementation is based on the popular jBcrypt. Many things aro
 features and APIs have been added:
 
 * Optimized and fixed implementation (e.g. uses `StringBuilder` instead of `StringBuffer`)
-* Support of most [version](https://en.wikipedia.org/wiki/Bcrypt#Versioning_history) variations (`$2a$`, `$2b$`, `$2x$`, `$2y$`)
+* Support of most [version](https://en.wikipedia.org/wiki/Bcrypt#Versioning_history) variations (`$2a$`, `$2b$`, `$2x$`, `$2y$`) with support of custom versions
 * Customizable handling for passwords over 72 bytes
 * Only uses byte and char arrays which can be wiped after use
+* Faster Radix64 implementation
 * Easily get the raw hash
-* Provide your own salt
-* Provide your own `SecureRandom` for salt generation
+* Provide your own salt or `SecureRandom` for salt generation
 * Clearer and easier API
 * Signed Jar and signed commits
 * More tests (and probably higher coverage)
@@ -213,6 +277,11 @@ Use the Maven wrapper to create a jar including all dependencies
 
 * Java 7 (+ [errorprone](https://github.com/google/error-prone) static analyzer)
 * Maven
+
+## Libraries & Credits
+
+* [jBcrypt](https://github.com/jeremyh/jBCrypt) (derived the "Blowfish Expensive key setup")
+* Radix64 implementation derived from [OpenJDK 8 Base64](http://hg.openjdk.java.net/jdk8/jdk8/jdk/file/687fd7c7986d/src/share/classes/java/util/Base64.java) (under GPL-2.0)
 
 ## BCrypt Implementations in Java
 

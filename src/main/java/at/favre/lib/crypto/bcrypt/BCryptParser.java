@@ -9,7 +9,7 @@ import static at.favre.lib.crypto.bcrypt.BCrypt.SEPARATOR;
 
 /**
  * A simple parser which is able to parse Modular Crypt Format specifically for bcrypt.
- * <p>
+ *
  * It will gather the parts of the format:
  * <ul>
  * <li>version</li>

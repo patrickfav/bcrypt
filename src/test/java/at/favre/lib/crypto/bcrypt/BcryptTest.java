@@ -41,10 +41,9 @@ public class BcryptTest {
     @Test
     public void quickStart() {
         String password = "1234";
-        char[] bcryptChars = BCrypt.withDefaults().hashToChar(12, password.toCharArray());
-        String bcryptHashString = new String(bcryptChars);
+        String bcryptHashString = BCrypt.withDefaults().hashToString(12, password.toCharArray());
         System.out.println(bcryptHashString);
-        BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), bcryptChars);
+        BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), bcryptHashString);
         assertTrue(result.verified);
     }
 
@@ -112,11 +111,13 @@ public class BcryptTest {
         byte[] hash2 = bCrypt.hash(7, salt, pw.getBytes(UTF_8));
         BCrypt.HashData hashData = bCrypt.hashRaw(7, salt, pw.getBytes(UTF_8));
         char[] hash3 = bCrypt.hashToChar(4, pw.toCharArray());
+        String hash4 = bCrypt.hashToString(4, pw.toCharArray());
 
         assertFalse(Bytes.wrap(hash1).equals(hash2));
         assertTrue(verifyer.verify(pw.toCharArray(), new String(hash1, UTF_8).toCharArray()).verified);
         assertTrue(verifyer.verify(pw.getBytes(UTF_8), hash2).verified);
         assertTrue(verifyer.verify(pw.toCharArray(), hash3).verified);
+        assertTrue(verifyer.verify(pw.toCharArray(), hash4).verified);
         assertEquals(new BCryptParser.Default(new Radix64Encoder.Default(), UTF_8).parse(hash2), hashData);
     }
 
@@ -126,6 +127,13 @@ public class BcryptTest {
         byte[] pw = Bytes.random(new Random().nextInt(68) + 2).array();
         byte[] hash = BCrypt.withDefaults().hash(4, pw);
         assertTrue(BCrypt.verifyer().verify(pw, hash).verified);
+        System.out.println(Bytes.wrap(hash).encodeUtf8());
+    }
+
+    @Test
+    public void testEmptyPw() {
+        byte[] hash = BCrypt.with(BCrypt.Version.VERSION_2A).hash(4, new byte[0]);
+        assertTrue(BCrypt.verifyer().verify(new byte[0], hash).verified);
         System.out.println(Bytes.wrap(hash).encodeUtf8());
     }
 
@@ -157,6 +165,11 @@ public class BcryptTest {
     @Test(expected = IllegalArgumentException.class)
     public void createHashWithPwNull() {
         BCrypt.withDefaults().hash(6, new byte[16], null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void createHashWithPwEmptyNoNullTerm() {
+        BCrypt.with(BCrypt.Version.VERSION_BC).hash(6, new byte[16], new byte[0]);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -343,14 +356,14 @@ public class BcryptTest {
     @Test
     public void testVersionPojoMethods() {
         assertEquals(BCrypt.Version.VERSION_2A, BCrypt.Version.VERSION_2A);
-        assertEquals(BCrypt.Version.VERSION_2A, new BCrypt.Version(new byte[]{MAJOR_VERSION, 0x61}, null));
-        assertEquals(BCrypt.Version.VERSION_2Y, new BCrypt.Version(new byte[]{MAJOR_VERSION, 0x79}, null));
+        assertEquals(BCrypt.Version.VERSION_2A, new BCrypt.Version(new byte[]{MAJOR_VERSION, 0x61}, true, true, null, null));
+        assertEquals(BCrypt.Version.VERSION_2Y, new BCrypt.Version(new byte[]{MAJOR_VERSION, 0x79}, true, true, null, null));
         assertNotEquals(BCrypt.Version.VERSION_2Y, BCrypt.Version.VERSION_2A);
         assertNotEquals(BCrypt.Version.VERSION_2A, BCrypt.Version.VERSION_2B);
         assertNotEquals(BCrypt.Version.VERSION_2X, BCrypt.Version.VERSION_2Y);
 
         assertEquals(BCrypt.Version.VERSION_2A.hashCode(), BCrypt.Version.VERSION_2A.hashCode());
-        assertEquals(BCrypt.Version.VERSION_2A.hashCode(), new BCrypt.Version(new byte[]{MAJOR_VERSION, 0x61}, null).hashCode());
+        assertEquals(BCrypt.Version.VERSION_2A.hashCode(), new BCrypt.Version(new byte[]{MAJOR_VERSION, 0x61}, true, true, null, null).hashCode());
 
         assertNotEquals(BCrypt.Version.VERSION_2Y.hashCode(), BCrypt.Version.VERSION_2A.hashCode());
         assertNotEquals(BCrypt.Version.VERSION_2A.hashCode(), BCrypt.Version.VERSION_2B.hashCode());

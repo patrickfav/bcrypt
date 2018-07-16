@@ -16,6 +16,9 @@ public interface LongPasswordStrategy {
      */
     byte[] derive(byte[] rawPassword);
 
+    /**
+     * Default base implementation
+     */
     abstract class BaseLongPasswordStrategy implements LongPasswordStrategy {
         final int maxLength;
 

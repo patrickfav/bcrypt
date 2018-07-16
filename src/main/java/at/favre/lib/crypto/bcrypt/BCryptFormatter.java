@@ -4,6 +4,7 @@ import at.favre.lib.bytes.Bytes;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.util.Locale;
 
 /**
  * Formats the out hash message of bcrypt. Usually this is the Modular Crypt Format.
@@ -65,9 +66,9 @@ public interface BCryptFormatter {
 
         @Override
         public byte[] createHashMessage(BCrypt.HashData hashData) {
-            byte[] saltEncoded = encoder.encode(hashData.rawSalt, hashData.rawSalt.length);
-            byte[] hashEncoded = encoder.encode(hashData.rawHash, hashData.rawHash.length);
-            byte[] costFactorBytes = String.format("%02d", hashData.cost).getBytes(defaultCharset);
+            byte[] saltEncoded = encoder.encode(hashData.rawSalt);
+            byte[] hashEncoded = encoder.encode(hashData.rawHash);
+            byte[] costFactorBytes = String.format(Locale.US, "%02d", hashData.cost).getBytes(defaultCharset);
 
             try {
                 ByteBuffer byteBuffer = ByteBuffer.allocate(hashData.version.versionIdentifier.length +
@@ -81,9 +82,9 @@ public interface BCryptFormatter {
                 byteBuffer.put(hashEncoded);
                 return byteBuffer.array();
             } finally {
-                Bytes.wrap(saltEncoded).mutable().secureWipe();
-                Bytes.wrap(hashEncoded).mutable().secureWipe();
-                Bytes.wrap(costFactorBytes).mutable().secureWipe();
+                Bytes.wrapNullSafe(saltEncoded).mutable().secureWipe();
+                Bytes.wrapNullSafe(hashEncoded).mutable().secureWipe();
+                Bytes.wrapNullSafe(costFactorBytes).mutable().secureWipe();
             }
         }
     }
