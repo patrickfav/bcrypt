@@ -15,7 +15,7 @@ Add dependency to your `pom.xml` ([check latest release](https://github.com/patr
 
     <dependency>
         <groupId>at.favre.lib</groupId>
-        <artifactId>bcrypt</artifactId>
+        <artifactId>bcrypt-core</artifactId>
         <version>{latest-version}</version>
     </dependency>
 
