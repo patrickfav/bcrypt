@@ -205,13 +205,13 @@ If you want to skip jar signing just change the skip configuration in the
 
 ### Build with Maven
 
-Use maven (3.1+) to create a jar including all dependencies
+Use the Maven wrapper to create a jar including all dependencies
 
-    mvn clean install
+    mvnw clean install
 
 ## Tech Stack
 
-* Java 7
+* Java 7 (+ [errorprone](https://github.com/google/error-prone) static analyzer)
 * Maven
 
 ## BCrypt Implementations in Java
