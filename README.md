@@ -233,6 +233,41 @@ features and APIs have been added:
 * Signed Jar and signed commits
 * More tests (and probably higher coverage)
 
+### The Modular Crypt Format for bcrypt
+
+Since bcrypt evolved from OpenBSD most implementations output the hash in the modular crypt format (MCF). In contrast to e.g. normal `sha` hash
+it includes the used hash function, cost factor, salt and hash itself. This makes it specifically convenient for password storage use. Formally 
+the [format](http://passlib.readthedocs.io/en/stable/modular_crypt_format.html) is:
+
+> (...) a standard for encoding password hash strings, which requires hashes have the format `${identifier}${content}`; where `{identifier}` 
+> is an short alphanumeric string uniquely identifying a particular scheme, and `{content}` is the contents of the scheme, using only the 
+> characters in the regexp range `[a-zA-Z0-9./]`.
+
+Analyzing the bcrypt format in detail we get:
+
+     ${identifier}${cost-factor}${16-bytes-salt-radix64}{23-bytes-hash-radix64}
+     
+With bcrypt the version identifier was `$2$`, but unfortunately early implementations [did not define how to handle non-ASCII characters](http://undeadly.org/cgi?action=article&sid=20140224132743),
+so to tag the old hashes, a new minor version was introduced which was not compatible with the earlier one: `$2a$`. 
+This is the default version used by most implementations. There are other minor versions which are only used to tag various non-backwards 
+compatible bugs in different implementations (namely `$2x$` and `$2y$` used by `crypt_blowfish` (PHP) and `$2b$` by OpenBSD). These are usually 
+irrelevant for implementations that did not have these bugs, so there is no advantage in setting the version to e.g. `$2y$` apart from making 
+it compatible with different systems. The actual format is the same as `$2a$`.
+
+The cost factor is the logarithmic work factor value as defined (4-30) printed as normal ASCII characters `[0-9]`. After that the 16 byte salt 
+encoded with a base64 dialect follows (22 characters) as well as the actual bcrypt hash (23 bytes / 31 characters encoded with the base64 dialect).
+
+Here is a full example:
+
+    $2a$08$cfcvVd2aQ8CMvoMpP2EBfeodLEkkFJ9umNEfPD18.hUF62qqlC/V.
+
+Here `$2a$` is the version, the cost factor is `8`, the salt is `cfcvVd2aQ8CMvoMpP2EBfe` and the bcrypt hash is `odLEkkFJ9umNEfPD18.hUF62qqlC/V.`.
+
+The used encoding is similar to the RFC * base64 encoding schema, but [with different mappings](https://en.wikipedia.org/wiki/Base64#Radix-64_applications_not_compatible_with_Base64)
+ (`./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz` vs. `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/`) 
+ only used by OpenBSD. In the code base this encoding is usually referenced as "Radix64" (see `Radix64Encoder`). The usual padding with `=` is
+ omitted.
+
 ## Digital Signatures
 
 ### Signed Jar
