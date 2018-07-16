@@ -171,7 +171,7 @@ Add to your `build.gradle` module dependencies:
 
 I'll quote secuirty expert [Thomas Porin](http://www.bolet.org/~pornin/) on this (an excerpt [from this post](https://security.stackexchange.com/a/6415/60108)):
 
-**tl;dr bcrypt is better than PBKDF2 because PBKDF2 can be better accelerated with GPUs. As such, PBKDF2 is easier to brute force offline with consumer hardware. srcypt tried to address bcrypt's shortcommings, but didn't succeed all the way.**
+**tl;dr bcrypt is better than PBKDF2 because PBKDF2 can be better accelerated with GPUs. As such, PBKDF2 is easier to brute force offline with consumer hardware. [srcypt tried to address bcrypt's shortcommings, but didn't succeed all the way.](https://security.stackexchange.com/a/26253/60108) [Argon2 is too new to tell.](https://security.stackexchange.com/a/119784/60108)**
 
 > Bcrypt has the best kind of repute that can be achieved for a cryptographic algorithm: it has been around for quite some time, used quite widely, "attracted attention", and yet remains unbroken to date.
 >
