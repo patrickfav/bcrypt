@@ -1,25 +1,20 @@
 package at.favre.lib.crypto.bcrypt.cli;
 
-import org.apache.commons.cli.*;
+import at.favre.lib.bytes.Bytes;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionGroup;
+import org.apache.commons.cli.Options;
 
 /**
  * Parses the command line input and converts it to a structured model ({@link Arg}
- * <p>
- * bcrypt-cli $password $work_factor
- * <p>
- * usage: bcrypt [-h] [-v] [-s SALT] [-V] [-r ROUNDS] [rawText]
- * <p>
- * debcrypt [-h] [-v] [-Q] hash [rawText]
- * <p>
- * htpasswd -bnBC 10 "" password | tr -d ':\n'
- * -b takes the password from the second command argument
- * -n prints the hash to stdout instead of writing it to a file
- * -B instructs to use bcrypt
- * -C 10 sets the bcrypt cost to 10
  */
 public final class CLIParser {
 
-    public static final String ARG_HASH = "h";
+    public static final String ARG_HASH = "b";
     public static final String ARG_CHECK = "c";
 
     private CLIParser() {
@@ -43,38 +38,52 @@ public final class CLIParser {
                 return null;
             }
 
-//            argument.apkFile = commandLine.getOptionValues(ARG_APK_FILE);
-//            argument.zipAlignPath = commandLine.getOptionValue("zipAlignPath");
-//            argument.out = commandLine.getOptionValue(ARG_APK_OUT);
-//
-//            if (commandLine.hasOption("ksDebug") && commandLine.hasOption("ks")) {
-//                throw new IllegalArgumentException("Either provide normal keystore or debug keystore location, not both.");
-//            }
-//
-//            if (commandLine.hasOption("verifySha256")) {
-//                argument.checkCertSha256 = commandLine.getOptionValues("verifySha256");
-//            }
-//
-//            argument.signArgsList = new MultiKeystoreParser().parse(commandLine);
-//            argument.ksIsDebug = commandLine.hasOption("ksDebug");
-//            argument.onlyVerify = commandLine.hasOption(ARG_VERIFY);
-//            argument.dryRun = commandLine.hasOption("dryRun");
-//            argument.debug = commandLine.hasOption("debug");
-//            argument.overwrite = commandLine.hasOption("overwrite");
-//            argument.verbose = commandLine.hasOption("verbose");
-//            argument.allowResign = commandLine.hasOption("allowResign");
-//            argument.skipZipAlign = commandLine.hasOption(ARG_SKIP_ZIPALIGN);
-//
-//            if (argument.apkFile == null || argument.apkFile.length == 0) {
-//                throw new IllegalArgumentException("must provide apk file or folder");
-//            }
-//
-//            if (argument.overwrite && argument.out != null) {
-//                throw new IllegalArgumentException("either provide out path or overwrite argument, cannot process both");
-//            }
+            if (commandLine.getArgs().length <= 0) {
+                throw new IllegalArgumentException("First parameter must be password (e.g. bcrypt 'mysecretpassword' -" + ARG_HASH + " 12)");
+            }
 
+            char[] password = commandLine.getArgs()[0].toCharArray();
+
+            if (commandLine.hasOption(ARG_HASH)) {
+
+                String[] hashParams = commandLine.getOptionValues(ARG_HASH);
+
+                if (hashParams == null || hashParams.length == 0) {
+                    throw new IllegalArgumentException("Hash mode expects at least the cost parameter. (e.g.  '-" + ARG_HASH + " 12')");
+                }
+
+                final int costFactor;
+                try {
+                    costFactor = Integer.valueOf(hashParams[0]);
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("First parameter of hash expected to be integer type, was " + hashParams[0]);
+                }
+
+                byte[] salt = null;
+                if (hashParams.length > 1) {
+                    try {
+                        salt = Bytes.parseHex(hashParams[1]).array();
+                    } catch (Exception e) {
+                        throw new IllegalArgumentException("Salt parameter could not be parsed as hex [0-9a-f], was " + hashParams[1]);
+                    }
+
+                    if (salt.length != 16) {
+                        throw new IllegalArgumentException("Salt parameter must be exactly 16 bytes (32 characters hex)");
+                    }
+                }
+                return new Arg(password, salt, costFactor);
+            } else if (commandLine.hasOption(ARG_CHECK)) {
+                String refBcrypt = commandLine.getOptionValue(ARG_CHECK);
+
+                if (refBcrypt == null || refBcrypt.trim().length() != 60) {
+                    throw new IllegalArgumentException("Reference bcrypt hash must be exactly 60 characters, e.g. '$2a$10$6XBbrUraPyfq7nxeaYsR4u.3.ZuGNCy3tOT4reneAI/qoWvP6AX/e' was " + refBcrypt);
+                }
+
+                return new Arg(password, refBcrypt);
+            }
         } catch (Exception e) {
-            System.err.println(e.getMessage());
+            String msg = e.getMessage();
+            System.err.println(msg.length() > 80 ? msg.substring(0, 80) + "..." : msg);
 
             CLIParser.printHelp(options);
 
@@ -86,15 +95,15 @@ public final class CLIParser {
 
     static Options setupOptions() {
         Options options = new Options();
-        Option optHash = Option.builder(ARG_HASH).longOpt("hash").argName("cost [salt-bytes-hex]").hasArgs().desc("Use this flag if you want to compute the bcrypt hash. Pass the logarithm cost factor (4-31) and optionally the used salt" +
-                " as hex encoded byte array (must be exactly 16 bytes/32 characters hex). Example: '--hash 12 8e270d6129fd45f30a9b3fe44b4a8d9a'").build();
+        Option optHash = Option.builder(ARG_HASH).longOpt("bhash").argName("cost> <[16-hex-byte-salt]").hasArgs().desc("Use this flag if you want to compute the bcrypt hash. Pass the logarithm cost factor (4-31) and optionally the used salt" +
+                " as hex encoded byte array (must be exactly 16 bytes/32 characters hex). Example: '--bhash 12 8e270d6129fd45f30a9b3fe44b4a8d9a'").required().build();
         Option optCheck = Option.builder(ARG_CHECK).longOpt("check").argName("bcrypt-hash").hasArg().desc("Use this flag if you want to verify a hash against a given password. Example: '--check $2a$06$If6bvum7DFjUnE9p2uDeDu0YHzrHM6tf.iqN8.yx.jNN1ILEf7h0i'").build();
 
         Option help = Option.builder("h").longOpt("help").desc("Prints help docs.").build();
         Option version = Option.builder("v").longOpt("version").desc("Prints current version.").build();
 
         OptionGroup mainArgs = new OptionGroup();
-        mainArgs.addOption(optHash).addOption(optCheck).addOption(help).addOption(version);
+        mainArgs.addOption(optCheck).addOption(optHash).addOption(help).addOption(version);
         mainArgs.setRequired(true);
 
         options.addOptionGroup(mainArgs);
@@ -105,6 +114,6 @@ public final class CLIParser {
         HelpFormatter help = new HelpFormatter();
         help.setWidth(110);
         help.setLeftPadding(4);
-        help.printHelp("bcrypt", "Version: " + Cli.jarVersion(), options, "", true);
+        help.printHelp("bcrypt <password>", "Version: " + BcryptTool.jarVersion(), options, "", true);
     }
 }

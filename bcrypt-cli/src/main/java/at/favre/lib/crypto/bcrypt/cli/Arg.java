@@ -12,17 +12,24 @@ public class Arg {
     public String checkBcryptHash;
     public byte[] salt;
     public int costFactor;
-    public int version;
 
     Arg() {
     }
 
-    public Arg(char[] password, String checkBcryptHash, byte[] salt, int costFactor, int version) {
+    Arg(char[] password, String checkBcryptHash) {
+        this(password, checkBcryptHash, null, 0);
+    }
+
+
+    Arg(char[] password, byte[] salt, int costFactor) {
+        this(password, null, salt, costFactor);
+    }
+
+    Arg(char[] password, String checkBcryptHash, byte[] salt, int costFactor) {
         this.password = password;
         this.checkBcryptHash = checkBcryptHash;
         this.salt = salt;
         this.costFactor = costFactor;
-        this.version = version;
     }
 
     @Override
@@ -31,7 +38,6 @@ public class Arg {
         if (o == null || getClass() != o.getClass()) return false;
         Arg arg = (Arg) o;
         return costFactor == arg.costFactor &&
-                version == arg.version &&
                 Arrays.equals(password, arg.password) &&
                 Objects.equals(checkBcryptHash, arg.checkBcryptHash) &&
                 Arrays.equals(salt, arg.salt);
@@ -40,7 +46,7 @@ public class Arg {
     @Override
     public int hashCode() {
 
-        int result = Objects.hash(checkBcryptHash, costFactor, version);
+        int result = Objects.hash(checkBcryptHash, costFactor);
         result = 31 * result + Arrays.hashCode(password);
         result = 31 * result + Arrays.hashCode(salt);
         return result;
@@ -53,7 +59,6 @@ public class Arg {
                 ", checkBcryptHash='" + checkBcryptHash + '\'' +
                 ", salt=" + Arrays.toString(salt) +
                 ", costFactor=" + costFactor +
-                ", version=" + version +
                 '}';
     }
 
