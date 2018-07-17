@@ -9,6 +9,7 @@ import java.util.Objects;
 public class Arg {
     //CHECKSTYLE:OFF -- I do want a concise class with only public access
     public char[] password;
+    public String checkBcryptHash;
     public byte[] salt;
     public int costFactor;
     public int version;
@@ -16,8 +17,9 @@ public class Arg {
     Arg() {
     }
 
-    public Arg(char[] password, byte[] salt, int costFactor, int version) {
+    public Arg(char[] password, String checkBcryptHash, byte[] salt, int costFactor, int version) {
         this.password = password;
+        this.checkBcryptHash = checkBcryptHash;
         this.salt = salt;
         this.costFactor = costFactor;
         this.version = version;
@@ -31,13 +33,14 @@ public class Arg {
         return costFactor == arg.costFactor &&
                 version == arg.version &&
                 Arrays.equals(password, arg.password) &&
+                Objects.equals(checkBcryptHash, arg.checkBcryptHash) &&
                 Arrays.equals(salt, arg.salt);
     }
 
     @Override
     public int hashCode() {
 
-        int result = Objects.hash(costFactor, version);
+        int result = Objects.hash(checkBcryptHash, costFactor, version);
         result = 31 * result + Arrays.hashCode(password);
         result = 31 * result + Arrays.hashCode(salt);
         return result;
@@ -47,12 +50,13 @@ public class Arg {
     public String toString() {
         return "Arg{" +
                 "password=" + Arrays.toString(password) +
+                ", checkBcryptHash='" + checkBcryptHash + '\'' +
                 ", salt=" + Arrays.toString(salt) +
                 ", costFactor=" + costFactor +
                 ", version=" + version +
                 '}';
     }
 
-    //CHECKSTYLE:ON
 
+    //CHECKSTYLE:ON
 }

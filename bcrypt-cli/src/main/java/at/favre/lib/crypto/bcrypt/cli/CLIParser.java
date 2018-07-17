@@ -19,10 +19,8 @@ import org.apache.commons.cli.*;
  */
 public final class CLIParser {
 
-    public static final String ARG_APK_FILE = "a";
-    public static final String ARG_APK_OUT = "o";
-    public static final String ARG_VERIFY = "onlyVerify";
-    public static final String ARG_SKIP_ZIPALIGN = "skipZipAlign";
+    public static final String ARG_HASH = "h";
+    public static final String ARG_CHECK = "c";
 
     private CLIParser() {
     }
@@ -88,42 +86,18 @@ public final class CLIParser {
 
     static Options setupOptions() {
         Options options = new Options();
-        Option apkPathOpt = Option.builder(ARG_APK_FILE).longOpt("apks").argName("file/folder").hasArgs().desc("Can be a single apk or " +
-                "a folder containing multiple apks. These are used as source for zipalining/signing/verifying. It is also possible to provide " +
-                "multiple locations space seperated (can be mixed file folder): '/apk /apks2 my.apk'. Folder will be checked non-recursively.").build();
-        Option outOpt = Option.builder(ARG_APK_OUT).longOpt("out").argName("path").hasArg().desc("Where the aligned/signed apks will be copied " +
-                "to. Must be a folder. Will create, if it does not exist.").build();
-
-        Option ksDebugOpt = Option.builder().longOpt("ksDebug").argName("keystore").hasArg().desc("Same as --ks parameter but with a debug keystore." +
-                " With this option the default keystore alias and passwords are used and any arguments relating to these parameter are ignored.").build();
-        Option zipAlignPathOpt = Option.builder().longOpt("zipAlignPath").argName("path").hasArg().desc("Pass your own zipalign executable. If this " +
-                "is omitted the built-in version is used (available for win, mac and linux)").build();
-
-        Option checkSh256Opt = Option.builder().longOpt("verifySha256").argName("cert-sha256").hasArgs().desc("Provide one or multiple sha256 in " +
-                "string hex representation (ignoring case) to let the tool check it against hashes of the APK's certificate and use it in the verify" +
-                " process. All given hashes must be present in the signature to verify e.g. if 2 hashes are given the apk must have 2 signatures with" +
-                " exact these hashes (providing only one hash, even if it matches one cert, will fail).").build();
-
-        Option verifyOnlyOpt = Option.builder("y").longOpt(ARG_VERIFY).hasArg(false).desc("If this is passed, the signature and alignment is only verified.").build();
-        Option dryRunOpt = Option.builder().longOpt("dryRun").hasArg(false).desc("Check what apks would be processed without actually doing anything.").build();
-        Option skipZipOpt = Option.builder().longOpt(ARG_SKIP_ZIPALIGN).hasArg(false).desc("Skips zipAlign process. Also affects verify.").build();
-        Option overwriteOpt = Option.builder().longOpt("overwrite").hasArg(false).desc("Will overwrite/delete the apks in-place").build();
-        Option verboseOpt = Option.builder().longOpt("verbose").hasArg(false).desc("Prints more output, especially useful for sign verify.").build();
-        Option debugOpt = Option.builder().longOpt("debug").hasArg(false).desc("Prints additional info for debugging.").build();
-        Option resignOpt = Option.builder().longOpt("allowResign").hasArg(false).desc("If this flag is set, the tool will not show error on signed apks, but will " +
-                "sign them with the new certificate (therefore removing the old one).").build();
+        Option optHash = Option.builder(ARG_HASH).longOpt("hash").argName("cost [salt-bytes-hex]").hasArgs().desc("Use this flag if you want to compute the bcrypt hash. Pass the logarithm cost factor (4-31) and optionally the used salt" +
+                " as hex encoded byte array (must be exactly 16 bytes/32 characters hex). Example: '--hash 12 8e270d6129fd45f30a9b3fe44b4a8d9a'").build();
+        Option optCheck = Option.builder(ARG_CHECK).longOpt("check").argName("bcrypt-hash").hasArg().desc("Use this flag if you want to verify a hash against a given password. Example: '--check $2a$06$If6bvum7DFjUnE9p2uDeDu0YHzrHM6tf.iqN8.yx.jNN1ILEf7h0i'").build();
 
         Option help = Option.builder("h").longOpt("help").desc("Prints help docs.").build();
         Option version = Option.builder("v").longOpt("version").desc("Prints current version.").build();
 
         OptionGroup mainArgs = new OptionGroup();
-        mainArgs.addOption(apkPathOpt).addOption(help).addOption(version);
+        mainArgs.addOption(optHash).addOption(optCheck).addOption(help).addOption(version);
         mainArgs.setRequired(true);
 
-        options.addOptionGroup(mainArgs)
-                .addOption(dryRunOpt).addOption(skipZipOpt).addOption(overwriteOpt).addOption(verboseOpt).addOption(debugOpt)
-                .addOption(zipAlignPathOpt).addOption(outOpt).addOption(ksDebugOpt).addOption(resignOpt).addOption(checkSh256Opt);
-
+        options.addOptionGroup(mainArgs);
         return options;
     }
 
