@@ -1,4 +1,4 @@
-# Bcrypt
+# Bcrypt Java Library and CLI Tool
 
 This is an implementation the OpenBSD Blowfish password hashing algorithm, as described in "[A Future-Adaptable Password Scheme](http://www.openbsd.org/papers/bcrypt-paper.ps)" by Niels Provos and David Mazieres. It's core is based upon [jBcrypt](https://github.com/jeremyh/jBCrypt), but  heavily refactored, modernized and with a lot of updates and enhancements. It supports all common [versions](https://en.wikipedia.org/wiki/Bcrypt#Versioning_history), has a security sensitive API and is fully tested against a range of test vectors and reference implementations.
 
@@ -11,11 +11,11 @@ The code is compiled with target [Java 7](https://en.wikipedia.org/wiki/Java_ver
 
 ## Quickstart
 
-Add dependency to your `pom.xml`:
+Add dependency to your `pom.xml` ([check latest release](https://github.com/patrickfav/bcrypt/releases)):
 
     <dependency>
         <groupId>at.favre.lib</groupId>
-        <artifactId>bcrypt</artifactId>
+        <artifactId>bcrypt-core</artifactId>
         <version>{latest-version}</version>
     </dependency>
 
@@ -30,7 +30,7 @@ BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), bcryptHa
 // result.verified == true
 ```
 
-## API Description
+## API Description for the Java Library
 
 In the following, the main features and use cases are explained.
 
@@ -140,6 +140,32 @@ You could even use the default formatter later on:
 byet[] hashMsg = Version.VERSION_2A.formatter.createHashMessage(hashData);
 ```
 
+## Command Line Interface (CLI) Tool
+
+In addition to the Java library there is a companion command line interface (CLI) tool (found in the `bcrypt-cli` 
+sub-module) which uses this bcrypt library. It features creating bcrypt password hashes with chosen cost factor and 
+optionally passed salt value as well as verifying given hash against given password.
+
+This command will create a bcrypt hash:
+
+    java -jar bcrypt-cli.jar 'mySecretPw' -b 12
+
+This command will verify given bcrypt hash (returns `!= 0` if could not be verified):
+
+    java -jar bcrypt-cli.jar 'mySecretPw' -c '$2a$08$hgaLWQl7PdKIkx9iQyoLkeuIqizWtPErpyC7aDBasi2Pav97wwW9G'
+
+The full API can be read in the doc by passing `-h`
+
+    -b,--bhash <cost> <[16-hex-byte-salt]>   Use this flag if you want to compute the bcrypt hash. Pass the
+                                             logarithm cost factor (4-31) and optionally the used salt as hex
+                                             encoded byte array (must be exactly 16 bytes/32 characters hex).
+                                             Example: '--bhash 12 8e270d6129fd45f30a9b3fe44b4a8d9a'
+    -c,--check <bcrypt-hash>                 Use this flag if you want to verify a hash against a given
+                                             password. Example: '--check
+                                             $2a$06$If6bvum7DFjUnE9p2uDeDu0YHzrHM6tf.iqN8.yx.jNN1ILEf7h0i'
+    -h,--help                                Prints help docs.
+    -v,--version                             Prints current version.
+
 ## Download
 
 The artifacts are deployed to [jcenter](https://bintray.com/bintray/jcenter) and [Maven Central](https://search.maven.org/).
@@ -150,7 +176,7 @@ Add dependency to your `pom.xml`:
 
     <dependency>
         <groupId>at.favre.lib</groupId>
-        <artifactId>bcrypt</artifactId>
+        <artifactId>bcrypt-core</artifactId>
         <version>{latest-version}</version>
     </dependency>
 
@@ -158,12 +184,16 @@ Add dependency to your `pom.xml`:
 
 Add to your `build.gradle` module dependencies:
 
-    compile group: 'at.favre.lib', name: 'bcrypt', version: '{latest-version}'
+    compile group: 'at.favre.lib', name: 'bcrypt-core', version: '{latest-version}'
 
-### Local Jar
+### Local Jar Library
 
 [Grab jar from latest release.](https://github.com/patrickfav/bcrypt/releases/latest)
 
+### CLI Tool
+
+Get the binary from the [release page](https://github.com/patrickfav/bcrypt/releases/latest) or build it yourself by with mvn (see below). The `jar`
+will be in the `bcrypt-cli/target` folder.
 
 ## Description
 
@@ -171,7 +201,7 @@ Add to your `build.gradle` module dependencies:
 
 I'll quote secuirty expert [Thomas Porin](http://www.bolet.org/~pornin/) on this (an excerpt [from this post](https://security.stackexchange.com/a/6415/60108)):
 
-**tl;dr bcrypt is better than PBKDF2 because PBKDF2 can be better accelerated with GPUs. As such, PBKDF2 is easier to brute force offline with consumer hardware. srcypt tried to address bcrypt's shortcommings, but didn't succeed all the way.**
+**tl;dr bcrypt is better than PBKDF2 because PBKDF2 can be better accelerated with GPUs. As such, PBKDF2 is easier to brute force offline with consumer hardware. [srcypt tried to address bcrypt's shortcommings, but didn't succeed all the way.](https://security.stackexchange.com/a/26253/60108) [Argon2 is too new to tell.](https://security.stackexchange.com/a/119784/60108)**
 
 > Bcrypt has the best kind of repute that can be achieved for a cryptographic algorithm: it has been around for quite some time, used quite widely, "attracted attention", and yet remains unbroken to date.
 >
@@ -192,6 +222,18 @@ I'll quote secuirty expert [Thomas Porin](http://www.bolet.org/~pornin/) on this
 >
 > NIST has issued Special Publication SP 800-132 on the subject of storing hashed passwords. Basically they recommend PBKDF2. This does not mean that they deem bcrypt insecure; they say nothing at all about bcrypt. It just means that NIST deems PBKDF2 "secure enough" (and it certainly is much better than a simple hash !). Also, NIST is an administrative organization, so they are bound to just love anything which builds on already "Approved" algorithms like SHA-256. On the other hand, bcrypt comes from Blowfish which has never received any kind of NIST blessing (or curse).
 
+#### What Cost Factor should I use?
+
+Again, quote from Thomas Porin [from this post](https://security.stackexchange.com/a/31846/60108):
+
+> As much as possible! This salted-and-slow hashing is an arms race between the attacker and the defender. You use many iterations to make the hashing of a password harder for everybody. To improve security, you should set that number as high as you can tolerate on your server, given the tasks that your server must otherwise fulfill. Higher is better.
+
+So find your tolerable slowest performance (for some this is 3 sec, for some 250 ms, for some 1 minute) and try it out on an average lower end device your user-base would use (if the client has to calculate the hash) and/or benchmark your server.
+
+Note, that it is unfortunately [NOT possible to increase the cost-factor](https://security.stackexchange.com/a/23308/60108) 
+of a calculated bcrypt hash without knowing the original password. A possible solution is to persist hashes with multiple work factors for
+different use cases/migration.
+
 ### Performance
 
 Compared to two other implementations in Java they all compare pretty well. Using the simple micro benchmark in this repo
@@ -203,6 +245,14 @@ Compared to two other implementations in Java they all compare pretty well. Usin
 | favreBcrypt  | 54.53 ms | 217.22 ms |
 | jBcrypt      | 53.24 ms | 213.42 ms |
 | BouncyCastle | 50.27 ms | 202.67 ms |
+
+with a Laptop CPU i5-6440HQ, Win 10, Java 8 (172):
+
+|              | cost 6   | cost   8  | cost 10  | cost 12   | cost 14   |
+|--------------|----------|-----------|----------|-----------|-----------|
+| favreBcrypt  |  5.09 ms |  19.95 ms | 78.51 ms | 331.18 ms | 1380.36 ms|
+| jBcrypt      |  5.23 ms |  20.3 ms  | 80.45 ms | 343.23 ms | 1297.34 ms|
+| BouncyCastle |  4.8 ms  |  18.59 ms | 74.05 ms | 295.23 ms | 1389.02 ms|
 
 So it makes sense that this implementation and jBcrypt's has the same performance as it is the same core
 implementation. Bouncy Castle is _slightly_ faster, but keep in mind that they do a little less work (only generating the hash, not the whole out message).
@@ -232,6 +282,41 @@ features and APIs have been added:
 * Clearer and easier API
 * Signed Jar and signed commits
 * More tests (and probably higher coverage)
+
+### The Modular Crypt Format for bcrypt
+
+Since bcrypt evolved from OpenBSD most implementations output the hash in the modular crypt format (MCF). In contrast to e.g. normal `sha` hash
+it includes the used hash function, cost factor, salt and hash itself. This makes it specifically convenient for password storage use. Formally 
+the [format](http://passlib.readthedocs.io/en/stable/modular_crypt_format.html) is:
+
+> (...) a standard for encoding password hash strings, which requires hashes have the format `${identifier}${content}`; where `{identifier}` 
+> is an short alphanumeric string uniquely identifying a particular scheme, and `{content}` is the contents of the scheme, using only the 
+> characters in the regexp range `[a-zA-Z0-9./]`.
+
+Analyzing the bcrypt format in detail we get:
+
+     ${identifier}${cost-factor}${16-bytes-salt-radix64}{23-bytes-hash-radix64}
+     
+With bcrypt the version identifier was `$2$`, but unfortunately early implementations [did not define how to handle non-ASCII characters](http://undeadly.org/cgi?action=article&sid=20140224132743),
+so to tag the old hashes, a new minor version was introduced which was not compatible with the earlier one: `$2a$`. 
+This is the default version used by most implementations. There are other minor versions which are only used to tag various non-backwards 
+compatible bugs in different implementations (namely `$2x$` and `$2y$` used by `crypt_blowfish` (PHP) and `$2b$` by OpenBSD). These are usually 
+irrelevant for implementations that did not have these bugs, so there is no advantage in setting the version to e.g. `$2y$` apart from making 
+it compatible with different systems. The actual format is the same as `$2a$`.
+
+The cost factor is the logarithmic work factor value as defined (4-30) printed as normal ASCII characters `[0-9]`. After that the 16 byte salt 
+encoded with a base64 dialect follows (22 characters) as well as the actual bcrypt hash (23 bytes / 31 characters encoded with the base64 dialect).
+
+Here is a full example:
+
+    $2a$08$cfcvVd2aQ8CMvoMpP2EBfeodLEkkFJ9umNEfPD18.hUF62qqlC/V.
+
+Here `$2a$` is the version, the cost factor is `8`, the salt is `cfcvVd2aQ8CMvoMpP2EBfe` and the bcrypt hash is `odLEkkFJ9umNEfPD18.hUF62qqlC/V.`.
+
+The used encoding is similar to the RFC * base64 encoding schema, but [with different mappings](https://en.wikipedia.org/wiki/Base64#Radix-64_applications_not_compatible_with_Base64)
+ (`./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz` vs. `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/`) 
+ only used by OpenBSD. In the code base this encoding is usually referenced as "Radix64" (see `Radix64Encoder`). The usual padding with `=` is
+ omitted.
 
 ## Digital Signatures
 
@@ -269,13 +354,13 @@ If you want to skip jar signing just change the skip configuration in the
 
 ### Build with Maven
 
-Use maven (3.1+) to create a jar including all dependencies
+Use the Maven wrapper to create a jar including all dependencies
 
-    mvn clean install
+    mvnw clean install
 
 ## Tech Stack
 
-* Java 7
+* Java 7 (+ [errorprone](https://github.com/google/error-prone) static analyzer)
 * Maven
 
 ## Libraries & Credits

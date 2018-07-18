@@ -350,11 +350,20 @@ public final class BCrypt {
 
         @Override
         public int hashCode() {
-
             int result = Objects.hash(cost, version);
             result = 31 * result + Arrays.hashCode(rawSalt);
             result = 31 * result + Arrays.hashCode(rawHash);
             return result;
+        }
+
+        @Override
+        public String toString() {
+            return "HashData{" +
+                    "cost=" + cost +
+                    ", version=" + version +
+                    ", rawSalt=" + Bytes.wrap(rawSalt).encodeHex() +
+                    ", rawHash=" + Bytes.wrap(rawHash).encodeHex() +
+                    '}';
         }
     }
 

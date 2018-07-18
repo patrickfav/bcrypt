@@ -167,7 +167,7 @@ public interface Radix64Encoder {
 
         @Override
         public byte[] decode(byte[] src) {
-            byte[] dst = new byte[outLength(src, src.length)];
+            byte[] dst = new byte[outLengthDecode(src.length)];
             int ret = decode0(src, 0, src.length, dst);
             if (ret != dst.length) {
                 dst = Arrays.copyOf(dst, ret);
@@ -175,20 +175,14 @@ public interface Radix64Encoder {
             return dst;
         }
 
-        private int outLength(byte[] src, int len) {
+        private int outLengthDecode(int len) {
             int paddings = 0;
             if (len == 0)
                 return 0;
             if (len < 2) {
-                throw new IllegalArgumentException(
-                        "Input byte[] should at least have 2 bytes for base64 bytes");
+                throw new IllegalArgumentException("Input byte[] should at least have 2 bytes for radix64 bytes");
             }
-            if (src[len - 1] == '=') {
-                paddings++;
-                if (src[len - 2] == '=')
-                    paddings++;
-            }
-            if (paddings == 0 && (len & 0x3) != 0)
+            if ((len & 0x3) != 0)
                 paddings = 4 - (len & 0x3);
             return 3 * ((len + 3) / 4) - paddings;
         }
@@ -200,21 +194,19 @@ public interface Radix64Encoder {
             while (sp < sl) {
                 int b = src[sp++] & 0xff;
                 if ((b = fromBase64[b]) < 0) {
-                    if (b == -2) {         // padding byte '='
+                    if (b == -2) {
+                        // padding byte '='
                         // =     shiftto==18 unnecessary padding
                         // x=    shiftto==12 a dangling single x
                         // x     to be handled together with non-padding case
                         // xx=   shiftto==6&&sp==sl missing last =
                         // xx=y  shiftto==6 last is not =
-                        if (shiftto == 6 && (sp == sl || src[sp++] != '=') ||
-                                shiftto == 18) {
-                            throw new IllegalArgumentException(
-                                    "Input byte array has wrong 4-byte ending unit");
+                        if (shiftto == 6 && (sp == sl || src[sp++] != '=') || shiftto == 18) {
+                            throw new IllegalArgumentException("Input byte array has wrong 4-byte ending unit");
                         }
                         break;
                     }
-                    throw new IllegalArgumentException(
-                            "Illegal base64 character " + Integer.toString(src[sp - 1], 16));
+                    throw new IllegalArgumentException("Illegal base64 character " + Integer.toString(src[sp - 1], 16));
                 }
                 bits |= (b << shiftto);
                 shiftto -= 6;
@@ -234,8 +226,7 @@ public interface Radix64Encoder {
                 dst[dp++] = (byte) (bits >> 8);
             } else if (shiftto == 12) {
                 // dangling single "x", incorrectly encoded.
-                throw new IllegalArgumentException(
-                        "Last unit does not have enough valid bits");
+                throw new IllegalArgumentException("Last unit does not have enough valid bits");
             }
 
             if (sp < sl) {
