@@ -143,6 +143,16 @@ public class Radix64Test {
         assertArrayEquals(new byte[0], encoder.decode(new byte[0]));
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testSingleCharDecodeShouldThrow() {
+        encoder.decode("A".getBytes(StandardCharsets.UTF_8));
+    }
+
+    @Test
+    public void testDecodeEmpytString() {
+        assertArrayEquals(new byte[0], encoder.decode(new byte[0]));
+    }
+
     static final class TestCase {
         private final String encoded;
         private final byte[] raw;
