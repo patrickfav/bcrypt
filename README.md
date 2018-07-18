@@ -140,30 +140,6 @@ You could even use the default formatter later on:
 byet[] hashMsg = Version.VERSION_2A.formatter.createHashMessage(hashData);
 ```
 
-## Download
-
-The artifacts are deployed to [jcenter](https://bintray.com/bintray/jcenter) and [Maven Central](https://search.maven.org/).
-
-### Maven
-
-Add dependency to your `pom.xml`:
-
-    <dependency>
-        <groupId>at.favre.lib</groupId>
-        <artifactId>bcrypt</artifactId>
-        <version>{latest-version}</version>
-    </dependency>
-
-### Gradle
-
-Add to your `build.gradle` module dependencies:
-
-    compile group: 'at.favre.lib', name: 'bcrypt', version: '{latest-version}'
-
-### Local Jar
-
-[Grab jar from latest release.](https://github.com/patrickfav/bcrypt/releases/latest)
-
 ## Command Line Interface (CLI) Tool
 
 In addition to the Java library there is a companion command line interface (CLI) tool (found in the `bcrypt-cli` 
@@ -190,9 +166,34 @@ The full API can be read in the doc by passing `-h`
     -h,--help                                Prints help docs.
     -v,--version                             Prints current version.
 
-### Download
+## Download
 
-Get the binary from the [release page](https://github.com/patrickfav/bcrypt/releases) or build it yourself by with mvn (see below)
+The artifacts are deployed to [jcenter](https://bintray.com/bintray/jcenter) and [Maven Central](https://search.maven.org/).
+
+### Maven
+
+Add dependency to your `pom.xml`:
+
+    <dependency>
+        <groupId>at.favre.lib</groupId>
+        <artifactId>bcrypt-core</artifactId>
+        <version>{latest-version}</version>
+    </dependency>
+
+### Gradle
+
+Add to your `build.gradle` module dependencies:
+
+    compile group: 'at.favre.lib', name: 'bcrypt-core', version: '{latest-version}'
+
+### Local Jar Library
+
+[Grab jar from latest release.](https://github.com/patrickfav/bcrypt/releases/latest)
+
+### CLI Tool
+
+Get the binary from the [release page](https://github.com/patrickfav/bcrypt/releases/latest) or build it yourself by with mvn (see below). The `jar`
+will be in the `bcrypt-cli/target` folder.
 
 ## Description
 
