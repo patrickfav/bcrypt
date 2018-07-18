@@ -6,44 +6,75 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class BcryptMicroBenchmark {
 
     private final Random rnd = new Random();
-    private final Map<AbstractBcrypt, Long> resultMap = new HashMap<>();
+    private Map<AbstractBcrypt, Map<Integer, Long>> map;
 
     @Test
     @Ignore
     public void benchmark() {
-        int rounds = 300;
         List<AbstractBcrypt> contender = Arrays.asList(new FavreBcrypt(), new JBcrypt(), new BC());
+        prepareMap(contender);
 
-        System.out.println("warmup\n\n");
+        int rounds = 819200;
+        int waitSec = 0;
+
+        System.out.println("warmup\n");
 
         warmup(contender);
 
-        sleep(3);
+        sleep(waitSec * 2);
 
-        for (int cost : new int[]{6, 8, 10, 12}) {
-            System.out.println("\nstart benchmark with " + rounds + " rounds and cost-factor " + cost + "\n\n");
+        for (int cost : new int[]{6, 8, 9, 10, 11, 12, 14, 15}) {
+            int currentRounds = Math.min(250, rounds / (1 << cost));
+            System.out.println("\n\nbenchmark with " + currentRounds + " rounds and cost-factor " + cost + "\n");
 
             for (AbstractBcrypt abstractBcrypt : contender) {
-                benchmarkSingle(abstractBcrypt, cost, rounds);
-                sleep(2);
+                benchmarkSingle(abstractBcrypt, cost, currentRounds);
+                sleep(waitSec);
+            }
+        }
+
+        System.out.println("\n\nResults:");
+        System.out.println("\t" + System.getProperty("os.arch") + ", Java " + System.getProperty("java.version") + " (" + System.getProperty("java.vendor") + "), " + System.getProperty("os.name") + " (" + System.getProperty("os.version") + ")\n\n");
+
+        StringBuilder sb = new StringBuilder();
+        int count = 0;
+        for (Map.Entry<AbstractBcrypt, Map<Integer, Long>> entry : map.entrySet()) {
+
+            if (count == 0) {
+                sb.append("|              |");
+                for (Integer cost : entry.getValue().keySet()) {
+                    sb.append("  cost ").append(String.format("%-2s", cost)).append("     |");
+                }
+                sb.append("\n");
+
+                for (int i = 0; i < entry.getValue().keySet().size() + 1; i++) {
+                    sb.append("| ------------ ");
+                }
+                sb.append("|\n");
             }
 
-            System.out.println("\nresults:\n\n");
 
-            for (Map.Entry<AbstractBcrypt, Long> entry : resultMap.entrySet()) {
-                System.out.println(entry.getKey().getClass().getSimpleName() + ": " + entry.getValue() + "ms (" + (Math.round(((double) entry.getValue() / (double) rounds) * 100.0) / 100.0) + " ms/round)");
+            sb.append("| ").append(String.format("%-12s", entry.getKey().getClass().getSimpleName())).append(" |");
+            for (Map.Entry<Integer, Long> iEntry : entry.getValue().entrySet()) {
+                sb.append(String.format("  %-8s", Math.round(((double) iEntry.getValue() / (double) rounds) * 100.0) / 100.0)).append(" ms |");
             }
+            sb.append("\n");
+            count++;
+        }
+
+        System.out.println(sb.toString());
+    }
+
+    private void prepareMap(List<AbstractBcrypt> contender) {
+        map = new HashMap<>();
+        for (AbstractBcrypt abstractBcrypt : contender) {
+            map.put(abstractBcrypt, new TreeMap<Integer, Long>());
         }
     }
 
@@ -66,7 +97,7 @@ public class BcryptMicroBenchmark {
         }
 
         for (byte[] bytes : cache) {
-            System.out.println(Bytes.wrapNullSafe(bytes).encodeBase64());
+            System.out.print(Bytes.wrapNullSafe(bytes).encodeBase64());
         }
     }
 
@@ -79,10 +110,10 @@ public class BcryptMicroBenchmark {
             cache[rnd.nextInt(cache.length)] = out;
         }
 
-        resultMap.put(contender, System.currentTimeMillis() - start);
+        map.get(contender).put(cost, System.currentTimeMillis() - start);
 
         for (byte[] bytes : cache) {
-            System.out.println(Bytes.wrapNullSafe(bytes).encodeBase64());
+            System.out.print(Bytes.wrapNullSafe(bytes).encodeBase64());
         }
     }
 
