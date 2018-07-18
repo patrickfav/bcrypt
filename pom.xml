@@ -5,21 +5,17 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>at.favre.lib</groupId>
-    <artifactId>bcrypt</artifactId>
-    <version>0.3.0</version>
-    <packaging>jar</packaging>
+    <artifactId>bcrypt-parent</artifactId>
+    <packaging>pom</packaging>
+    <version>0.4.0</version>
 
-    <name>BCrypt Password Hashing Function</name>
-    <description>Bcrypt is a password hashing function designed by Niels Provos and David Mazières, based on the
-        Blowfish cipher. The core of this implementation is based on jBcrypt, but heavily refactored, modernized and
-        with a lot of updates and enhancements.
-    </description>
     <url>https://github.com/patrickfav/bcrypt</url>
     <inceptionYear>2018</inceptionYear>
 
-    <prerequisites>
-        <maven>3.1.0</maven>
-    </prerequisites>
+    <modules>
+        <module>bcrypt-core</module>
+        <module>bcrypt-cli</module>
+    </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -80,32 +76,6 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>3.0.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.0.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.22.0</version>
             </plugin>
@@ -141,63 +111,15 @@
                 </executions>
                 <configuration>
                     <skip>false</skip> <!-- set this to true if fail because of missing credentials -->
-                    <keystore>keystore.jks</keystore>
+                    <keystore>${session.executionRootDirectory}/keystore.jks</keystore>
                     <alias>pfopensource</alias>
                     <storepass>${env.OPENSOURCE_PROJECTS_KS_PW}</storepass>
                     <keypass>${env.OPENSOURCE_PROJECTS_KEY_PW}</keypass>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>net.nicoulaj.maven.plugins</groupId>
-                <artifactId>checksum-maven-plugin</artifactId>
-                <version>1.6</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>artifacts</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <algorithms>
-                        <algorithm>SHA-256</algorithm>
-                    </algorithms>
-                    <shasumSummary>true</shasumSummary>
-                    <shasumSummaryFile>checksum-sha256.txt</shasumSummaryFile>
-                    <attachChecksums>false</attachChecksums>
-                    <quiet>false</quiet>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 
-    <dependencies>
-        <dependency>
-            <groupId>at.favre.lib</groupId>
-            <artifactId>bytes</artifactId>
-            <version>0.4.6</version>
-        </dependency>
-
-        <!-- test -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mindrot</groupId>
-            <artifactId>jbcrypt</artifactId>
-            <version>0.4</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.60</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
     <developers>
         <developer>
             <id>patrickfav</id>

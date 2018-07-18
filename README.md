@@ -1,4 +1,4 @@
-# Bcrypt
+# Bcrypt Java Library and CLI Tool
 
 This is an implementation the OpenBSD Blowfish password hashing algorithm, as described in "[A Future-Adaptable Password Scheme](http://www.openbsd.org/papers/bcrypt-paper.ps)" by Niels Provos and David Mazieres. It's core is based upon [jBcrypt](https://github.com/jeremyh/jBCrypt), but  heavily refactored, modernized and with a lot of updates and enhancements. It supports all common [versions](https://en.wikipedia.org/wiki/Bcrypt#Versioning_history), has a security sensitive API and is fully tested against a range of test vectors and reference implementations.
 
@@ -15,7 +15,7 @@ Add dependency to your `pom.xml` ([check latest release](https://github.com/patr
 
     <dependency>
         <groupId>at.favre.lib</groupId>
-        <artifactId>bcrypt</artifactId>
+        <artifactId>bcrypt-core</artifactId>
         <version>{latest-version}</version>
     </dependency>
 
@@ -30,7 +30,7 @@ BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), bcryptHa
 // result.verified == true
 ```
 
-## API Description
+## API Description for the Java Library
 
 In the following, the main features and use cases are explained.
 
@@ -140,6 +140,32 @@ You could even use the default formatter later on:
 byet[] hashMsg = Version.VERSION_2A.formatter.createHashMessage(hashData);
 ```
 
+## Command Line Interface (CLI) Tool
+
+In addition to the Java library there is a companion command line interface (CLI) tool (found in the `bcrypt-cli` 
+sub-module) which uses this bcrypt library. It features creating bcrypt password hashes with chosen cost factor and 
+optionally passed salt value as well as verifying given hash against given password.
+
+This command will create a bcrypt hash:
+
+    java -jar bcrypt-cli.jar 'mySecretPw' -b 12
+
+This command will verify given bcrypt hash:
+
+    java -jar bcrypt-cli.jar 'mySecretPw' -c '$2a$08$hgaLWQl7PdKIkx9iQyoLkeuIqizWtPErpyC7aDBasi2Pav97wwW9G'
+
+The full API can be read in the doc by passing `-h`
+
+    -b,--bhash <cost> <[16-hex-byte-salt]>   Use this flag if you want to compute the bcrypt hash. Pass the
+                                             logarithm cost factor (4-31) and optionally the used salt as hex
+                                             encoded byte array (must be exactly 16 bytes/32 characters hex).
+                                             Example: '--bhash 12 8e270d6129fd45f30a9b3fe44b4a8d9a'
+    -c,--check <bcrypt-hash>                 Use this flag if you want to verify a hash against a given
+                                             password. Example: '--check
+                                             $2a$06$If6bvum7DFjUnE9p2uDeDu0YHzrHM6tf.iqN8.yx.jNN1ILEf7h0i'
+    -h,--help                                Prints help docs.
+    -v,--version                             Prints current version.
+
 ## Download
 
 The artifacts are deployed to [jcenter](https://bintray.com/bintray/jcenter) and [Maven Central](https://search.maven.org/).
@@ -150,7 +176,7 @@ Add dependency to your `pom.xml`:
 
     <dependency>
         <groupId>at.favre.lib</groupId>
-        <artifactId>bcrypt</artifactId>
+        <artifactId>bcrypt-core</artifactId>
         <version>{latest-version}</version>
     </dependency>
 
@@ -158,12 +184,16 @@ Add dependency to your `pom.xml`:
 
 Add to your `build.gradle` module dependencies:
 
-    compile group: 'at.favre.lib', name: 'bcrypt', version: '{latest-version}'
+    compile group: 'at.favre.lib', name: 'bcrypt-core', version: '{latest-version}'
 
-### Local Jar
+### Local Jar Library
 
 [Grab jar from latest release.](https://github.com/patrickfav/bcrypt/releases/latest)
 
+### CLI Tool
+
+Get the binary from the [release page](https://github.com/patrickfav/bcrypt/releases/latest) or build it yourself by with mvn (see below). The `jar`
+will be in the `bcrypt-cli/target` folder.
 
 ## Description
 
@@ -203,6 +233,14 @@ Compared to two other implementations in Java they all compare pretty well. Usin
 | favreBcrypt  | 54.53 ms | 217.22 ms |
 | jBcrypt      | 53.24 ms | 213.42 ms |
 | BouncyCastle | 50.27 ms | 202.67 ms |
+
+with a Laptop CPU i5-6440HQ, Win 10, Java 8 (172):
+
+|              | cost 6   | cost   8  | cost 10  | cost 12   | cost 14   |
+|--------------|----------|-----------|----------|-----------|-----------|
+| favreBcrypt  |  5.09 ms |  19.95 ms | 78.51 ms | 331.18 ms | 1380.36 ms|
+| jBcrypt      |  5.23 ms |  20.3 ms  | 80.45 ms | 343.23 ms | 1297.34 ms|
+| BouncyCastle |  4.8 ms  |  18.59 ms | 74.05 ms | 295.23 ms | 1389.02 ms|
 
 So it makes sense that this implementation and jBcrypt's has the same performance as it is the same core
 implementation. Bouncy Castle is _slightly_ faster, but keep in mind that they do a little less work (only generating the hash, not the whole out message).
