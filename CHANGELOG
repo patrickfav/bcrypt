@@ -4,6 +4,7 @@
 
 * change maven artifact to `bcrypt-core`
 * add cli tool
+* add (_experimental_) ProGuard optimized version (use maven classifier 'optimized') #4
 
 ## v0.3.0
 
