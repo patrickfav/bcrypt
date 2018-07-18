@@ -22,7 +22,7 @@ public class BcryptMicroBenchmark {
     @Test
     @Ignore
     public void benchmark() {
-        int rounds = 250;
+        int rounds = 300;
         List<AbstractBcrypt> contender = Arrays.asList(new FavreBcrypt(), new JBcrypt(), new BC());
 
         System.out.println("warmup\n\n");
@@ -31,17 +31,19 @@ public class BcryptMicroBenchmark {
 
         sleep(3);
 
-        System.out.println("\nstart benchmark with " + rounds + " rounds\n\n");
+        for (int cost : new int[]{6, 8, 10, 12}) {
+            System.out.println("\nstart benchmark with " + rounds + " rounds and cost-factor " + cost + "\n\n");
 
-        for (AbstractBcrypt abstractBcrypt : contender) {
-            benchmarkSingle(abstractBcrypt, 12, rounds);
-            sleep(2);
-        }
+            for (AbstractBcrypt abstractBcrypt : contender) {
+                benchmarkSingle(abstractBcrypt, cost, rounds);
+                sleep(2);
+            }
 
-        System.out.println("\nresults:\n\n");
+            System.out.println("\nresults:\n\n");
 
-        for (Map.Entry<AbstractBcrypt, Long> entry : resultMap.entrySet()) {
-            System.out.println(entry.getKey().getClass().getSimpleName() + ": " + entry.getValue() + "ms (" + (Math.round(((double) entry.getValue() / (double) rounds) * 100.0) / 100.0) + " ms/round)");
+            for (Map.Entry<AbstractBcrypt, Long> entry : resultMap.entrySet()) {
+                System.out.println(entry.getKey().getClass().getSimpleName() + ": " + entry.getValue() + "ms (" + (Math.round(((double) entry.getValue() / (double) rounds) * 100.0) / 100.0) + " ms/round)");
+            }
         }
     }
 

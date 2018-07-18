@@ -234,6 +234,14 @@ Compared to two other implementations in Java they all compare pretty well. Usin
 | jBcrypt      | 53.24 ms | 213.42 ms |
 | BouncyCastle | 50.27 ms | 202.67 ms |
 
+with a Laptop CPU i5-6440HQ, Win 10, Java 8 (172):
+
+|              | cost 6   | cost   8  | cost 10  | cost 12   | cost 14   |
+|--------------|----------|-----------|----------|-----------|-----------|
+| favreBcrypt  |  5.09 ms |  19.95 ms | 78.51 ms | 331.18 ms | 1380.36 ms|
+| jBcrypt      |  5.23 ms |  20.3 ms  | 80.45 ms | 343.23 ms | 1297.34 ms|
+| BouncyCastle |  4.8 ms  |  18.59 ms | 74.05 ms | 295.23 ms | 1389.02 ms|
+
 So it makes sense that this implementation and jBcrypt's has the same performance as it is the same core
 implementation. Bouncy Castle is _slightly_ faster, but keep in mind that they do a little less work (only generating the hash, not the whole out message).
 
