@@ -150,7 +150,7 @@ This command will create a bcrypt hash:
 
     java -jar bcrypt-cli.jar 'mySecretPw' -b 12
 
-This command will verify given bcrypt hash:
+This command will verify given bcrypt hash (returns `!= 0` if could not be verified):
 
     java -jar bcrypt-cli.jar 'mySecretPw' -c '$2a$08$hgaLWQl7PdKIkx9iQyoLkeuIqizWtPErpyC7aDBasi2Pav97wwW9G'
 
@@ -221,6 +221,18 @@ I'll quote secuirty expert [Thomas Porin](http://www.bolet.org/~pornin/) on this
 > What NIST recommends
 >
 > NIST has issued Special Publication SP 800-132 on the subject of storing hashed passwords. Basically they recommend PBKDF2. This does not mean that they deem bcrypt insecure; they say nothing at all about bcrypt. It just means that NIST deems PBKDF2 "secure enough" (and it certainly is much better than a simple hash !). Also, NIST is an administrative organization, so they are bound to just love anything which builds on already "Approved" algorithms like SHA-256. On the other hand, bcrypt comes from Blowfish which has never received any kind of NIST blessing (or curse).
+
+#### What Cost Factor should I use?
+
+Again, quote from Thomas Porin [from this post](https://security.stackexchange.com/a/31846/60108):
+
+> As much as possible! This salted-and-slow hashing is an arms race between the attacker and the defender. You use many iterations to make the hashing of a password harder for everybody. To improve security, you should set that number as high as you can tolerate on your server, given the tasks that your server must otherwise fulfill. Higher is better.
+
+So find your tolerable slowest performance (for some this is 3 sec, for some 250 ms, for some 1 minute) and try it out on an average lower end device your user-base would use (if the client has to calculate the hash) and/or benchmark your server.
+
+Note, that it is unfortunately [NOT possible to increase the cost-factor](https://security.stackexchange.com/a/23308/60108) 
+of a calculated bcrypt hash without knowing the original password. A possible solution is to persist hashes with multiple work factors for
+different use cases/migration.
 
 ### Performance
 
