@@ -239,17 +239,17 @@ different use cases/migration.
 
 ### Performance
 
-Compared to two other implementations in Java they all compare pretty well. Using the simple micro benchmark in this repo
-(see `BcryptMicroBenchmark`), I got the following results with a Intel Core i7-7700K, Win 10, Java 8 (172):
+Compared to two other implementations in Java they all share similar performance characteristics. Using the simple micro
+ benchmark in this repo (see `BcryptMicroBenchmark`), I got the following results with a Intel Core [i7-7700K](https://ark.intel.com/products/97129/Intel-Core-i7-7700K-Processor-8M-Cache-up-to-4_50-GHz), Win 10, 
+ Java 8 (172):
 
+|              | cost 6   | cost   8  | cost 10  | cost 12   | cost 14   |
+|--------------|----------|-----------|----------|-----------|-----------|
+| favreBcrypt  |  3.38 ms |  13.54 ms | 53.91 ms | 216.01 ms | 873.93 ms |
+| jBcrypt      |  3.43 ms |  13.75 ms | 54.76 ms | 218.62 ms | 883.55 ms |
+| BouncyCastle |  3.14 ms |  12.5 ms  | 49.8 ms  | 199.09 ms | 799.71 ms |
 
-|              | cost 10  | cost 12   |
-|--------------|----------|-----------|
-| favreBcrypt  | 54.53 ms | 217.22 ms |
-| jBcrypt      | 53.24 ms | 213.42 ms |
-| BouncyCastle | 50.27 ms | 202.67 ms |
-
-with a Laptop CPU i5-6440HQ, Win 10, Java 8 (172):
+and with a Laptop CPU [i5-6440HQ](https://ark.intel.com/products/88962/Intel-Core-i5-6440HQ-Processor-6M-Cache-up-to-3_50-GHz), Win 10, Java 8 (172):
 
 |              | cost 6   | cost   8  | cost 10  | cost 12   | cost 14   |
 |--------------|----------|-----------|----------|-----------|-----------|
@@ -257,10 +257,18 @@ with a Laptop CPU i5-6440HQ, Win 10, Java 8 (172):
 | jBcrypt      |  5.23 ms |  20.3 ms  | 80.45 ms | 343.23 ms | 1297.34 ms|
 | BouncyCastle |  4.8 ms  |  18.59 ms | 74.05 ms | 295.23 ms | 1389.02 ms|
 
-So it makes sense that this implementation and jBcrypt's has the same performance as it is the same core
-implementation. Bouncy Castle is _slightly_ faster, but keep in mind that they do a little less work (only generating the hash, not the whole out message).
+compare that with a 2017 flag ship Android phone Samsung Galaxy S8+ ([SM-G955F](https://www.gsmarena.com/samsung_galaxy_s8+-8523.php)) with Android 8:
 
-Compare this to other benchmarks, [like this one in node.js](https://github.com/dcodeIO/bcrypt.js/wiki/Benchmark) where a bcrypt hash with cost factor 12 is between 300-400ms (but with a weaker CPU).
+|              | cost 6   | cost   8  | cost 10   | cost 12   | cost 14   |
+|--------------|----------|-----------|-----------|-----------|-----------|
+| favreBcrypt  |  8.13 ms |  29.05 ms | 110.62 ms | 438.45 ms | 1768.44 ms|
+| jBcrypt      |  7.91 ms |  30.91 ms | 116.45 ms | 462.93 ms | 1855.36 ms|
+| BouncyCastle |  10.41 ms|  38.03 ms | 149.09 ms | 595.19 ms | 2383.72 ms|
+
+So it makes sense that this implementation and jBcrypt's has the same performance as it is the same core
+implementation. Bouncy Castle is _slightly_ faster (on the JVM, not on Android interestingly), but keep in mind that they do a little less work (only generating the hash, not the whole out message).
+
+Compare this to other benchmarks, [like this one in node.js](https://github.com/dcodeIO/bcrypt.js/wiki/Benchmark) where a bcrypt hash with cost factor 12 is between 300-400ms.
 
 **Disclaimer:** Micro benchmarks are [usually a really bad way to measure performance](https://mrale.ph/blog/2012/12/15/microbenchmarks-fairy-tale.html). 
 These numbers are only informal tests and should not be used to derive any security relevant decisions.
@@ -269,22 +277,6 @@ These numbers are only informal tests and should not be used to derive any secur
 
 This implementation is tested against the bcrypt implementation jBcrypt and Bouncy Castle. It includes test vectors
 found in the test cases of bcrypt and [various](https://stackoverflow.com/a/12761326/774398) [places](http://openwall.info/wiki/john/sample-hashes) [on](http://cvsweb.openwall.com/cgi/cvsweb.cgi/Owl/packages/glibc/crypt_blowfish/wrapper.c?rev=HEAD) the web.
-
-### Enhancements over jBcrypt
-
-The core of this implementation is based on the popular jBcrypt. Many things around if have been heavily refactored and various new
-features and APIs have been added:
-
-* Optimized and fixed implementation (e.g. uses `StringBuilder` instead of `StringBuffer`)
-* Support of most [version](https://en.wikipedia.org/wiki/Bcrypt#Versioning_history) variations (`$2a$`, `$2b$`, `$2x$`, `$2y$`) with support of custom versions
-* Customizable handling for passwords over 72 bytes
-* Only uses byte and char arrays which can be wiped after use
-* Faster Radix64 implementation
-* Easily get the raw hash
-* Provide your own salt or `SecureRandom` for salt generation
-* Clearer and easier API
-* Signed Jar and signed commits
-* More tests (and probably higher coverage)
 
 ### The Modular Crypt Format for bcrypt
 
@@ -320,6 +312,22 @@ The used encoding is similar to the RFC * base64 encoding schema, but [with diff
  (`./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz` vs. `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/`) 
  only used by OpenBSD. In the code base this encoding is usually referenced as "Radix64" (see `Radix64Encoder`). The usual padding with `=` is
  omitted.
+
+### Enhancements over jBcrypt
+
+The core of this implementation is based on the popular jBcrypt. Many things around if have been heavily refactored and various new
+features and APIs have been added:
+
+* Optimized and fixed implementation (e.g. uses `StringBuilder` instead of `StringBuffer`)
+* Support of most [version](https://en.wikipedia.org/wiki/Bcrypt#Versioning_history) variations (`$2a$`, `$2b$`, `$2x$`, `$2y$`) with support of custom versions
+* Customizable handling for passwords over 72 bytes
+* Only uses byte and char arrays which can be wiped after use
+* Faster Radix64 implementation
+* Easily get the raw hash
+* Provide your own salt or `SecureRandom` for salt generation
+* Clearer and easier API
+* Signed Jar and signed commits
+* More tests (and probably higher coverage)
 
 ## Digital Signatures
 
@@ -371,7 +379,7 @@ Use the Maven wrapper to create a jar including all dependencies
 * [jBcrypt](https://github.com/jeremyh/jBCrypt) (derived the "Blowfish Expensive key setup")
 * Radix64 implementation derived from [OpenJDK 8 Base64](http://hg.openjdk.java.net/jdk8/jdk8/jdk/file/687fd7c7986d/src/share/classes/java/util/Base64.java) (under GPL-2.0)
 
-## BCrypt Implementations in Java
+### BCrypt Implementations in Java
 
 * [jBcrypt](https://github.com/jeremyh/jBCrypt) - the below implementations are based on jBcrypt
   * [Spring Bcrypt](https://docs.spring.io/spring-security/site/docs/4.2.5.RELEASE/apidocs/org/springframework/security/crypto/bcrypt/BCrypt.html)
