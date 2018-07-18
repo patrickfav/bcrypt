@@ -1,4 +1,4 @@
-# Bcrypt
+# Bcrypt Java Library and CLI Tool
 
 This is an implementation the OpenBSD Blowfish password hashing algorithm, as described in "[A Future-Adaptable Password Scheme](http://www.openbsd.org/papers/bcrypt-paper.ps)" by Niels Provos and David Mazieres. It's core is based upon [jBcrypt](https://github.com/jeremyh/jBCrypt), but  heavily refactored, modernized and with a lot of updates and enhancements. It supports all common [versions](https://en.wikipedia.org/wiki/Bcrypt#Versioning_history), has a security sensitive API and is fully tested against a range of test vectors and reference implementations.
 
@@ -30,7 +30,7 @@ BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), bcryptHa
 // result.verified == true
 ```
 
-## API Description
+## API Description for the Java Library
 
 In the following, the main features and use cases are explained.
 
@@ -164,6 +164,35 @@ Add to your `build.gradle` module dependencies:
 
 [Grab jar from latest release.](https://github.com/patrickfav/bcrypt/releases/latest)
 
+## Command Line Interface (CLI) Tool
+
+In addition to the Java library there is a companion command line interface (CLI) tool (found in the `bcrypt-cli` 
+sub-module) which uses this bcrypt library. It features creating bcrypt password hashes with chosen cost factor and 
+optionally passed salt value as well as verifying given hash against given password.
+
+This command will create a bcrypt hash:
+
+    java -jar bcrypt-cli.jar 'mySecretPw' -b 12
+
+This command will verify given bcrypt hash:
+
+    java -jar bcrypt-cli.jar 'mySecretPw' -c '$2a$08$hgaLWQl7PdKIkx9iQyoLkeuIqizWtPErpyC7aDBasi2Pav97wwW9G'
+
+The full API can be read in the doc by passing `-h`
+
+    -b,--bhash <cost> <[16-hex-byte-salt]>   Use this flag if you want to compute the bcrypt hash. Pass the
+                                             logarithm cost factor (4-31) and optionally the used salt as hex
+                                             encoded byte array (must be exactly 16 bytes/32 characters hex).
+                                             Example: '--bhash 12 8e270d6129fd45f30a9b3fe44b4a8d9a'
+    -c,--check <bcrypt-hash>                 Use this flag if you want to verify a hash against a given
+                                             password. Example: '--check
+                                             $2a$06$If6bvum7DFjUnE9p2uDeDu0YHzrHM6tf.iqN8.yx.jNN1ILEf7h0i'
+    -h,--help                                Prints help docs.
+    -v,--version                             Prints current version.
+
+### Download
+
+Get the binary from the [release page](https://github.com/patrickfav/bcrypt/releases) or build it yourself by with mvn (see below)
 
 ## Description
 
