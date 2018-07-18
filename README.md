@@ -1,6 +1,6 @@
 # Bcrypt Java Library and CLI Tool
 
-This is an implementation the OpenBSD Blowfish password hashing algorithm, as described in "[A Future-Adaptable Password Scheme](http://www.openbsd.org/papers/bcrypt-paper.ps)" by Niels Provos and David Mazieres. It's core is based upon [jBcrypt](https://github.com/jeremyh/jBCrypt), but  heavily refactored, modernized and with a lot of updates and enhancements. It supports all common [versions](https://en.wikipedia.org/wiki/Bcrypt#Versioning_history), has a security sensitive API and is fully tested against a range of test vectors and reference implementations.
+This is an implementation of the OpenBSD Blowfish password hashing algorithm, as described in "[A Future-Adaptable Password Scheme](http://www.openbsd.org/papers/bcrypt-paper.ps)" by Niels Provos and David Mazieres. It's core is based on [jBcrypt](https://github.com/jeremyh/jBCrypt), but  heavily refactored, modernized and with a lot of updates and enhancements. It supports all common [versions](https://en.wikipedia.org/wiki/Bcrypt#Versioning_history), has a security sensitive API and is fully tested against a range of test vectors and reference implementations.
 
 [![Download](https://api.bintray.com/packages/patrickfav/maven/bcrypt/images/download.svg)](https://bintray.com/patrickfav/maven/bcrypt/_latestVersion)
 [![Build Status](https://travis-ci.org/patrickfav/bcrypt.svg?branch=master)](https://travis-ci.org/patrickfav/bcrypt)
@@ -11,7 +11,7 @@ The code is compiled with target [Java 7](https://en.wikipedia.org/wiki/Java_ver
 
 ## Quickstart
 
-Add dependency to your `pom.xml` ([check latest release](https://github.com/patrickfav/bcrypt/releases)):
+Add the dependency of the [latest version](https://github.com/patrickfav/bcrypt/releases/latest) to your `pom.xml`:
 
     <dependency>
         <groupId>at.favre.lib</groupId>
@@ -50,7 +50,7 @@ For advanced use cases you may add your own version by providing a version ident
 as well as parser.
 
 ```java
-Version customVersion2f = new Version(new byte[]{0x32, 0x66} /* 2f */, myCustomFormatter, myCustomParser);
+Version customVersion2f = new Version(new byte[]{0x32, 0x66} /* 2f */,true ,true, myCustomFormatter, myCustomParser);
 ```
 
 ### byte[] vs char[] API
@@ -113,7 +113,8 @@ The caller may provide their own salt (which must be exactly 16 bytes) with:
 BCrypt.withDefaults().hash(6, salt16Bytes, password.getBytes(StandardCharsets.UTF_8));
 ```
 
-or provide a custom instance of CPRNG which is used for the internal secure creation of the salt if none is passed:
+or provide a custom instance of a cryptographically secure pseudorandom number generator ([CPRNG](https://en.wikipedia.org/wiki/Cryptographically_secure_pseudorandom_number_generator)) 
+which is used for the internal secure creation of the salt if none is passed:
 
 ```java
 BCrypt.with(new SecureRandom()).hash(6, password.getBytes(StandardCharsets.UTF_8));
@@ -172,7 +173,7 @@ The artifacts are deployed to [jcenter](https://bintray.com/bintray/jcenter) and
 
 ### Maven
 
-Add dependency to your `pom.xml`:
+Add the dependency of the [latest version](https://github.com/patrickfav/bcrypt/releases) to your `pom.xml`:
 
     <dependency>
         <groupId>at.favre.lib</groupId>
@@ -199,9 +200,11 @@ will be in the `bcrypt-cli/target` folder.
 
 ### Security Analysis
 
-I'll quote secuirty expert [Thomas Porin](http://www.bolet.org/~pornin/) on this (an excerpt [from this post](https://security.stackexchange.com/a/6415/60108)):
+I'll quote security expert [Thomas Porin](http://www.bolet.org/~pornin/) on this (an excerpt [from this post](https://security.stackexchange.com/a/6415/60108)):
 
-**tl;dr bcrypt is better than PBKDF2 because PBKDF2 can be better accelerated with GPUs. As such, PBKDF2 is easier to brute force offline with consumer hardware. [srcypt tried to address bcrypt's shortcommings, but didn't succeed all the way.](https://security.stackexchange.com/a/26253/60108) [Argon2 is too new to tell.](https://security.stackexchange.com/a/119784/60108)**
+**tl;dr bcrypt is better than PBKDF2 because PBKDF2 can be better accelerated with GPUs. As such, PBKDF2 is easier to brute 
+force offline with consumer hardware. [srcypt tried to address bcrypt's shortcommings, but didn't succeed all the way.](https://security.stackexchange.com/a/26253/60108) 
+[Argon2 is too new to tell.](https://security.stackexchange.com/a/119784/60108)**
 
 > Bcrypt has the best kind of repute that can be achieved for a cryptographic algorithm: it has been around for quite some time, used quite widely, "attracted attention", and yet remains unbroken to date.
 >
