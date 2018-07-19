@@ -249,14 +249,6 @@ Compared to two other implementations in Java they all share similar performance
 | jBcrypt      |  3.43 ms |  13.75 ms | 54.76 ms | 218.62 ms | 883.55 ms |
 | BouncyCastle |  3.14 ms |  12.5 ms  | 49.8 ms  | 199.09 ms | 799.71 ms |
 
-and with a Laptop CPU [i5-6440HQ](https://ark.intel.com/products/88962/Intel-Core-i5-6440HQ-Processor-6M-Cache-up-to-3_50-GHz), Win 10, Java 8 (172):
-
-|              | cost 6   | cost   8  | cost 10  | cost 12   | cost 14   |
-|--------------|----------|-----------|----------|-----------|-----------|
-| favreBcrypt  |  5.09 ms |  19.95 ms | 78.51 ms | 331.18 ms | 1380.36 ms|
-| jBcrypt      |  5.23 ms |  20.3 ms  | 80.45 ms | 343.23 ms | 1297.34 ms|
-| BouncyCastle |  4.8 ms  |  18.59 ms | 74.05 ms | 295.23 ms | 1389.02 ms|
-
 compare that with a 2017 flag ship Android phone Samsung Galaxy S8+ ([SM-G955F](https://www.gsmarena.com/samsung_galaxy_s8+-8523.php)) with Android 8:
 
 |              | cost 6   | cost   8  | cost 10   | cost 12   | cost 14   |
@@ -264,6 +256,8 @@ compare that with a 2017 flag ship Android phone Samsung Galaxy S8+ ([SM-G955F](
 | favreBcrypt  |  8.13 ms |  29.05 ms | 110.62 ms | 438.45 ms | 1768.44 ms|
 | jBcrypt      |  7.91 ms |  30.91 ms | 116.45 ms | 462.93 ms | 1855.36 ms|
 | BouncyCastle |  10.41 ms|  38.03 ms | 149.09 ms | 595.19 ms | 2383.72 ms|
+
+More benchmarks can be found in the [wiki](https://github.com/patrickfav/bcrypt/wiki/Benchmark).
 
 So it makes sense that this implementation and jBcrypt's has the same performance as it is the same core
 implementation. Bouncy Castle is _slightly_ faster (on the JVM, not on Android interestingly), but keep in mind that they do a little less work (only generating the hash, not the whole out message).
