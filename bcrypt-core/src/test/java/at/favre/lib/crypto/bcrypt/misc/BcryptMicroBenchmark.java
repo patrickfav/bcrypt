@@ -21,7 +21,7 @@ public class BcryptMicroBenchmark {
         prepareMap(contender);
 
         int rounds = 819200;
-        int waitSec = 0;
+        int waitSec = 2;
 
         System.out.println("warmup\n");
 
