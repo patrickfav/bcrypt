@@ -200,7 +200,7 @@ will be in the `bcrypt-cli/target` folder.
 
 ### Security Analysis
 
-I'll quote security expert [Thomas Porin](http://www.bolet.org/~pornin/) on this (an excerpt [from this post](https://security.stackexchange.com/a/6415/60108)):
+I'll quote security expert [Thomas Pornin](http://www.bolet.org/~pornin/) on this (an excerpt [from this post](https://security.stackexchange.com/a/6415/60108)):
 
 **tl;dr bcrypt is better than PBKDF2 because PBKDF2 can be better accelerated with GPUs. As such, PBKDF2 is easier to brute 
 force offline with consumer hardware. [srcypt tried to address bcrypt's shortcommings, but didn't succeed all the way.](https://security.stackexchange.com/a/26253/60108) 
@@ -227,7 +227,7 @@ force offline with consumer hardware. [srcypt tried to address bcrypt's shortcom
 
 #### What Cost Factor should I use?
 
-Again, quote from Thomas Porin [from this post](https://security.stackexchange.com/a/31846/60108):
+Again, quote from Thomas Pornin [from this post](https://security.stackexchange.com/a/31846/60108):
 
 > As much as possible! This salted-and-slow hashing is an arms race between the attacker and the defender. You use many iterations to make the hashing of a password harder for everybody. To improve security, you should set that number as high as you can tolerate on your server, given the tasks that your server must otherwise fulfill. Higher is better.
 
