@@ -10,7 +10,7 @@
         <version>0.4.0</version>
     </parent>
 
-    <artifactId>bcrypt-core</artifactId>
+    <artifactId>bcrypt</artifactId>
     <packaging>jar</packaging>
 
     <name>BCrypt Password Hashing Function</name>
