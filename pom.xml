@@ -13,14 +13,15 @@
     <inceptionYear>2018</inceptionYear>
 
     <modules>
-        <module>bcrypt-core</module>
-        <module>bcrypt-cli</module>
+        <module>modules/bcrypt</module>
+        <module>modules/bcrypt-cli</module>
     </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
+
     <repositories>
         <repository>
             <id>maven-central-repo</id>

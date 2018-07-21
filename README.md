@@ -15,7 +15,7 @@ Add the dependency of the [latest version](https://github.com/patrickfav/bcrypt/
 
     <dependency>
         <groupId>at.favre.lib</groupId>
-        <artifactId>bcrypt-core</artifactId>
+        <artifactId>bcrypt</artifactId>
         <version>{latest-version}</version>
     </dependency>
 
@@ -177,7 +177,7 @@ Add the dependency of the [latest version](https://github.com/patrickfav/bcrypt/
 
     <dependency>
         <groupId>at.favre.lib</groupId>
-        <artifactId>bcrypt-core</artifactId>
+        <artifactId>bcrypt</artifactId>
         <version>{latest-version}</version>
     </dependency>
 
@@ -185,7 +185,7 @@ Add the dependency of the [latest version](https://github.com/patrickfav/bcrypt/
 
 Add to your `build.gradle` module dependencies:
 
-    compile group: 'at.favre.lib', name: 'bcrypt-core', version: '{latest-version}'
+    compile group: 'at.favre.lib', name: 'bcrypt', version: '{latest-version}'
 
 ### Local Jar Library
 

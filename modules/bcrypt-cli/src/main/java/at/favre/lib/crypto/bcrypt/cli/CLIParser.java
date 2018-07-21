@@ -1,13 +1,7 @@
 package at.favre.lib.crypto.bcrypt.cli;
 
 import at.favre.lib.bytes.Bytes;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionGroup;
-import org.apache.commons.cli.Options;
+import org.apache.commons.cli.*;
 
 /**
  * Parses the command line input and converts it to a structured model ({@link Arg}
