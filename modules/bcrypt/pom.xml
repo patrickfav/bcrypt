@@ -8,6 +8,7 @@
         <artifactId>bcrypt-parent</artifactId>
         <groupId>at.favre.lib</groupId>
         <version>0.5.0</version>
+        <relativePath>../../</relativePath>
     </parent>
 
     <artifactId>bcrypt</artifactId>
