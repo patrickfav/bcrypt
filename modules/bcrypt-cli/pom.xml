@@ -16,10 +16,6 @@
     <name>BCrypt CLI Tool</name>
     <description>A companion CLI tool for the bcrypt library for java.</description>
 
-    <properties>
-        <maven.deploy.skip>true</maven.deploy.skip>
-    </properties>
-
     <build>
         <plugins>
             <plugin>

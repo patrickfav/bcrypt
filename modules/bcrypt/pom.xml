@@ -19,6 +19,10 @@
         with a lot of updates and enhancements.
     </description>
 
+    <properties>
+        <maven.deploy.skip>false</maven.deploy.skip>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
