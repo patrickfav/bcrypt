@@ -1,8 +1,9 @@
 # Releases
 
+## v0.5.0
+
 ## v0.4.0
 
-* change maven artifact to `bcrypt-core`
 * add cli tool #5
 
 ## v0.3.0
