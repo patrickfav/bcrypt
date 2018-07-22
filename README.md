@@ -209,19 +209,19 @@ force offline with consumer hardware. [srcypt tried to address bcrypt's shortcom
 > Bcrypt has the best kind of repute that can be achieved for a cryptographic algorithm: it has been around for quite some time, used quite widely, "attracted attention", and yet remains unbroken to date.
 >
 >
-> Why bcrypt is somewhat better than PBKDF2
+> #### Why bcrypt is somewhat better than PBKDF2
 >
 > If you look at the situation in details, you can actually see some points where bcrypt is better than, say, PBKDF2. Bcrypt is a password hashing function which aims at being slow. To be precise, we want the password hashing function to be as slow as possible for the attacker while not being intolerably slow for the honest systems. (...)
 > What we want to avoid is that an attacker might use some non-PC hardware which would allow him to suffer less than us from the extra work implied by bcrypt or PBKDF2. In particular, an industrious attacker may want to use a GPU or a FPGA. SHA-256, for instance, can be very efficiently implemented on a GPU, since it uses only 32-bit logic and arithmetic operations that GPU are very good at. (...)
 > Bcrypt happens to heavily rely on accesses to a table which is constantly altered throughout the algorithm execution. This is very fast on a PC, much less so on a GPU, where memory is shared and all cores compete for control of the internal memory bus. Thus, the boost that an attacker can get from using GPU is quite reduced, compared to what the attacker gets with PBKDF2 or similar designs.
 > 
 >
-> Why bcrypt is not optimally secure
+> #### Why bcrypt is not optimally secure
 >
 > Bcrypt needs only 4 kB of fast RAM. While bcrypt does a decent job at making life difficult for a GPU-enhanced attacker, it does little against a FPGA-wielding attacker.
 >
 >
-> What NIST recommends
+> #### What NIST recommends
 >
 > NIST has issued Special Publication SP 800-132 on the subject of storing hashed passwords. Basically they recommend PBKDF2. This does not mean that they deem bcrypt insecure; they say nothing at all about bcrypt. It just means that NIST deems PBKDF2 "secure enough" (and it certainly is much better than a simple hash !). Also, NIST is an administrative organization, so they are bound to just love anything which builds on already "Approved" algorithms like SHA-256. On the other hand, bcrypt comes from Blowfish which has never received any kind of NIST blessing (or curse).
 
@@ -378,6 +378,7 @@ Use the Maven wrapper to create a jar including all dependencies
 * [jBcrypt](https://github.com/jeremyh/jBCrypt) - the below implementations are based on jBcrypt
   * [Spring Bcrypt](https://docs.spring.io/spring-security/site/docs/4.2.5.RELEASE/apidocs/org/springframework/security/crypto/bcrypt/BCrypt.html)
   * [Apache Ldap](https://directory.apache.org/api/gen-docs/latest/apidocs/org/apache/directory/api/ldap/model/password/BCrypt.html)
+  * [Tomcat Bcrypt](https://github.com/andreacomo/tomcat-bcrypt)
 * [Bouncy Castle](https://github.com/bcgit/bc-java/blob/master/core/src/main/java/org/bouncycastle/crypto/generators/BCrypt.java)
 
 # License
