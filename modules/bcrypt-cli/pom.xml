@@ -7,8 +7,8 @@
     <parent>
         <artifactId>bcrypt-parent</artifactId>
         <groupId>at.favre.lib</groupId>
-        <version>0.4.1</version>
-        <relativePath>../../</relativePath>
+        <version>0.4.2</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>bcrypt-cli</artifactId>
@@ -86,7 +86,7 @@
         <dependency>
             <groupId>at.favre.lib</groupId>
             <artifactId>bcrypt</artifactId>
-            <version>0.4.1</version>
+            <version>0.4.2</version>
         </dependency>
         <dependency>
             <groupId>commons-cli</groupId>
