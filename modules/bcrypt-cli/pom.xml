@@ -7,7 +7,7 @@
     <parent>
         <artifactId>bcrypt-parent</artifactId>
         <groupId>at.favre.lib</groupId>
-        <version>0.5.0</version>
+        <version>0.4.1</version>
         <relativePath>../../</relativePath>
     </parent>
 
@@ -16,6 +16,10 @@
 
     <name>BCrypt CLI Tool</name>
     <description>A companion CLI tool for the bcrypt library for java.</description>
+
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
 
     <build>
         <plugins>
@@ -82,7 +86,7 @@
         <dependency>
             <groupId>at.favre.lib</groupId>
             <artifactId>bcrypt</artifactId>
-            <version>0.5.0</version>
+            <version>0.4.1</version>
         </dependency>
         <dependency>
             <groupId>commons-cli</groupId>
