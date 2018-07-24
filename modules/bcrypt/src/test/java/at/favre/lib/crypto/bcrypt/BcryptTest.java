@@ -2,6 +2,7 @@ package at.favre.lib.crypto.bcrypt;
 
 import at.favre.lib.bytes.Bytes;
 import at.favre.lib.bytes.BytesTransformer;
+import at.favre.lib.crypto.bcrypt.misc.BcryptTestEntry;
 import at.favre.lib.crypto.bcrypt.misc.Repeat;
 import at.favre.lib.crypto.bcrypt.misc.RepeatRule;
 import org.junit.Rule;

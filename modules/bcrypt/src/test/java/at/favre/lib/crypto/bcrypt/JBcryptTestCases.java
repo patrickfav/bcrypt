@@ -1,12 +1,15 @@
 package at.favre.lib.crypto.bcrypt;
 
 import at.favre.lib.bytes.Bytes;
+import at.favre.lib.crypto.bcrypt.misc.BcryptTestEntry;
 import at.favre.lib.crypto.bcrypt.misc.Repeat;
 import at.favre.lib.crypto.bcrypt.misc.RepeatRule;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.Random;
 
 import static at.favre.lib.crypto.bcrypt.BcryptTest.UTF_8;
@@ -50,7 +53,10 @@ public class JBcryptTestCases {
 
     @Test
     public void testAgainstReferenceHashes() {
+        Date start = new Date();
+        System.out.println("jBcrypt Test Vector Suite ID: " + Bytes.from(Arrays.hashCode(testEntries)).encodeHex() + " (" + start.toString() + ")");
         BcryptTestEntry.testEntries(testEntries);
+        System.out.println("finished (" + (new Date().getTime() - start.getTime()) + " ms)");
     }
 
     @Test

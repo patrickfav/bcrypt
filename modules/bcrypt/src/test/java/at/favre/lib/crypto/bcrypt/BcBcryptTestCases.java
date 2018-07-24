@@ -6,6 +6,8 @@ import at.favre.lib.crypto.bcrypt.misc.RepeatRule;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.Date;
 import java.util.Random;
 
 import static at.favre.lib.crypto.bcrypt.BcryptTest.UTF_8;
@@ -54,6 +56,8 @@ public class BcBcryptTestCases {
 
     @Test
     public void testBcRefVectors() {
+        Date start = new Date();
+        System.out.println("Bouncy Castle Test Vector Suite ID: " + Bytes.from(Arrays.hashCode(testVectors)).encodeHex() + " (" + start.toString() + ")");
         for (Object[] testVector : testVectors) {
             byte[] pw = Bytes.parseHex((String) testVector[0]).array();
             byte[] salt = Bytes.parseHex((String) testVector[1]).array();
@@ -63,5 +67,6 @@ public class BcBcryptTestCases {
             BCrypt.HashData hash = BCrypt.with(BCrypt.Version.VERSION_BC).hashRaw(cost, salt, pw);
             assertArrayEquals(refHash, hash.rawHash);
         }
+        System.out.println("finished (" + (new Date().getTime() - start.getTime()) + " ms)");
     }
 }
