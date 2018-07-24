@@ -3,7 +3,6 @@ package at.favre.lib.crypto.bcrypt.misc;
 import at.favre.lib.bytes.Bytes;
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import at.favre.lib.crypto.bcrypt.Radix64Encoder;
-import com.github.fzakaria.ascii85.Ascii85;
 import org.apache.commons.text.StringEscapeUtils;
 
 import java.nio.charset.StandardCharsets;
@@ -57,8 +56,8 @@ public class BcryptTestEntriesGenerator {
     }
 
     private String generatePw() {
-        return Ascii85.encode(Bytes.random(pwLengthByte).array());
-    }
+        return "诶比伊艾弗豆贝尔维吾艾尺开艾丝维贼德";
+    }//
 
     private byte[] generateSalt() {
         return Bytes.random(16).array();
