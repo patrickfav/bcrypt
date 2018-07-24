@@ -272,7 +272,8 @@ These numbers are only informal tests and should not be used to derive any secur
 ### Test Vectors and Reference Implementations
 
 This implementation is tested against the bcrypt implementation jBcrypt and Bouncy Castle. It includes test vectors
-found in the test cases of bcrypt and [various](https://stackoverflow.com/a/12761326/774398) [places](http://openwall.info/wiki/john/sample-hashes) [on](http://cvsweb.openwall.com/cgi/cvsweb.cgi/Owl/packages/glibc/crypt_blowfish/wrapper.c?rev=HEAD) the web.
+found in the test cases of bcrypt and [various](https://stackoverflow.com/a/12761326/774398) [places](http://openwall.info/wiki/john/sample-hashes) [on](http://cvsweb.openwall.com/cgi/cvsweb.cgi/Owl/packages/glibc/crypt_blowfish/wrapper.c?rev=HEAD) the web. Additionally I [created a reference test suite](https://github.com/patrickfav/bcrypt/wiki/Published-Test-Vectors) for regression tests and to check compatibility with
+other libraries.
 
 ### The Modular Crypt Format for bcrypt
 
