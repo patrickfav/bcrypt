@@ -2,30 +2,34 @@ package at.favre.lib.crypto.bcrypt.misc;
 
 import at.favre.lib.bytes.Bytes;
 import at.favre.lib.crypto.bcrypt.BCrypt;
-import org.junit.Ignore;
-import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 public class BcryptMicroBenchmark {
 
     private final Random rnd = new Random();
     private Map<AbstractBcrypt, Map<Integer, Long>> map;
+    private final int roundsFactor;
+    private final int[] costFactorsTotest;
+    private final int waitSec;
+    private final boolean skipWarmup;
 
-    @Test
-    public void quickBenchmark() {
-        benchmark(2000, new int[]{4, 5, 6, 7}, 0, true);
+    public BcryptMicroBenchmark(int roundsFactor, int[] costFactorsTotest, int waitSec, boolean skipWarmup) {
+        this.roundsFactor = roundsFactor;
+        this.costFactorsTotest = costFactorsTotest;
+        this.waitSec = waitSec;
+        this.skipWarmup = skipWarmup;
     }
 
-    @Test
-    @Ignore
-    public void fullBenchmark() {
-        benchmark(819200, new int[]{6, 8, 9, 10, 11, 12, 14, 15}, 2, false);
-    }
-
-    private void benchmark(int roundsFactor, int[] costFactorsTotest, int waitSec, boolean skipWarmup) {
+    public void benchmark() {
         List<AbstractBcrypt> contender = Arrays.asList(new FavreBcrypt(), new JBcrypt(), new BC());
         prepareMap(contender);
 
@@ -130,28 +134,28 @@ public class BcryptMicroBenchmark {
     }
 
 
-    public static final class FavreBcrypt implements AbstractBcrypt {
+    static final class FavreBcrypt implements AbstractBcrypt {
         @Override
         public byte[] bcrypt(int cost, byte[] password) {
             return BCrypt.withDefaults().hash(cost, password);
         }
     }
 
-    public static final class JBcrypt implements AbstractBcrypt {
+    static final class JBcrypt implements AbstractBcrypt {
         @Override
         public byte[] bcrypt(int cost, byte[] password) {
             return org.mindrot.jbcrypt.BCrypt.hashpw(new String(password, StandardCharsets.UTF_8), org.mindrot.jbcrypt.BCrypt.gensalt(cost)).getBytes(StandardCharsets.UTF_8);
         }
     }
 
-    public static final class BC implements AbstractBcrypt {
+    static final class BC implements AbstractBcrypt {
         @Override
         public byte[] bcrypt(int cost, byte[] password) {
             return org.bouncycastle.crypto.generators.BCrypt.generate(Bytes.from(password).append((byte) 0).array(), Bytes.random(16).array(), cost);
         }
     }
 
-    public interface AbstractBcrypt {
+    interface AbstractBcrypt {
         byte[] bcrypt(int cost, byte[] password);
     }
 }
