@@ -54,7 +54,7 @@ public class JBcryptTestCases {
     @Test
     public void testAgainstReferenceHashes() {
         Date start = new Date();
-        System.out.println("jBcrypt Test Vector Suite ID: " + Bytes.from(Arrays.hashCode(testEntries)).encodeHex() + " (" + start.toString() + ")");
+        System.out.println("jBcrypt Test Vector Suite ID: " + Bytes.from(Arrays.hashCode(testEntries)).encodeHex() + " [" + testEntries.length + "] (" + start.toString() + ")");
         BcryptTestEntry.testEntries(testEntries);
         System.out.println("finished (" + (new Date().getTime() - start.getTime()) + " ms)");
     }

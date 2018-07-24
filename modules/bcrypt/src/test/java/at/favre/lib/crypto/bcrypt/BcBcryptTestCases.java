@@ -57,7 +57,7 @@ public class BcBcryptTestCases {
     @Test
     public void testBcRefVectors() {
         Date start = new Date();
-        System.out.println("Bouncy Castle Test Vector Suite ID: " + Bytes.from(Arrays.hashCode(testVectors)).encodeHex() + " (" + start.toString() + ")");
+        System.out.println("Bouncy Castle Test Vector Suite ID: " + Bytes.from(Arrays.hashCode(testVectors)).encodeHex() + " [" + testVectors.length + "] (" + start.toString() + ")");
         for (Object[] testVector : testVectors) {
             byte[] pw = Bytes.parseHex((String) testVector[0]).array();
             byte[] salt = Bytes.parseHex((String) testVector[1]).array();
