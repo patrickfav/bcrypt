@@ -302,7 +302,7 @@ final class BCryptOpenBSDProtocol {
     BCryptOpenBSDProtocol() {
     }
 
-    byte[] cryptRaw(int rounds, byte[] salt, byte[] password) {
+    byte[] cryptRaw(long rounds, byte[] salt, byte[] password) {
         return cryptRaw(rounds, salt, password, bf_crypt_ciphertext.clone());
     }
 
@@ -317,7 +317,11 @@ final class BCryptOpenBSDProtocol {
      * @param cdata    the plaintext to encrypt
      * @return an array containing the binary hashed password
      */
-    byte[] cryptRaw(int rounds, byte[] salt, byte[] password, int[] cdata) {
+    byte[] cryptRaw(long rounds, byte[] salt, byte[] password, int[] cdata) {
+        if (rounds < 0) {
+            throw new IllegalArgumentException("rounds must not be negative");
+        }
+
         int clen = cdata.length;
 
         if (salt.length != BCrypt.SALT_LENGTH) {
@@ -329,7 +333,7 @@ final class BCryptOpenBSDProtocol {
 
         enhancedKeySchedule(P, S, salt, password);
 
-        for (int i = 0; i != rounds; i++) {
+        for (long roundCount = 0; roundCount != rounds; roundCount++) {
             key(P, S, password);
             key(P, S, salt);
         }

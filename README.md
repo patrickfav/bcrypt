@@ -319,6 +319,7 @@ features and APIs have been added:
 * Customizable handling for passwords over 72 bytes
 * Only uses byte and char arrays which can be wiped after use
 * Faster Radix64 implementation
+* Allow a cost factor of 31 (jBcrypt only allows up to 30)
 * Easily get the raw hash
 * Provide your own salt or `SecureRandom` for salt generation
 * Clearer and easier API

@@ -40,7 +40,7 @@ public final class BCrypt {
     /**
      * Maximum allowed cost factor
      */
-    public static final int MAX_COST = 30;
+    public static final int MAX_COST = 31;
 
     /**
      * Ascii hex pointer for '2'
@@ -283,7 +283,7 @@ public final class BCrypt {
 
             byte[] pwWithNullTerminator = version.appendNullTerminator ? Bytes.wrap(password).append((byte) 0).array() : Bytes.wrap(password).copy().array();
             try {
-                byte[] hash = new BCryptOpenBSDProtocol().cryptRaw(1 << cost, salt, pwWithNullTerminator);
+                byte[] hash = new BCryptOpenBSDProtocol().cryptRaw(1L << (long) cost, salt, pwWithNullTerminator);
                 return new HashData(cost, version, salt, version.useOnly23bytesForHash ?
                         Bytes.wrap(hash).resize(HASH_OUT_LENGTH, BytesTransformer.ResizeTransformer.Mode.RESIZE_KEEP_FROM_ZERO_INDEX).array() :
                         hash
