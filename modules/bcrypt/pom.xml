@@ -8,6 +8,7 @@
         <artifactId>bcrypt-parent</artifactId>
         <groupId>at.favre.lib</groupId>
         <version>0.4.2</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>bcrypt</artifactId>
