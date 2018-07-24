@@ -15,22 +15,30 @@ public class BcryptMicroBenchmark {
     private Map<AbstractBcrypt, Map<Integer, Long>> map;
 
     @Test
+    public void quickBenchmark() {
+        benchmark(3000, new int[]{5}, 0, true);
+    }
+
+    @Test
     @Ignore
-    public void benchmark() {
+    public void fullBenchmark() {
+        benchmark(819200, new int[]{6, 8, 9, 10, 11, 12, 14, 15}, 2, false);
+    }
+
+    private void benchmark(int roundsFactor, int[] costFactorsTotest, int waitSec, boolean skipWarmup) {
         List<AbstractBcrypt> contender = Arrays.asList(new FavreBcrypt(), new JBcrypt(), new BC());
         prepareMap(contender);
 
-        int rounds = 819200;
-        int waitSec = 2;
+        if (!skipWarmup) {
+            System.out.println("warmup\n");
 
-        System.out.println("warmup\n");
+            warmup(contender);
 
-        warmup(contender);
+            sleep(waitSec * 2);
+        }
 
-        sleep(waitSec * 2);
-
-        for (int cost : new int[]{6, 8, 9, 10, 11, 12, 14, 15}) {
-            int currentRounds = calculateRounds(rounds, cost);
+        for (int cost : costFactorsTotest) {
+            int currentRounds = calculateRounds(roundsFactor, cost);
             System.out.println("\n\nbenchmark with " + currentRounds + " rounds and cost-factor " + cost + "\n");
 
             for (AbstractBcrypt abstractBcrypt : contender) {
@@ -62,7 +70,7 @@ public class BcryptMicroBenchmark {
 
             sb.append("| ").append(String.format("%-12s", entry.getKey().getClass().getSimpleName())).append(" |");
             for (Map.Entry<Integer, Long> iEntry : entry.getValue().entrySet()) {
-                sb.append(String.format("  %-8s", Math.round(((double) iEntry.getValue() / (double) calculateRounds(rounds, iEntry.getKey())) * 100.0) / 100.0)).append(" ms |");
+                sb.append(String.format("  %-8s", Math.round(((double) iEntry.getValue() / (double) calculateRounds(roundsFactor, iEntry.getKey())) * 100.0) / 100.0)).append(" ms |");
             }
             sb.append("\n");
             count++;
