@@ -28,17 +28,17 @@ public class BcryptTestEntriesGenerator {
 
     public void printRefData() {
         StringBuilder sb = new StringBuilder("new BcryptTestEntry[] {\n");
-        byte[] salt = Bytes.random(16).array();
-        String pw = "";
+        byte[] salt = generateSalt();
+        String pw = generatePw();
 
         Radix64Encoder encoder = new Radix64Encoder.Default();
         for (int costFactor : costFactors) {
             for (int i = 0; i < examplesPerCostFactor; i++) {
                 if (!sameSaltAllExamples) {
-                    salt = Bytes.random(16).array();
+                    salt = generateSalt();
                 }
                 if (!samePasswordAllExamples) {
-                    pw = Ascii85.encode(Bytes.random(pwLengthByte).array());
+                    pw = generatePw();
                 }
                 BCrypt.HashData data = BCrypt.with(version).hashRaw(costFactor, salt, Bytes.from(pw).array());
 
@@ -54,5 +54,13 @@ public class BcryptTestEntriesGenerator {
         sb.append("}");
 
         System.out.println(sb.toString());
+    }
+
+    private String generatePw() {
+        return Ascii85.encode(Bytes.random(pwLengthByte).array());
+    }
+
+    private byte[] generateSalt() {
+        return Bytes.random(16).array();
     }
 }
