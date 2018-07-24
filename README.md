@@ -33,7 +33,7 @@ BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), bcryptHa
 ## API Description for the Java Library
 
 The following APIs are for advanced use-cases and require the developer to be familiar with the material. If you are not
-sre, just stick to the quick start example.
+sure, just stick to the quick start example.
 
 ### Bcrypt Versions
 This implementation supports the various versions, which basically only differ through their identifier:
