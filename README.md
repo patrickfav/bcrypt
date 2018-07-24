@@ -32,7 +32,8 @@ BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), bcryptHa
 
 ## API Description for the Java Library
 
-In the following, the main features and use cases are explained.
+The following APIs are for advanced use-cases and require the developer to be familiar with the material. If you are not
+sre, just stick to the quick start example.
 
 ### Bcrypt Versions
 This implementation supports the various versions, which basically only differ through their identifier:
@@ -45,6 +46,7 @@ char[] bcryptChars = BCrypt.with(BCrypt.Version.VERSION_2B).hashToChar(6, passwo
 // $2b$06$GskjDDM9oejRN8pxNhiSZuIw/cnjbsNb8IfWGd3TFQXtRfKTN95r.
 ```
 
+For example the [PHP implementation of bcrypt](http://php.net/manual/en/function.password-hash.php) will return hashes with version `$2y$`.
 By using `BCrypt.withDefaults()` it will default to version `$2a$`. The older `$2$` version is not supported.
 For advanced use cases you may add your own version by providing a version identifier and a custom message formatter 
 as well as parser.
