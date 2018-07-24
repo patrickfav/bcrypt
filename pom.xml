@@ -16,8 +16,8 @@
     <description>Parent Maven project for Bcrypt</description>
 
     <modules>
-        <module>modules/bcrypt</module>
-        <module>modules/bcrypt-cli</module>
+        <module>bcrypt</module>
+        <module>bcrypt-cli</module>
     </modules>
 
     <properties>
