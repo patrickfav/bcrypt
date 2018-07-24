@@ -16,7 +16,7 @@ public class BcryptMicroBenchmark {
 
     @Test
     public void quickBenchmark() {
-        benchmark(3000, new int[]{5}, 0, true);
+        benchmark(2000, new int[]{4, 5, 6, 7}, 0, true);
     }
 
     @Test
