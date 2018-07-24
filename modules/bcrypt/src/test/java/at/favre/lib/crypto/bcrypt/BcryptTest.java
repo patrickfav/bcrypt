@@ -10,7 +10,9 @@ import org.junit.Test;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 import static at.favre.lib.crypto.bcrypt.BCrypt.MAJOR_VERSION;
 import static junit.framework.TestCase.assertFalse;
@@ -204,6 +206,20 @@ public class BcryptTest {
 
         assertArrayEquals(bcryptHashBytes1a, bcryptHashBytes1b);
         assertArrayEquals(bcryptHashBytes1a, bcryptHashBytes2);
+    }
+
+    @Test
+    public void testVariousPwLengthShouldBeDifferentHashes() {
+        Bytes pw = Bytes.random(256);
+        byte[] salt = Bytes.random(16).array();
+
+        Set<String> hashes = new HashSet<>();
+        for (int i = 0; i < 72; i++) {
+            BCrypt.HashData data = BCrypt.with(LongPasswordStrategies.truncate()).hashRaw(4, salt, pw.resize(i, BytesTransformer.ResizeTransformer.Mode.RESIZE_KEEP_FROM_ZERO_INDEX).array());
+            String hashHexString = Bytes.wrap(data.rawHash).encodeHex();
+            assertFalse("hash already in set for length " + i, hashes.contains(hashHexString));
+            hashes.add(hashHexString);
+        }
     }
 
     @Test
