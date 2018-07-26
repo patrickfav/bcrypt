@@ -65,7 +65,7 @@ public interface Radix64Encoder {
      * the Base64 encoding scheme as used in OpenBSD which is not compatible
      * with the RFC Base64 schemas.
      *
-     * Required Information for GPL-2 License
+     * Required Information for GPL-2 License with Classpath Exception (http://openjdk.java.net/legal/gplv2+ce.html)
      *
      * Original: http://hg.openjdk.java.net/jdk8/jdk8/jdk/file/687fd7c7986d/src/share/classes/java/util/Base64.java
      *
