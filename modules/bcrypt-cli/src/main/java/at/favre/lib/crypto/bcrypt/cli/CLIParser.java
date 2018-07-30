@@ -1,7 +1,13 @@
 package at.favre.lib.crypto.bcrypt.cli;
 
 import at.favre.lib.bytes.Bytes;
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionGroup;
+import org.apache.commons.cli.Options;
 
 /**
  * Parses the command line input and converts it to a structured model ({@link Arg}
@@ -40,40 +46,9 @@ public final class CLIParser {
 
             if (commandLine.hasOption(ARG_HASH)) {
 
-                String[] hashParams = commandLine.getOptionValues(ARG_HASH);
-
-                if (hashParams == null || hashParams.length == 0) {
-                    throw new IllegalArgumentException("Hash mode expects at least the cost parameter. (e.g.  '-" + ARG_HASH + " 12')");
-                }
-
-                final int costFactor;
-                try {
-                    costFactor = Integer.valueOf(hashParams[0]);
-                } catch (Exception e) {
-                    throw new IllegalArgumentException("First parameter of hash expected to be integer type, was " + hashParams[0]);
-                }
-
-                byte[] salt = null;
-                if (hashParams.length > 1) {
-                    try {
-                        salt = Bytes.parseHex(hashParams[1]).array();
-                    } catch (Exception e) {
-                        throw new IllegalArgumentException("Salt parameter could not be parsed as hex [0-9a-f], was " + hashParams[1]);
-                    }
-
-                    if (salt.length != 16) {
-                        throw new IllegalArgumentException("Salt parameter must be exactly 16 bytes (32 characters hex)");
-                    }
-                }
-                return new Arg(password, salt, costFactor);
+                return handleHash(commandLine, password);
             } else if (commandLine.hasOption(ARG_CHECK)) {
-                String refBcrypt = commandLine.getOptionValue(ARG_CHECK);
-
-                if (refBcrypt == null || refBcrypt.trim().length() != 60) {
-                    throw new IllegalArgumentException("Reference bcrypt hash must be exactly 60 characters, e.g. '$2a$10$6XBbrUraPyfq7nxeaYsR4u.3.ZuGNCy3tOT4reneAI/qoWvP6AX/e' was " + refBcrypt);
-                }
-
-                return new Arg(password, refBcrypt);
+                return handleCheck(commandLine, password);
             }
         } catch (Exception e) {
             String msg = e.getMessage();
@@ -85,6 +60,45 @@ public final class CLIParser {
         }
 
         return argument;
+    }
+
+    private static Arg handleHash(CommandLine commandLine, char[] password) {
+        String[] hashParams = commandLine.getOptionValues(ARG_HASH);
+
+        if (hashParams == null || hashParams.length == 0) {
+            throw new IllegalArgumentException("Hash mode expects at least the cost parameter. (e.g.  '-" + ARG_HASH + " 12')");
+        }
+
+        final int costFactor;
+        try {
+            costFactor = Integer.valueOf(hashParams[0]);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("First parameter of hash expected to be integer type, was " + hashParams[0]);
+        }
+
+        byte[] salt = null;
+        if (hashParams.length > 1) {
+            try {
+                salt = Bytes.parseHex(hashParams[1]).array();
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Salt parameter could not be parsed as hex [0-9a-f], was " + hashParams[1]);
+            }
+
+            if (salt.length != 16) {
+                throw new IllegalArgumentException("Salt parameter must be exactly 16 bytes (32 characters hex)");
+            }
+        }
+        return new Arg(password, salt, costFactor);
+    }
+
+    private static Arg handleCheck(CommandLine commandLine, char[] password) {
+        String refBcrypt = commandLine.getOptionValue(ARG_CHECK);
+
+        if (refBcrypt == null || refBcrypt.trim().length() != 60) {
+            throw new IllegalArgumentException("Reference bcrypt hash must be exactly 60 characters, e.g. '$2a$10$6XBbrUraPyfq7nxeaYsR4u.3.ZuGNCy3tOT4reneAI/qoWvP6AX/e' was " + refBcrypt);
+        }
+
+        return new Arg(password, refBcrypt);
     }
 
     static Options setupOptions() {
