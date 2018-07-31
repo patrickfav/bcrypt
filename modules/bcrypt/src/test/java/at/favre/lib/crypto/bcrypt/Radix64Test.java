@@ -119,29 +119,12 @@ public class Radix64Test {
         //System.out.println("new EncodeTestCase(\"" + Bytes.wrap(encoded).encodeUtf8() + "\"," + new JavaByteArrayEncoder().encode(rnd) + "),");
     }
 
-    @Test
-    public void testBigBlobApache() {
-        int length = 1024 * 1024 * 10;
-        byte[] rnd = Bytes.random(length).array();
-        byte[] encoded = new Radix64ApacheCodec().encode(rnd);
-        byte[] decoded = new Radix64ApacheCodec().decode(encoded);
-
-        assertArrayEquals(rnd, decoded);
-        if (length < 1024) {
-            System.out.println(Bytes.wrap(encoded).encodeUtf8());
-        } else {
-            System.out.println(Bytes.wrap(encoded).toString());
-        }
-        //System.out.println("new EncodeTestCase(\"" + Bytes.wrap(encoded).encodeUtf8() + "\"," + new JavaByteArrayEncoder().encode(rnd) + "),");
-    }
-
 
     @Test
     public void testEncodeAgainstRefTable() {
         for (TestCase encodeTestCase : referenceRadix64Table) {
             byte[] encoded = encoder.encode(encodeTestCase.raw);
             assertArrayEquals(encodeTestCase.encoded.getBytes(StandardCharsets.UTF_8), encoded);
-            assertArrayEquals(encodeTestCase.encoded.getBytes(StandardCharsets.UTF_8), new Radix64ApacheCodec().encode(encodeTestCase.raw));
         }
     }
 
@@ -150,7 +133,6 @@ public class Radix64Test {
         for (TestCase encodeTestCase : referenceRadix64Table) {
             byte[] decoded = encoder.decode(encodeTestCase.encoded.getBytes(StandardCharsets.UTF_8));
             assertArrayEquals(encodeTestCase.raw, decoded);
-            assertArrayEquals(encodeTestCase.raw, new Radix64ApacheCodec().decode(encodeTestCase.encoded.getBytes(StandardCharsets.UTF_8)));
         }
     }
 
@@ -164,9 +146,9 @@ public class Radix64Test {
         assertArrayEquals(new byte[0], encoder.decode(new byte[0]));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testSingleCharDecodeShouldThrow() {
-        encoder.decode("A".getBytes(StandardCharsets.UTF_8));
+    @Test
+    public void testSingleCharDecode() {
+        assertArrayEquals(new byte[0], encoder.decode("A".getBytes(StandardCharsets.UTF_8)));
     }
 
     @Test
