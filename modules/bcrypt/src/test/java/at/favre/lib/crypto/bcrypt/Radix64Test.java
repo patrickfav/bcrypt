@@ -4,10 +4,12 @@ import at.favre.lib.bytes.Bytes;
 import at.favre.lib.crypto.bcrypt.misc.Repeat;
 import at.favre.lib.crypto.bcrypt.misc.RepeatRule;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 import static org.junit.Assert.assertArrayEquals;
 
@@ -117,6 +119,7 @@ public class Radix64Test {
         //System.out.println("new EncodeTestCase(\"" + Bytes.wrap(encoded).encodeUtf8() + "\"," + new JavaByteArrayEncoder().encode(rnd) + "),");
     }
 
+
     @Test
     public void testEncodeAgainstRefTable() {
         for (TestCase encodeTestCase : referenceRadix64Table) {
@@ -143,9 +146,9 @@ public class Radix64Test {
         assertArrayEquals(new byte[0], encoder.decode(new byte[0]));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testSingleCharDecodeShouldThrow() {
-        encoder.decode("A".getBytes(StandardCharsets.UTF_8));
+    @Test
+    public void testSingleCharDecode() {
+        assertArrayEquals(new byte[0], encoder.decode("A".getBytes(StandardCharsets.UTF_8)));
     }
 
     @Test
@@ -160,6 +163,29 @@ public class Radix64Test {
         TestCase(String encoded, byte[] raw) {
             this.encoded = encoded;
             this.raw = raw;
+        }
+    }
+
+    @Test
+    @Ignore
+    public void calculate6bitBaseDecodeTable() {
+        final char[] toBase64 = {
+                '.', '/', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+                'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
+                'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
+                'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+                'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5',
+                '6', '7', '8', '9'
+        };
+        final int[] fromBase64 = new int[256];
+        Arrays.fill(fromBase64, -1);
+        for (int i = 0; i < toBase64.length; i++) {
+            fromBase64[toBase64[i]] = i;
+        }
+        fromBase64['='] = -2;
+
+        for (int i = 0; i < fromBase64.length; i++) {
+            System.out.print(fromBase64[i] + ", ");
         }
     }
 }
