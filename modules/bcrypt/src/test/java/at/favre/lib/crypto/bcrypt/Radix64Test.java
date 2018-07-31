@@ -4,10 +4,12 @@ import at.favre.lib.bytes.Bytes;
 import at.favre.lib.crypto.bcrypt.misc.Repeat;
 import at.favre.lib.crypto.bcrypt.misc.RepeatRule;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 import static org.junit.Assert.assertArrayEquals;
 
@@ -118,10 +120,28 @@ public class Radix64Test {
     }
 
     @Test
+    public void testBigBlobApache() {
+        int length = 1024 * 1024 * 10;
+        byte[] rnd = Bytes.random(length).array();
+        byte[] encoded = new Radix64ApacheCodec().encode(rnd);
+        byte[] decoded = new Radix64ApacheCodec().decode(encoded);
+
+        assertArrayEquals(rnd, decoded);
+        if (length < 1024) {
+            System.out.println(Bytes.wrap(encoded).encodeUtf8());
+        } else {
+            System.out.println(Bytes.wrap(encoded).toString());
+        }
+        //System.out.println("new EncodeTestCase(\"" + Bytes.wrap(encoded).encodeUtf8() + "\"," + new JavaByteArrayEncoder().encode(rnd) + "),");
+    }
+
+
+    @Test
     public void testEncodeAgainstRefTable() {
         for (TestCase encodeTestCase : referenceRadix64Table) {
             byte[] encoded = encoder.encode(encodeTestCase.raw);
             assertArrayEquals(encodeTestCase.encoded.getBytes(StandardCharsets.UTF_8), encoded);
+            assertArrayEquals(encodeTestCase.encoded.getBytes(StandardCharsets.UTF_8), new Radix64ApacheCodec().encode(encodeTestCase.raw));
         }
     }
 
@@ -130,6 +150,7 @@ public class Radix64Test {
         for (TestCase encodeTestCase : referenceRadix64Table) {
             byte[] decoded = encoder.decode(encodeTestCase.encoded.getBytes(StandardCharsets.UTF_8));
             assertArrayEquals(encodeTestCase.raw, decoded);
+            assertArrayEquals(encodeTestCase.raw, new Radix64ApacheCodec().decode(encodeTestCase.encoded.getBytes(StandardCharsets.UTF_8)));
         }
     }
 
@@ -160,6 +181,29 @@ public class Radix64Test {
         TestCase(String encoded, byte[] raw) {
             this.encoded = encoded;
             this.raw = raw;
+        }
+    }
+
+    @Test
+    @Ignore
+    public void calculate6bitBaseDecodeTable() {
+        final char[] toBase64 = {
+                '.', '/', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+                'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
+                'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
+                'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+                'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5',
+                '6', '7', '8', '9'
+        };
+        final int[] fromBase64 = new int[256];
+        Arrays.fill(fromBase64, -1);
+        for (int i = 0; i < toBase64.length; i++) {
+            fromBase64[toBase64[i]] = i;
+        }
+        fromBase64['='] = -2;
+
+        for (int i = 0; i < fromBase64.length; i++) {
+            System.out.print(fromBase64[i] + ", ");
         }
     }
 }
