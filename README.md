@@ -376,7 +376,7 @@ Use the Maven wrapper to create a jar including all dependencies
 ## Libraries & Credits
 
 * [jBcrypt](https://github.com/jeremyh/jBCrypt) (derived the "Blowfish Expensive key setup") (under BSD licence)
-* Radix64 implementation derived from [Apache Commons Codec](https://commons.apache.org/codec/) (under Apache v2)
+* Radix64 implementation derived from [Square's Okio Base64](https://github.com/square/okio) (under Apache v2)
 
 ### BCrypt Implementations in Java
 

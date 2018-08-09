@@ -87,25 +87,25 @@ public class Radix64Test {
     @Repeat(3)
     public void testEncodeDifferentLengths() {
         for (int i = 1; i < 128; i++) {
-            testSingleEncode(i);
+            testSingleEncode(i, encoder);
         }
     }
 
     @Test
     public void testEncode16Bytes() {
         for (int i = 0; i < 256; i++) {
-            testSingleEncode(16);
+            testSingleEncode(16, encoder);
         }
     }
 
     @Test
     public void testEncode23Bytes() {
         for (int i = 0; i < 256; i++) {
-            testSingleEncode(23);
+            testSingleEncode(23, encoder);
         }
     }
 
-    private void testSingleEncode(int length) {
+    private static void testSingleEncode(int length, Radix64Encoder encoder) {
         byte[] rnd = Bytes.random(length).array();
         byte[] encoded = encoder.encode(rnd);
         byte[] decoded = encoder.decode(encoded);
@@ -124,7 +124,9 @@ public class Radix64Test {
     public void testEncodeAgainstRefTable() {
         for (TestCase encodeTestCase : referenceRadix64Table) {
             byte[] encoded = encoder.encode(encodeTestCase.raw);
-            assertArrayEquals(encodeTestCase.encoded.getBytes(StandardCharsets.UTF_8), encoded);
+            assertArrayEquals("ref test for '" + encodeTestCase.encoded + "' did not pass - expected " +
+                    Bytes.wrap(encodeTestCase.encoded.getBytes(StandardCharsets.UTF_8)).encodeHex() + " actual " +
+                    Bytes.wrap(encoded).encodeHex(), encodeTestCase.encoded.getBytes(StandardCharsets.UTF_8), encoded);
         }
     }
 
@@ -138,7 +140,7 @@ public class Radix64Test {
 
     @Test
     public void testBigBlob() {
-        testSingleEncode(1024 * 1024 * 10);
+        testSingleEncode(1024 * 1024 * 10, encoder);
     }
 
     @Test
