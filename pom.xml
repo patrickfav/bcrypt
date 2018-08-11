@@ -66,7 +66,6 @@
                 <version>3.0.0</version>
                 <configuration>
                     <configLocation>checkstyle.xml</configLocation>
-                    <excludes>**/benchmark-jmh/**</excludes>
                 </configuration>
                 <dependencies>
                     <dependency>
@@ -114,11 +113,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <excludes>
-                        <exclude>**/benchmark-jmh/**</exclude>
-                    </excludes>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.eluder.coveralls</groupId>
