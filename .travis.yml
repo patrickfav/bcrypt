@@ -34,11 +34,11 @@ deploy:
       secure: "jTRC8q1o58sepRHphhUJEVnWPatWESdQuO8IYcqxQOSWsObD8Xr5KNrsLSgBAAGKCTEFdSb88/HrXQShZp1w4pdqTrmB4+eXgWxjtYNPzcaMkWMxsiJabLss91ahvvUVpNVp3AE2iHjUEOOqeXyx7ynhBVtvDn0Bf80O8ufqvq0PqQunQa5xlYp0UgTIEZ1BAoOtMTyWQrywvTRZj2ZLi0Aa5Lnqbrr2U2ZLqC3FLFOKveWJ8XxG10a2x2DmyRyW9h9EamXgoWVS3DqWOYdNDwEjgeih+0yNtJ1CWcDDC6PC77Nkit9/L5roCCnaTJbdhNdsVFBKP+1AUH81xMdSMl9SRKi16eVbjyEcu4laEzJlYz46eO8spbYJrmIDs59ij4C4dPQeb3LQPeioheEkFmUD/krZHH2klDnlN4T4nU2VPm0iYSkqezRHOkess+SDKxXvS8ZjmBcJLaI20QYLk+MFpWGw69JcgI90WHHFXBDLC+juz+16kmIEs6X96iaK0buysE0aSIy1/3l03mfnAl2fdMydrRhOkvWOpvOc67QCpkehEbhhC29TrbZAp954fu9akaKoHrdFU/I0Y4esM7CgzWUOc3oxfzInJ4Uva+Dun17gZxyuAXhvXqe7x9fPjpMnJGZUSe1E1GCja8BKpx4VFlz1SmBqC+FhDqTlmk8="
     file_glob: true
     file:
-      - "target/bcrypt-core/bcrypt-*.jar"
-      - "target/bcrypt-core/*.sha256"
-      - "target/bcrypt-core/checksum-sha256.txt"
-      - "target/bcrypt-cli/bcrypt-*.jar"
-      - "target/bcrypt-cli/*.sha256"
+      - "modules/bcrypt/target/bcrypt-*.jar"
+      - "modules/bcrypt/target/*.sha256"
+      - "modules/bcrypt/target/checksum-sha256.txt"
+      - "modules/bcrypt-cli/target/bcrypt-*.jar"
+      - "modules/bcrypt-cli/target/*.sha256"
     skip_cleanup: true
     on:
       branch: master

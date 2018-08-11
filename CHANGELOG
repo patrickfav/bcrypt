@@ -1,8 +1,12 @@
 # Releases
 
+## v0.5.0
+
+* allow actual 2^31 rounds (fix integer overflow issue with `1<<31`) #7
+* use Apache v2 compatible Radix 64 impl and skip OpenJDK one #8
+
 ## v0.4.0
 
-* change maven artifact to `bcrypt-core`
 * add cli tool #5
 * add (_experimental_) ProGuard optimized version (use maven classifier 'optimized') #4
 
