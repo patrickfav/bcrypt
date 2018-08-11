@@ -73,6 +73,60 @@
                     <quiet>false</quiet>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>com.github.wvengen</groupId>
+                <artifactId>proguard-maven-plugin</artifactId>
+                <version>2.0.14</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>proguard</goal>
+                        </goals>
+                        <configuration>
+                            <includeDependency>true</includeDependency>
+                            <attachArtifactClassifier>optimized</attachArtifactClassifier>
+                            <attach>true</attach>
+                            <proguardVersion>6.0.3</proguardVersion>
+                            <obfuscate>false</obfuscate>
+                            <options>
+                                <option>-include ${project.basedir}/proguard-rules.pro</option>
+                            </options>
+                            <libs>
+                                <lib>${java.home}/lib/rt.jar</lib>
+                            </libs>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>net.sf.proguard</groupId>
+                        <artifactId>proguard-base</artifactId>
+                        <version>6.0.3</version>
+                        <scope>runtime</scope>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jarsigner-plugin</artifactId>
+                <version>1.4</version>
+                <executions>
+                    <execution>
+                        <id>sign</id>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <skip>${project.skipJarSign}</skip>
+                    <keystore>${session.executionRootDirectory}/keystore.jks</keystore>
+                    <alias>pfopensource</alias>
+                    <storepass>${env.OPENSOURCE_PROJECTS_KS_PW}</storepass>
+                    <keypass>${env.OPENSOURCE_PROJECTS_KEY_PW}</keypass>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

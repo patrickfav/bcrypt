@@ -116,26 +116,6 @@
                 <artifactId>coveralls-maven-plugin</artifactId>
                 <version>4.3.0</version>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jarsigner-plugin</artifactId>
-                <version>1.4</version>
-                <executions>
-                    <execution>
-                        <id>sign</id>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <skip>${project.skipJarSign}</skip>
-                    <keystore>${session.executionRootDirectory}/keystore.jks</keystore>
-                    <alias>pfopensource</alias>
-                    <storepass>${env.OPENSOURCE_PROJECTS_KS_PW}</storepass>
-                    <keypass>${env.OPENSOURCE_PROJECTS_KEY_PW}</keypass>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 
