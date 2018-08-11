@@ -18,11 +18,14 @@
     <modules>
         <module>modules/bcrypt</module>
         <module>modules/bcrypt-cli</module>
+        <module>modules/benchmark-jmh</module>
     </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <project.jbcryptVersion>0.4</project.jbcryptVersion>
+        <project.bcVersion>1.60</project.bcVersion>
         <project.skipJarSign>false
         </project.skipJarSign> <!-- set this to true if fail because of missing credentials -->
     </properties>
