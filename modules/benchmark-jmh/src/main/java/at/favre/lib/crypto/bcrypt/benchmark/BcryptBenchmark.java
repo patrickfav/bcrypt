@@ -17,48 +17,34 @@ import java.util.concurrent.TimeUnit;
 @Measurement(iterations = 3, time = 10)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-//CHECKSTYLE.OFF
 public class BcryptBenchmark {
 
-    private AbstractBcrypt favreBcrypt;
-    private AbstractBcrypt jBcrypt;
-    private AbstractBcrypt bcBcrypt;
-    private BinaryToTextEncoding.Encoder ascii85 = new BinaryToTextEncoding.Encoder() {
+    private AbstractBcrypt favreBcrypt = new FavreBcrypt();
+    private AbstractBcrypt jBcrypt = new JBcrypt();
+    private AbstractBcrypt bcBcrypt = new BC();
+
+    @Param({"5", "6", "8", "10", "12", "14"})
+    public int cost;
+    public byte[] pw = Bytes.random(36).encode(new BinaryToTextEncoding.Encoder() {
         @Override
         public String encode(byte[] bytes, ByteOrder byteOrder) {
             return Ascii85.encode(bytes);
         }
-    };
+    }).getBytes(StandardCharsets.US_ASCII);
 
-    @Param({"5", "6", "8", "10", "12", "14"})
-    private int cost;
-    private byte[] pw;
-
-    @Setup(Level.Trial)
-    public void setupBenchmark() {
-        favreBcrypt = new FavreBcrypt();
-        jBcrypt = new JBcrypt();
-        bcBcrypt = new BC();
-    }
-
-    @Setup(Level.Invocation)
-    public void setup() {
-        pw = Bytes.random(36).encode(ascii85).getBytes(StandardCharsets.UTF_8);
+    @Benchmark
+    public byte[] benchmarkBcBcrypt() {
+        return benchmark(bcBcrypt, cost, Bytes.wrap(pw).copy().array());
     }
 
     @Benchmark
     public byte[] benchmarkFavreBcrypt() {
-        return benchmark(favreBcrypt, cost, pw);
+        return benchmark(favreBcrypt, cost, Bytes.wrap(pw).copy().array());
     }
 
     @Benchmark
     public byte[] benchmarkJBcrypt() {
-        return benchmark(jBcrypt, cost, pw);
-    }
-
-    @Benchmark
-    public byte[] benchmarkBcBcrypt() {
-        return benchmark(bcBcrypt, cost, pw);
+        return benchmark(jBcrypt, cost, Bytes.wrap(pw).copy().array());
     }
 
     private byte[] benchmark(AbstractBcrypt bcrypt, int logRounds, byte[] pw) {
@@ -90,4 +76,3 @@ public class BcryptBenchmark {
         byte[] bcrypt(int cost, byte[] password);
     }
 }
-//CHECKSTYLE.ON
