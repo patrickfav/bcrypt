@@ -4,6 +4,7 @@
 
 * allow actual 2^31 rounds (fix integer overflow issue with `1<<31`) #7
 * use Apache v2 compatible Radix 64 impl and skip OpenJDK one #8
+* add JMH benchmark module #11
 
 ## v0.4.0
 

@@ -270,6 +270,12 @@ Compare this to other benchmarks, [like this one in node.js](https://github.com/
 **Disclaimer:** Micro benchmarks are [usually a really bad way to measure performance](https://mrale.ph/blog/2012/12/15/microbenchmarks-fairy-tale.html). 
 These numbers are only informal tests and should not be used to derive any security relevant decisions.
 
+#### JMH Benchmark
+
+Additionally there is JMH benchmark module, which is probably better than my home-brew micro benchmark. Build it with 
+maven `./mvnw clean install` (you may want to disable jar signing with `<project.skipJarSign>` property) and execute
+it with `java -jar modules/benchmark-jmh/target/benchmark-jmh-x.y.z-full.jar`.
+
 ### Test Vectors and Reference Implementations
 
 This implementation is tested against the bcrypt implementation jBcrypt and Bouncy Castle. It includes test vectors
@@ -366,7 +372,7 @@ If you want to skip jar signing just change the skip configuration in the
 
 Use the Maven wrapper to create a jar including all dependencies
 
-    mvnw clean install
+    ./mvnw clean install
 
 ## Tech Stack
 
