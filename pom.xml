@@ -66,7 +66,7 @@
                 <version>3.0.0</version>
                 <configuration>
                     <configLocation>checkstyle.xml</configLocation>
-                    <excludes>BcryptBenchmark.*</excludes>
+                    <excludes>**/benchmark-jmh/**</excludes>
                 </configuration>
                 <dependencies>
                     <dependency>
@@ -116,7 +116,7 @@
                 </executions>
                 <configuration>
                     <excludes>
-                        <exclude>BcryptBenchmark.*</exclude>
+                        <exclude>**/benchmark-jmh/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>

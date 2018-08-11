@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings("CheckStyle")
 @State(Scope.Thread)
 @Fork(1)
-@Warmup(iterations = 3, time = 4)
+@Warmup(iterations = 2, time = 4)
 @Measurement(iterations = 3, time = 12)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
@@ -30,7 +30,7 @@ public class BcryptBenchmark {
         }
     };
 
-    @Param({"5", "6", "8", "10", "12"})
+    @Param({"10", "12"})
     private int cost;
     private byte[] pw;
 
@@ -51,12 +51,12 @@ public class BcryptBenchmark {
         return benchmark(favreBcrypt, cost, pw);
     }
 
-    @Benchmark
+    //@Benchmark
     public byte[] benchmarkJBcrypt() {
         return benchmark(jBcrypt, cost, pw);
     }
 
-    @Benchmark
+    //@Benchmark
     public byte[] benchmarkBcBcrypt() {
         return benchmark(bcBcrypt, cost, pw);
     }
