@@ -360,7 +360,7 @@ set as `pfopensource`.
 If you want to skip jar signing just change the skip configuration in the
 `pom.xml` jar sign plugin to true:
 
-    <skip>true</skip>
+    <project.skipJarSign>true</project.skipJarSign>
 
 ### Build with Maven
 
