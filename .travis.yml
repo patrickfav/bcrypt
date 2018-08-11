@@ -37,7 +37,7 @@ deploy:
       - "modules/bcrypt/target/bcrypt-*.jar"
       - "modules/bcrypt/target/*.sha256"
       - "modules/bcrypt/target/checksum-sha256.txt"
-      - "modules/bcrypt-cli/target/bcrypt-*.jar"
+      - "modules/bcrypt-cli/target/bcrypt-*-full.jar"
       - "modules/bcrypt-cli/target/*.sha256"
     skip_cleanup: true
     on:
