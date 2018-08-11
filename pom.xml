@@ -66,6 +66,7 @@
                 <version>3.0.0</version>
                 <configuration>
                     <configLocation>checkstyle.xml</configLocation>
+                    <excludes>BcryptBenchmark.*</excludes>
                 </configuration>
                 <dependencies>
                     <dependency>
