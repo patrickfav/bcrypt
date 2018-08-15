@@ -1,5 +1,7 @@
 # Releases
 
+## v0.6.0
+
 ## v0.5.0
 
 * allow actual 2^31 rounds (fix integer overflow issue with `1<<31`) #7
