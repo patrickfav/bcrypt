@@ -2,6 +2,8 @@
 
 ## v0.6.0
 
+* change verifier that accepts `String` type to accept more flexible `CharSequence`
+
 ## v0.5.0
 
 * allow actual 2^31 rounds (fix integer overflow issue with `1<<31`) #7

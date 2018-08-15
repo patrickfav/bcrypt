@@ -445,11 +445,23 @@ public final class BCrypt {
          * Same as calling <code>verify(password, bcryptHash.toCharArray())</code>
          *
          * @param password   to compare against the hash
-         * @param bcryptHash to compare against the password
+         * @param bcryptHash to compare against the password (you may just pass a regular {@link String})
          * @return result object, see {@link Result} for more info
          */
-        public Result verify(char[] password, String bcryptHash) {
-            return verify(password, bcryptHash.toCharArray(), null);
+        public Result verify(char[] password, CharSequence bcryptHash) {
+            return verify(password, toCharArray(bcryptHash), null);
+        }
+
+        private static char[] toCharArray(CharSequence charSequence) {
+            if (charSequence instanceof String) {
+                return charSequence.toString().toCharArray();
+            } else {
+                char[] buffer = new char[charSequence.length()];
+                for (int i = 0; i < charSequence.length(); i++) {
+                    buffer[i] = charSequence.charAt(i);
+                }
+                return buffer;
+            }
         }
 
         private Result verify(char[] password, char[] bcryptHash, Version requiredVersion) {
