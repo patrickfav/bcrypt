@@ -344,8 +344,8 @@ public final class BCrypt {
             HashData hashData = (HashData) o;
             return cost == hashData.cost &&
                     version == hashData.version &&
-                    Arrays.equals(rawSalt, hashData.rawSalt) &&
-                    Arrays.equals(rawHash, hashData.rawHash);
+                    Bytes.wrap(rawSalt).equalsConstantTime(hashData.rawSalt) &&
+                    Bytes.wrap(rawHash).equalsConstantTime(hashData.rawHash);
         }
 
         @Override
