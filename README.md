@@ -394,6 +394,10 @@ Use the Maven wrapper to create a jar including all dependencies
   * [Tomcat Bcrypt](https://github.com/andreacomo/tomcat-bcrypt)
 * [Bouncy Castle](https://github.com/bcgit/bc-java/blob/master/core/src/main/java/org/bouncycastle/crypto/generators/BCrypt.java)
 
+## Further Reading
+
+* [The Bcrypt Protocol… is kind of a mess](https://hackernoon.com/the-bcrypt-protocol-is-kind-of-a-mess-4aace5eb31bd)
+
 # License
 
 Copyright 2018 Patrick Favre-Bulle
