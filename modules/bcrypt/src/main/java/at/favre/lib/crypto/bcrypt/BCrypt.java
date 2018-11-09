@@ -8,7 +8,6 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Collections;
@@ -537,7 +536,7 @@ public final class BCrypt {
             Objects.requireNonNull(salt);
 
             HashData hashData = BCrypt.withDefaults().hashRaw(cost, salt, password);
-            return new Result(hashData, MessageDigest.isEqual(hashData.rawHash, rawBcryptHash23Bytes));
+            return new Result(hashData, Bytes.wrap(hashData.rawHash).equalsConstantTime(rawBcryptHash23Bytes));
         }
     }
 
