@@ -398,6 +398,11 @@ Use the Maven wrapper to create a jar including all dependencies
 
 * [The Bcrypt Protocol… is kind of a mess](https://hackernoon.com/the-bcrypt-protocol-is-kind-of-a-mess-4aace5eb31bd)
 
+## Related Libraries
+
+* [Single Step KDF [NIST SP 800-56C] (Java)](https://github.com/patrickfav/singlestep-kdf)
+* [HKDF [RFC5869] Two-Step KDF (Java)](https://github.com/patrickfav/hkdf)
+
 # License
 
 Copyright 2018 Patrick Favre-Bulle
