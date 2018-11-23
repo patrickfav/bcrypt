@@ -5,7 +5,6 @@ import at.favre.lib.bytes.BytesTransformer;
 import at.favre.lib.bytes.BytesValidators;
 
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
@@ -124,13 +123,6 @@ public final class BCrypt {
         return new Verifyer();
     }
 
-    private static byte[] charArrayToByteArray(char[] charArray, Charset charset) {
-        ByteBuffer bb = charset.encode(CharBuffer.wrap(charArray));
-        byte[] bytes = new byte[bb.remaining()];
-        bb.get(bytes);
-        return bytes;
-    }
-
     /**
      * Can create bcrypt hashes
      */
@@ -202,7 +194,7 @@ public final class BCrypt {
 
             byte[] passwordBytes = null;
             try {
-                passwordBytes = charArrayToByteArray(password, defaultCharset);
+                passwordBytes = Bytes.from(password, defaultCharset).array();
                 return hash(cost, Bytes.random(SALT_LENGTH, secureRandom).array(), passwordBytes);
             } finally {
                 Bytes.wrapNullSafe(passwordBytes).mutable().secureWipe();
@@ -467,8 +459,8 @@ public final class BCrypt {
             byte[] passwordBytes = null;
             byte[] bcryptHashBytes = null;
             try {
-                passwordBytes = charArrayToByteArray(password, defaultCharset);
-                bcryptHashBytes = charArrayToByteArray(bcryptHash, defaultCharset);
+                passwordBytes = Bytes.from(password, defaultCharset).array();
+                bcryptHashBytes = Bytes.from(bcryptHash, defaultCharset).array();
                 return verify(passwordBytes, bcryptHashBytes, requiredVersion);
             } finally {
                 Bytes.wrapNullSafe(passwordBytes).mutable().secureWipe();
