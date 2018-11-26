@@ -5,7 +5,7 @@ sudo: false # route your build to the container-based infrastructure for a faste
 language: java
 install: true
 jdk:
-  - openjdk10
+  - openjdk8
 
 env:
   global:
