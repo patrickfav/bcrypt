@@ -334,9 +334,9 @@ features and APIs have been added:
 * Signed Jar and signed commits
 * More tests (and probably higher coverage)
 
-## Security-relevant Information
+## Security Relevant Information
 
-### OSWAP Dependency Check
+### OWASP Dependency Check
 
 This project uses the [OWASP Dependency-Check](https://www.owasp.org/index.php/OWASP_Dependency_Check) which is a utility that identifies project dependencies and checks if there are any known, publicly disclosed, vulnerabilities against a [NIST database](https://nvd.nist.gov/vuln/data-feeds).
 The build will fail if any issue is found.
