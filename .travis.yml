@@ -17,8 +17,8 @@ before_install:
   - tar xvf secrets.tar
 
 script:
-  - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then ./mvnw clean install -X -Djarsigner.skip=true checkstyle:check; fi'
-  - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then ./mvnw clean install -X -Djarsigner.skip=false checkstyle:check; fi'
+  - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then ./mvnw clean install -Djarsigner.skip=true checkstyle:check; fi'
+  - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then ./mvnw clean install -Djarsigner.skip=false checkstyle:check; fi'
 
 after_success:
   - ./mvnw test jacoco:report coveralls:report
