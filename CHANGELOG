@@ -1,5 +1,7 @@
 # Releases
 
+## v0.8.0
+
 ## v0.7.0
 
 * add OSWAP dependency check plugin to Maven POM #14
