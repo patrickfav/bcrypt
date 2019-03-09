@@ -13,7 +13,7 @@ env:
     - secure: "rO0GEdDFN4QlA6+SLJXOvOPmKWt6RGM5YdVgI+RupmAcwlYB+VW+gmVPC+G1jQIbN6rtRLtyO2J2j0rLtBpCTKsWSwmLUQytlpIc5qQBSaYHoij+JR4j3Cngfb0ifjH9Doj6kb40/k+4Qy9t3ypbhRcZ32eXkOI3dlrnK2AubaUA1XlmxDG/ViA9FCpukcNLBVOqFdmzw3ity3YsXm5xRCXVkoTX/9zBl2x7XEHYWRR1ZgyOUCVSkQgT/OP5sqlfT7vRb0gg00ShgP5wepLDfQ1zc4QERo4/+CkD3ES/69fvQJWlAwTJ3b57pGZM8dkfhEQCInCHIL9HhQyXhwZ3gzsfflnu4+hSRnlmJIaNogFtdgOYF/NpadNBPBTytDHkLy7LKEJadz3snPFQM47ZBtleqygNMEq02QdD1tUkBQeDE0xNjUowPZcNQDEucihgHHBVQfCR/eR+3zxSlFnH1cKNn0k4Y5Hwx55eTqrnVtNQFXmD3E3ZfdTK9ne4c3Uk9gYHpuvj6vflUhDAlzGJfplsb9xMBtGDAt2qKDLgObnae9780RTxPDIM3FVP+WS1ATB6UCKNsrK/7KcCT6zrGwX3a5biCGCx9x/em5NHG4ZuF/Nq6m7qnHuVhrghjQgVL8wx6t3J9fLEidTcXiYo26A+kxzmlY7widyBb/l7g9U="
 
 before_install:
-  -  openssl aes-256-cbc -K $encrypted_55afeb8ba94e_key -iv $encrypted_55afeb8ba94e_iv -in secrets.tar.enc -out secrets.tar -d
+  - openssl aes-256-cbc -K $encrypted_55afeb8ba94e_key -iv $encrypted_55afeb8ba94e_iv -in secrets.tar.enc -out secrets.tar -d
   - tar xvf secrets.tar
 
 script:
