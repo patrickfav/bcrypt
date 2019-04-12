@@ -194,6 +194,10 @@ Add to your `build.gradle` module dependencies:
 
 [Grab jar from latest release.](https://github.com/patrickfav/bcrypt/releases/latest)
 
+### OSGi
+
+The library should be prepared to be used with the OSGi framework with the help of the [bundle plugin](http://felix.apache.org/documentation/subprojects/apache-felix-maven-bundle-plugin-bnd.html).
+
 ### CLI Tool
 
 Get the binary from the [release page](https://github.com/patrickfav/bcrypt/releases/latest) or build it yourself by with mvn (see below). The `jar`
