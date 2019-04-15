@@ -3,6 +3,7 @@ package at.favre.lib.crypto.bcrypt;
 import at.favre.lib.bytes.Bytes;
 import at.favre.lib.bytes.BytesTransformer;
 import at.favre.lib.bytes.BytesValidators;
+import at.favre.lib.bytes.MutableBytes;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -441,6 +442,26 @@ public final class BCrypt {
          */
         public Result verify(char[] password, CharSequence bcryptHash) {
             return verify(password, toCharArray(bcryptHash), null);
+        }
+
+        /**
+         * Verify given bcrypt hash, which includes salt and cost factor with given raw password.
+         * The result will have {@link Result#verified} true if they match. If given hash has an
+         * invalid format {@link Result#validFormat} will be false; see also {@link Result#formatErrorMessage}
+         * for easier debugging.
+         * <p>
+         * Same as calling <code>verify(Bytes.from(password, defaultCharset).array(), bcryptHash.toCharArray())</code>
+         *
+         * @param password   to compare against the hash
+         * @param bcryptHash to compare against the password; here the whole bcrypt hash
+         *                   (including salt, etc) in its encoded form is expected not the
+         *                   raw bytes found in {@link HashData#rawHash}
+         * @return result object, see {@link Result} for more info
+         */
+        public Result verify(char[] password, byte[] bcryptHash) {
+            try (MutableBytes pw = Bytes.from(password, defaultCharset).mutable()) {
+                return verify(pw.array(), bcryptHash, null);
+            }
         }
 
         private static char[] toCharArray(CharSequence charSequence) {
