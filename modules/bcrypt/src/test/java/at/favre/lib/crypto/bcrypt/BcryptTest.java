@@ -143,6 +143,8 @@ public class BcryptTest {
         assertTrue(verifyer.verify(pw.getBytes(UTF_8), hash2).verified);
         assertTrue(verifyer.verify(pw.toCharArray(), hash3).verified);
         assertTrue(verifyer.verify(pw.toCharArray(), hash4).verified);
+        assertTrue(verifyer.verify(pw.toCharArray(), hash1).verified);
+        assertTrue(verifyer.verify(pw.toCharArray(), hash2).verified);
         assertEquals(new BCryptParser.Default(new Radix64Encoder.Default(), UTF_8).parse(hash2), hashData);
     }
 

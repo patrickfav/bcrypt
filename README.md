@@ -188,7 +188,7 @@ Add the dependency of the [latest version](https://github.com/patrickfav/bcrypt/
 
 Add to your `build.gradle` module dependencies:
 
-    compile group: 'at.favre.lib', name: 'bcrypt', version: '{latest-version}'
+    implementation group: 'at.favre.lib', name: 'bcrypt', version: '{latest-version}'
 
 ### Local Jar Library
 
