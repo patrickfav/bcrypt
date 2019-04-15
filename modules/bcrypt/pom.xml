@@ -7,12 +7,12 @@
     <parent>
         <artifactId>bcrypt-parent</artifactId>
         <groupId>at.favre.lib</groupId>
-        <version>0.7.0</version>
+        <version>0.8.0-SNAPSHOT</version>
         <relativePath>../../</relativePath>
     </parent>
 
     <artifactId>bcrypt</artifactId>
-    <packaging>jar</packaging>
+    <packaging>bundle</packaging>
 
     <name>BCrypt Password Hashing Function</name>
     <description>Bcrypt is a password hashing function designed by Niels Provos and David Mazières, based on the
@@ -26,6 +26,12 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>4.2.0</version>
+                <extensions>true</extensions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>

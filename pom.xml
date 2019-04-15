@@ -7,7 +7,7 @@
     <groupId>at.favre.lib</groupId>
     <artifactId>bcrypt-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.8.0</version>
+    <version>0.8.0-SNAPSHOT</version>
 
     <url>https://github.com/patrickfav/bcrypt</url>
     <inceptionYear>2018</inceptionYear>
@@ -26,7 +26,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.jbcryptVersion>0.4</project.jbcryptVersion>
         <project.bcVersion>1.60</project.bcVersion>
-        <project.skipJarSign>false
+        <project.skipJarSign>true
         </project.skipJarSign> <!-- set this to true if fail because of missing credentials -->
     </properties>
 
