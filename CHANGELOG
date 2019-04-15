@@ -2,7 +2,8 @@
 
 ## v0.8.0
 
-* add new verify API signature accepting char array password and byte array hash
+* add new verify API signature accepting char array password and byte array hash #16
+* add OSGi support #15
 
 ## v0.7.0
 
