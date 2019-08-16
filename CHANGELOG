@@ -1,5 +1,8 @@
 # Releases
 
+## v0.9.0
+* fix license headers and correct credits to jBcrypt
+
 ## v0.8.0
 
 * add new verify API signature accepting char array password and byte array hash #16

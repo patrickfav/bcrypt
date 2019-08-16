@@ -1,6 +1,6 @@
 # Bcrypt Java Library and CLI Tool
 
-This is an implementation of the OpenBSD Blowfish password hashing algorithm, as described in "[A Future-Adaptable Password Scheme](http://www.openbsd.org/papers/bcrypt-paper.ps)" by Niels Provos and David Mazieres. It's core is based on [jBcrypt](https://github.com/jeremyh/jBCrypt), but  heavily refactored, modernized and with a lot of updates and enhancements. It supports all common [versions](https://en.wikipedia.org/wiki/Bcrypt#Versioning_history), has a security sensitive API and is fully tested against a range of test vectors and reference implementations.
+This is an implementation of the OpenBSD Blowfish password hashing algorithm, as described in "[A Future-Adaptable Password Scheme](http://www.openbsd.org/papers/bcrypt-paper.ps)" by Niels Provos and David Mazieres. It's core is based on [jBcrypt](https://github.com/djmdjm/jBCrypt), but  heavily refactored, modernized and with a lot of updates and enhancements. It supports all common [versions](https://en.wikipedia.org/wiki/Bcrypt#Versioning_history), has a security sensitive API and is fully tested against a range of test vectors and reference implementations.
 
 [![Download](https://api.bintray.com/packages/patrickfav/maven/bcrypt/images/download.svg)](https://bintray.com/patrickfav/maven/bcrypt/_latestVersion)
 [![Build Status](https://travis-ci.org/patrickfav/bcrypt.svg?branch=master)](https://travis-ci.org/patrickfav/bcrypt)
@@ -392,14 +392,14 @@ Use the Maven wrapper to create a jar including all dependencies
 
 ## Libraries & Credits
 
-* [jBcrypt](https://github.com/jeremyh/jBCrypt) (derived the "Blowfish Expensive key setup") (under BSD licence)
+* [jBcrypt](https://github.com/djmdjm/jBCrypt) (derived the "Blowfish Expensive key setup") (under BSD licence)
 * Radix64 implementation derived from [Square's Okio Base64](https://github.com/square/okio) (under Apache v2)
 * [Bytes](https://github.com/patrickfav/bytes-java) (byte array utility library) (under Apache v2)
 
 
 ### BCrypt Implementations in Java
 
-* [jBcrypt](https://github.com/jeremyh/jBCrypt) - the below implementations are based on jBcrypt
+* [jBcrypt](https://github.com/djmdjm/jBCrypt) - the below implementations are based on jBcrypt
   * [Spring Bcrypt](https://docs.spring.io/spring-security/site/docs/4.2.5.RELEASE/apidocs/org/springframework/security/crypto/bcrypt/BCrypt.html)
   * [Apache Ldap](https://directory.apache.org/api/gen-docs/latest/apidocs/org/apache/directory/api/ldap/model/password/BCrypt.html)
   * [Tomcat Bcrypt](https://github.com/andreacomo/tomcat-bcrypt)
