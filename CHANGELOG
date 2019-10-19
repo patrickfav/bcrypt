@@ -2,6 +2,7 @@
 
 ## v0.9.0
 * fix license headers and correct credits to jBcrypt
+* add long-password strategy to verifier #21
 
 ## v0.8.0
 

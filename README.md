@@ -101,8 +101,14 @@ The API supports passing a custom handling in that case, to mimic the behaviour 
 truncate the password.
 
 ```java
-BCrypt.with(LongPasswordStrategies.truncate()).hash(6, new byte[100]);
-BCrypt.with(LongPasswordStrategies.hashSha512()).hash(6, new byte[100]); //allows to honour all pw bytes
+BCrypt.with(LongPasswordStrategies.truncate()).hash(6, pw);
+BCrypt.with(LongPasswordStrategies.hashSha512()).hash(6, pw); //allows to honour all pw bytes
+```
+
+Don't forget to use the same strategy when verifying:
+
+```java
+BCrypt.verifyer(LongPasswordStrategies.truncate()).verify(pw, hash)
 ```
 
 The password will only be transformed if it is longer than 71 bytes. *It is important to note, however, that using any

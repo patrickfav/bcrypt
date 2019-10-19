@@ -14,6 +14,7 @@ public class LongPasswordStrategyTest {
     public void testFactory() {
         assertNotNull(LongPasswordStrategies.hashSha512().derive(Bytes.random(100).array()));
         assertNotNull(LongPasswordStrategies.truncate().derive(Bytes.random(100).array()));
+        assertNotNull(LongPasswordStrategies.none().derive(Bytes.random(100).array()));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -90,6 +91,17 @@ public class LongPasswordStrategyTest {
             assertArrayEquals(Bytes.wrap(byteArray).hash("SHA-512").array(), strategy.derive(byteArray));
             assertTrue(byteArray.length <= maxLength);
             System.out.println(Bytes.wrap(byteArray).encodeHex());
+        }
+    }
+
+    @Test
+    public void testPassThroughStrategy() {
+        LongPasswordStrategy strategy = new LongPasswordStrategy.PassThroughStrategy();
+        byte[] byteArray;
+
+        for (int i = 1; i < 64; i++) {
+            byteArray = Bytes.random(i).array();
+            assertSame(byteArray, strategy.derive(byteArray));
         }
     }
 }
