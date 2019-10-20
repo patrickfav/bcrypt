@@ -1,4 +1,4 @@
-# Contributing to HKDF
+# Contributing to Bcrypt
 
 We ❤ pull requests from everyone.
 
@@ -8,8 +8,8 @@ This repo validates against checkstyle (import the xml found in the root to your
 To run the tests (and checkstyle):
 
 ```shell
-mvn test checkstyle:check
+mvn clean install
 ```
 
-Tests are automatically run against branches and pull requests
+Tests are automatically run against feature branches and pull requests
 via TravisCI, so you can also depend on that.
