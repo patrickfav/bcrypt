@@ -108,7 +108,7 @@ BCrypt.with(LongPasswordStrategies.hashSha512()).hash(6, pw); //allows to honour
 Don't forget to use the same strategy when verifying:
 
 ```java
-BCrypt.verifyer(LongPasswordStrategies.truncate()).verify(pw, hash)
+BCrypt.verifyer(LongPasswordStrategies.truncate()).verify(pw, hash);
 ```
 
 The password will only be transformed if it is longer than 71 bytes. *It is important to note, however, that using any
