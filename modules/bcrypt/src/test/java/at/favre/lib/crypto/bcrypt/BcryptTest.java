@@ -263,23 +263,17 @@ public class BcryptTest {
         byte[] hash = bCrypt.hash(8, Bytes.random(16).array(), pw);
 
         BCrypt.Result result = BCrypt.verifyer().verify(pw, hash);
-        assertTrue(result.verified);
-        assertTrue(result.validFormat);
-        assertEquals(BCrypt.Version.VERSION_2A, result.details.version);
-        assertEquals(8, result.details.cost);
+        assertResult(result, true, BCrypt.Version.VERSION_2A, 8);
     }
 
     @Test
     public void verifyRawByteArrays() {
         BCrypt.Hasher bCrypt = BCrypt.withDefaults();
-        byte[] pw = Bytes.random(24).encodeBase36().getBytes();
+        byte[] pw = Bytes.random(24).encodeRadix(36).getBytes();
         BCrypt.HashData hash = bCrypt.hashRaw(6, Bytes.random(16).array(), pw);
 
         BCrypt.Result result = BCrypt.verifyer().verify(pw, hash);
-        assertTrue(result.verified);
-        assertTrue(result.validFormat);
-        assertEquals(BCrypt.Version.VERSION_2A, result.details.version);
-        assertEquals(6, result.details.cost);
+        assertResult(result, true, BCrypt.Version.VERSION_2A, 6);
     }
 
     @Test
@@ -288,11 +282,8 @@ public class BcryptTest {
         byte[] pw = Bytes.random(24).encodeBase36().getBytes();
         BCrypt.HashData hash = bCrypt.hashRaw(7, Bytes.random(16).array(), pw);
 
-        BCrypt.Result result = BCrypt.verifyer().verify(pw, hash.cost, hash.rawSalt, hash.rawHash);
-        assertTrue(result.verified);
-        assertTrue(result.validFormat);
-        assertEquals(BCrypt.Version.VERSION_2A, result.details.version);
-        assertEquals(7, result.details.cost);
+        BCrypt.Result result = BCrypt.verifyer().verify(pw, hash.cost, hash.rawSalt, hash.rawHash, hash.version);
+        assertResult(result, true, BCrypt.Version.VERSION_2A, 7);
     }
 
     @Test
@@ -302,10 +293,7 @@ public class BcryptTest {
         char[] hash = bCrypt.hashToChar(6, pw.toCharArray());
 
         BCrypt.Result result = BCrypt.verifyer().verify(pw.toCharArray(), hash);
-        assertTrue(result.verified);
-        assertTrue(result.validFormat);
-        assertEquals(BCrypt.Version.VERSION_2A, result.details.version);
-        assertEquals(6, result.details.cost);
+        assertResult(result, true, BCrypt.Version.VERSION_2A, 6);
     }
 
     @Test
@@ -315,10 +303,7 @@ public class BcryptTest {
         byte[] hash = bCrypt.hash(5, Bytes.random(16).array(), pw);
 
         BCrypt.Result result = BCrypt.verifyer().verifyStrict(pw, hash, BCrypt.Version.VERSION_2A);
-        assertFalse(result.verified);
-        assertTrue(result.validFormat);
-        assertEquals(BCrypt.Version.VERSION_2Y, result.details.version);
-        assertEquals(5, result.details.cost);
+        assertResult(result, false, BCrypt.Version.VERSION_2Y, 5);
     }
 
     @Test
@@ -328,10 +313,28 @@ public class BcryptTest {
         char[] hash = bCrypt.hashToChar(5, pw.toCharArray());
 
         BCrypt.Result result = BCrypt.verifyer().verifyStrict(pw.toCharArray(), hash, BCrypt.Version.VERSION_2A);
-        assertFalse(result.verified);
+        assertResult(result, false, BCrypt.Version.VERSION_2X, 5);
+    }
+
+    @Test
+    public void verifyCorrectNonDefaultVersion() {
+        BCrypt.Version version = BCrypt.Version.VERSION_2X;
+        int cost = 4;
+        BCrypt.Hasher bCrypt = BCrypt.with(version);
+        String pw = "8PAsdjhlkjhkjla_ääas#d";
+        BCrypt.HashData hash1 = bCrypt.hashRaw(cost, Bytes.random(16).array(), Bytes.from(pw).array());
+        char[] hash2 = bCrypt.hashToChar(cost, pw.toCharArray());
+
+        assertResult(BCrypt.verifyer().verify(pw.toCharArray(), hash2), true, version, cost);
+        assertResult(BCrypt.verifyer().verifyStrict(pw.toCharArray(), hash2, version), true, version, cost);
+        assertResult(BCrypt.verifyer().verify(Bytes.from(pw).array(), hash1), true, version, cost);
+    }
+
+    private void assertResult(BCrypt.Result result, boolean verified, BCrypt.Version version, int cost) {
+        assertEquals(verified, result.verified);
         assertTrue(result.validFormat);
-        assertEquals(BCrypt.Version.VERSION_2X, result.details.version);
-        assertEquals(5, result.details.cost);
+        assertEquals(version, result.details.version);
+        assertEquals(cost, result.details.cost);
     }
 
     @Test

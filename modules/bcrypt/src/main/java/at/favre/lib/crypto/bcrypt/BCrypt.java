@@ -517,7 +517,7 @@ public final class BCrypt {
                     return new Result(hashData, false);
                 }
 
-                return verify(password, hashData.cost, hashData.rawSalt, hashData.rawHash);
+                return verify(password, hashData.cost, hashData.rawSalt, hashData.rawHash, hashData.version);
             } catch (IllegalBCryptFormatException e) {
                 return new Result(e);
             }
@@ -538,7 +538,7 @@ public final class BCrypt {
          * @return result object, see {@link Result} for more info
          */
         public Result verify(byte[] password, HashData bcryptHashData) {
-            return verify(password, bcryptHashData.cost, bcryptHashData.rawSalt, bcryptHashData.rawHash);
+            return verify(password, bcryptHashData.cost, bcryptHashData.rawSalt, bcryptHashData.rawHash, bcryptHashData.version);
         }
 
         /**
@@ -555,14 +555,15 @@ public final class BCrypt {
          * @param cost                 cost (log2 factor) which was used to create the hash
          * @param salt                 16 byte raw hash value (not radix64 version) which was used to create the hash
          * @param rawBcryptHash23Bytes 23 byte raw bcrypt hash value (not radix64 version)
+         * @param version              the version of the provided hash
          * @return result object, see {@link Result} for more info
          */
-        public Result verify(byte[] password, int cost, byte[] salt, byte[] rawBcryptHash23Bytes) {
+        public Result verify(byte[] password, int cost, byte[] salt, byte[] rawBcryptHash23Bytes, Version version) {
             Objects.requireNonNull(password);
             Objects.requireNonNull(rawBcryptHash23Bytes);
             Objects.requireNonNull(salt);
 
-            HashData hashData = BCrypt.with(longPasswordStrategy).hashRaw(cost, salt, password);
+            HashData hashData = BCrypt.with(version, new SecureRandom(), longPasswordStrategy).hashRaw(cost, salt, password);
             return new Result(hashData, Bytes.wrap(hashData.rawHash).equalsConstantTime(rawBcryptHash23Bytes));
         }
     }
