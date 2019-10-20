@@ -135,6 +135,7 @@ public final class BCrypt {
     public static Verifyer verifyer(LongPasswordStrategy longPasswordStrategy) {
         return new Verifyer(longPasswordStrategy);
     }
+
     /**
      * Can create bcrypt hashes
      */
