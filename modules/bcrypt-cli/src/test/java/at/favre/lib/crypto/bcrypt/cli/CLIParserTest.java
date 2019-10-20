@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import java.util.Random;
 
+import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -62,9 +63,13 @@ public class CLIParserTest {
     @Test
     public void testWithSaltWrongLengthReturnNull() {
         assertNull(CLIParser.parse(asArgArray("'" + defaultPw + "' -" + CLIParser.ARG_HASH + " 4 490d9611ab0930a9d9ef8776855336")));
-        assertNull(CLIParser.parse(asArgArray("'" + defaultPw + "' -" + CLIParser.ARG_HASH + " 5 490d9611ab0930a9d9ef87768553366")));
         assertNull(CLIParser.parse(asArgArray("'" + defaultPw + "' -" + CLIParser.ARG_HASH + " 6 490d9611ab0930a9d9ef87768553366fe2")));
         assertNull(CLIParser.parse(asArgArray("'" + defaultPw + "' -" + CLIParser.ARG_HASH + " 7 490d9611ab0930a9d9ef87768553366fe")));
+    }
+
+    @Test
+    public void testWith31LengthSalt_shouldParseWillAppendLeadingZero() {
+        assertNotNull(CLIParser.parse(asArgArray("'" + defaultPw + "' -" + CLIParser.ARG_HASH + " 5 490d9611ab0930a9d9ef87768553366")));
     }
 
     @Test
