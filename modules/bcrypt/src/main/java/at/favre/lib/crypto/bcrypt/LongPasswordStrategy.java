@@ -83,4 +83,13 @@ public interface LongPasswordStrategy {
         }
     }
 
+    /**
+     * A simple strategy that just returns the provided password without changing it.
+     */
+    final class PassThroughStrategy implements LongPasswordStrategy {
+        @Override
+        public byte[] derive(byte[] rawPassword) {
+            return rawPassword;
+        }
+    }
 }

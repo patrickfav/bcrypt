@@ -413,4 +413,15 @@ public class BcryptTest {
         assertNotEquals(BCrypt.Version.VERSION_2A.hashCode(), BCrypt.Version.VERSION_2B.hashCode());
         assertNotEquals(BCrypt.Version.VERSION_2X.hashCode(), BCrypt.Version.VERSION_2Y.hashCode());
     }
+
+    @Test
+    public void testVerifierWithLongPasswordStrategy() {
+        LongPasswordStrategy truncate = LongPasswordStrategies.truncate();
+
+        byte[] pw = Bytes.random(200).array();
+        byte[] hash = BCrypt.with(truncate).hash(4, pw);
+
+        assertTrue(BCrypt.verifyer(truncate).verify(pw, hash).verified);
+        assertFalse(BCrypt.verifyer().verify(pw, hash).verified);
+    }
 }

@@ -121,7 +121,19 @@ public final class BCrypt {
      * @return new verifier instance
      */
     public static Verifyer verifyer() {
-        return new Verifyer();
+        return verifyer(LongPasswordStrategies.none());
+    }
+
+    /**
+     * Creates a new instance of bcrypt verifier to verify a password against a given hash.
+     * This verify also respects the passed {@link LongPasswordStrategy} for creating the reference hash - use this
+     * if you use one while hashing.
+     *
+     * @param longPasswordStrategy used to create the reference hash.
+     * @return new verifier instance
+     */
+    public static Verifyer verifyer(LongPasswordStrategy longPasswordStrategy) {
+        return new Verifyer(longPasswordStrategy);
     }
 
     /**
@@ -364,8 +376,10 @@ public final class BCrypt {
      */
     public static final class Verifyer {
         private final Charset defaultCharset = DEFAULT_CHARSET;
+        private final LongPasswordStrategy longPasswordStrategy;
 
-        private Verifyer() {
+        private Verifyer(LongPasswordStrategy longPasswordStrategy) {
+            this.longPasswordStrategy = longPasswordStrategy;
         }
 
         /**
@@ -549,7 +563,7 @@ public final class BCrypt {
             Objects.requireNonNull(rawBcryptHash23Bytes);
             Objects.requireNonNull(salt);
 
-            HashData hashData = BCrypt.with(version).hashRaw(cost, salt, password);
+            HashData hashData = BCrypt.with(version, new SecureRandom(), longPasswordStrategy).hashRaw(cost, salt, password);
             return new Result(hashData, Bytes.wrap(hashData.rawHash).equalsConstantTime(rawBcryptHash23Bytes));
         }
     }

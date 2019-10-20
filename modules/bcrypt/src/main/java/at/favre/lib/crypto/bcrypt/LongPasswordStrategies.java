@@ -34,4 +34,13 @@ public final class LongPasswordStrategies {
     public static LongPasswordStrategy strict() {
         return new LongPasswordStrategy.StrictMaxPasswordLengthStrategy(BCrypt.MAX_PW_LENGTH_BYTE);
     }
+
+    /**
+     * See {@link LongPasswordStrategy.PassThroughStrategy}
+     *
+     * @return new instance
+     */
+    public static LongPasswordStrategy none() {
+        return new LongPasswordStrategy.PassThroughStrategy();
+    }
 }
