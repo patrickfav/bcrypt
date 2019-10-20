@@ -2,6 +2,11 @@
 
 ## v0.9.0
 * fix license headers and correct credits to jBcrypt
+* fix not returning correct hash version when verifying #24
+
+### Breaking Changes
+
+* `verify(byte[] password, int cost, byte[] salt, byte[] rawBcryptHash23Bytes)` signature changed, added `version` property (see #24)
 
 ## v0.8.0
 
