@@ -4,10 +4,13 @@
 * fix license headers and correct credits to jBcrypt
 * add long-password strategy to verifier #21
 * fix not returning correct hash version when verifying #24
+* allow for custom max password length in Version #22
 
 ### Breaking Changes
 
 * `verify(byte[] password, int cost, byte[] salt, byte[] rawBcryptHash23Bytes)` signature changed, added `version` property (see #24)
+* `LongPasswordStrategies` factory methods now require the version for the max password length (see #22)
+* Verifier now accepts `Version` as a constructor parameter and `verifyStrict` therefore does not need one (see #22)
 
 ## v0.8.0
 

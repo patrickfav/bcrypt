@@ -9,17 +9,18 @@ import static org.junit.Assert.*;
 public class LongPasswordStrategyTest {
 
     private final int maxLength = 72;
+    private static final BCrypt.Version DEFAULT_VERSION = BCrypt.Version.VERSION_2A;
 
     @Test
     public void testFactory() {
-        assertNotNull(LongPasswordStrategies.hashSha512().derive(Bytes.random(100).array()));
-        assertNotNull(LongPasswordStrategies.truncate().derive(Bytes.random(100).array()));
+        assertNotNull(LongPasswordStrategies.hashSha512(DEFAULT_VERSION).derive(Bytes.random(100).array()));
+        assertNotNull(LongPasswordStrategies.truncate(DEFAULT_VERSION).derive(Bytes.random(100).array()));
         assertNotNull(LongPasswordStrategies.none().derive(Bytes.random(100).array()));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testFactoryForStrictShouldThrowException() {
-        LongPasswordStrategies.strict().derive(Bytes.random(100).array());
+        LongPasswordStrategies.strict(DEFAULT_VERSION).derive(Bytes.random(100).array());
     }
 
     @Test

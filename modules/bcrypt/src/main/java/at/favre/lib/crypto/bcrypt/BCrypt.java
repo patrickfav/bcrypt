@@ -27,11 +27,6 @@ public final class BCrypt {
     public static final int SALT_LENGTH = 16;
 
     /**
-     * The max length of the password in bytes excluding lats null-terminator byte
-     */
-    public static final int MAX_PW_LENGTH_BYTE = 71;
-
-    /**
      * Minimum allowed cost factor
      */
     public static final int MIN_COST = 4;
@@ -55,52 +50,68 @@ public final class BCrypt {
      */
     static final byte SEPARATOR = 0x24;
 
+    /**
+     * The default version of none is given
+     */
+    static final Version DEFAULT_VERSION = Version.VERSION_2A;
+
     private BCrypt() {
     }
 
     /**
      * Create a new instance of bcrypt hash with default version {@link Version#VERSION_2A}.
-     * Will throw an exception if given password is longer than the max length support for bycrpt of {@link #MAX_PW_LENGTH_BYTE}.
+     * Will throw an exception if given password is longer than the max length support for bycrpt of {@link Version#allowedMaxPwLength}.
      *
      * @return new bcrypt hash instance
      */
     public static Hasher withDefaults() {
-        return new Hasher(Version.VERSION_2A, new SecureRandom(), new LongPasswordStrategy.StrictMaxPasswordLengthStrategy(MAX_PW_LENGTH_BYTE));
+        return new Hasher(DEFAULT_VERSION, new SecureRandom(), LongPasswordStrategies.strict(DEFAULT_VERSION));
     }
 
     /**
      * Create a new instance of bcrypt hash with given {@link Version}.
-     * Will throw an exception if given password is longer than the max length support for bycrpt of {@link #MAX_PW_LENGTH_BYTE}.
+     * Will throw an exception if given password is longer than the max length support for bycrpt of {@link Version#allowedMaxPwLength}.
      *
      * @param version defines what version of bcrypt will be generated (mostly the version identifier changes)
      * @return new bcrypt hash instance
      */
     public static Hasher with(Version version) {
-        return new Hasher(version, new SecureRandom(), new LongPasswordStrategy.StrictMaxPasswordLengthStrategy(MAX_PW_LENGTH_BYTE));
+        return new Hasher(version, new SecureRandom(), LongPasswordStrategies.strict(DEFAULT_VERSION));
     }
 
     /**
      * Create a new instance of bcrypt hash with default version {@link Version#VERSION_2A}.
      * The passed {@link SecureRandom} is used for generating the random salt.
-     * Will throw an exception if given password is longer than the max length support for bycrpt of {@link #MAX_PW_LENGTH_BYTE}.
+     * Will throw an exception if given password is longer than the max length support for bycrpt of {@link Version#allowedMaxPwLength}.
      *
      * @param secureRandom to use for random salt generation
      * @return new bcrypt hash instance
      */
     public static Hasher with(SecureRandom secureRandom) {
-        return new Hasher(Version.VERSION_2A, secureRandom, new LongPasswordStrategy.StrictMaxPasswordLengthStrategy(MAX_PW_LENGTH_BYTE));
+        return new Hasher(DEFAULT_VERSION, secureRandom, LongPasswordStrategies.strict(DEFAULT_VERSION));
     }
 
     /**
      * Create a new instance of bcrypt hash with default version {@link Version#VERSION_2A}.
      * The passed {@link LongPasswordStrategy} will decide what to do when the password is longer than the supported
-     * {@link #MAX_PW_LENGTH_BYTE}
+     * {@link Version#allowedMaxPwLength}
      *
      * @param longPasswordStrategy decides what to do on pw that are too long
      * @return new bcrypt hash instance
      */
     public static Hasher with(LongPasswordStrategy longPasswordStrategy) {
-        return new Hasher(Version.VERSION_2A, new SecureRandom(), longPasswordStrategy);
+        return new Hasher(DEFAULT_VERSION, new SecureRandom(), longPasswordStrategy);
+    }
+
+    /**
+     * Create a new instance with custom version and long password strategy
+     *
+     * @param version              defines what version of bcrypt will be generated (mostly the version identifier changes)
+     * @param longPasswordStrategy decides what to do on pw that are too long
+     * @return new bcrypt hash instance
+     */
+    public static Hasher with(Version version, LongPasswordStrategy longPasswordStrategy) {
+        return new Hasher(version, new SecureRandom(), longPasswordStrategy);
     }
 
     /**
@@ -116,12 +127,23 @@ public final class BCrypt {
     }
 
     /**
-     * Creates a new instance of bcrypt verifier to verify a password against a given hash
+     * Creates a new instance of bcrypt verifier to verify a password against a given hash.
+     * Uses {@link Version#VERSION_2A} and a strict long passwords strategy.
      *
      * @return new verifier instance
      */
     public static Verifyer verifyer() {
-        return verifyer(LongPasswordStrategies.none());
+        return verifyer(DEFAULT_VERSION);
+    }
+
+    /**
+     * Creates a new instance of bcrypt verifier to verify a password against a given hash.
+     *
+     * @param version to use, also matters in  {@link Verifyer#verifyStrict(byte[], byte[])}
+     * @return new verifier instance
+     */
+    public static Verifyer verifyer(Version version) {
+        return new Verifyer(version, LongPasswordStrategies.strict(version));
     }
 
     /**
@@ -129,11 +151,12 @@ public final class BCrypt {
      * This verify also respects the passed {@link LongPasswordStrategy} for creating the reference hash - use this
      * if you use one while hashing.
      *
+     * @param version              to use, also matters in  {@link Verifyer#verifyStrict(byte[], byte[])}
      * @param longPasswordStrategy used to create the reference hash.
      * @return new verifier instance
      */
-    public static Verifyer verifyer(LongPasswordStrategy longPasswordStrategy) {
-        return new Verifyer(longPasswordStrategy);
+    public static Verifyer verifyer(Version version, LongPasswordStrategy longPasswordStrategy) {
+        return new Verifyer(version, longPasswordStrategy);
     }
 
     /**
@@ -281,7 +304,7 @@ public final class BCrypt {
                 throw new IllegalArgumentException("provided password must at least be length 1 if no null terminator is appended");
             }
 
-            if (password.length > MAX_PW_LENGTH_BYTE + (version.appendNullTerminator ? 0 : 1)) {
+            if (password.length > version.allowedMaxPwLength + (version.appendNullTerminator ? 0 : 1)) {
                 password = longPasswordStrategy.derive(password);
             }
 
@@ -377,9 +400,11 @@ public final class BCrypt {
     public static final class Verifyer {
         private final Charset defaultCharset = DEFAULT_CHARSET;
         private final LongPasswordStrategy longPasswordStrategy;
+        private final Version version;
 
-        private Verifyer(LongPasswordStrategy longPasswordStrategy) {
-            this.longPasswordStrategy = longPasswordStrategy;
+        private Verifyer(Version version, LongPasswordStrategy longPasswordStrategy) {
+            this.version = Objects.requireNonNull(version);
+            this.longPasswordStrategy = Objects.requireNonNull(longPasswordStrategy);
         }
 
         /**
@@ -388,14 +413,15 @@ public final class BCrypt {
          * <p>
          * If given hash has an invalid format {@link Result#validFormat} will be false; see also
          * {@link Result#formatErrorMessage} for easier debugging.
+         * <p>
+         * Using the strict method will also require the version identifier to match, matching hash does not suffice.
          *
-         * @param password        to compare against the hash
-         * @param bcryptHash      to compare against the password
-         * @param expectedVersion will check for this version and wil not verify if versions do not match
+         * @param password   to compare against the hash
+         * @param bcryptHash to compare against the password
          * @return result object, see {@link Result} for more info
          */
-        public Result verifyStrict(byte[] password, byte[] bcryptHash, Version expectedVersion) {
-            return verify(password, bcryptHash, expectedVersion);
+        public Result verifyStrict(byte[] password, byte[] bcryptHash) {
+            return innerVerify(password, bcryptHash, true);
         }
 
         /**
@@ -409,7 +435,7 @@ public final class BCrypt {
          * @return result object, see {@link Result} for more info
          */
         public Result verify(byte[] password, byte[] bcryptHash) {
-            return verify(password, bcryptHash, null);
+            return innerVerify(password, bcryptHash, false);
         }
 
         /**
@@ -418,14 +444,15 @@ public final class BCrypt {
          * <p>
          * If given hash has an invalid format {@link Result#validFormat} will be false; see also
          * {@link Result#formatErrorMessage} for easier debugging.
+         * <p>
+         * Using the strict method will also require the version identifier to match, matching hash does not suffice.
          *
-         * @param password        to compare against the hash
-         * @param bcryptHash      to compare against the password
-         * @param expectedVersion will check for this version and wil not verify if versions do not match
+         * @param password   to compare against the hash
+         * @param bcryptHash to compare against the password
          * @return result object, see {@link Result} for more info
          */
-        public Result verifyStrict(char[] password, char[] bcryptHash, Version expectedVersion) {
-            return verify(password, bcryptHash, expectedVersion);
+        public Result verifyStrict(char[] password, char[] bcryptHash) {
+            return innerVerify(password, bcryptHash, true);
         }
 
         /**
@@ -439,7 +466,7 @@ public final class BCrypt {
          * @return result object, see {@link Result} for more info
          */
         public Result verify(char[] password, char[] bcryptHash) {
-            return verify(password, bcryptHash, null);
+            return innerVerify(password, bcryptHash, false);
         }
 
         /**
@@ -455,7 +482,7 @@ public final class BCrypt {
          * @return result object, see {@link Result} for more info
          */
         public Result verify(char[] password, CharSequence bcryptHash) {
-            return verify(password, toCharArray(bcryptHash), null);
+            return innerVerify(password, toCharArray(bcryptHash), false);
         }
 
         /**
@@ -474,7 +501,7 @@ public final class BCrypt {
          */
         public Result verify(char[] password, byte[] bcryptHash) {
             try (MutableBytes pw = Bytes.from(password, defaultCharset).mutable()) {
-                return verify(pw.array(), bcryptHash, null);
+                return innerVerify(pw.array(), bcryptHash, false);
             }
         }
 
@@ -490,13 +517,13 @@ public final class BCrypt {
             }
         }
 
-        private Result verify(char[] password, char[] bcryptHash, Version requiredVersion) {
+        private Result innerVerify(char[] password, char[] bcryptHash, boolean strict) {
             byte[] passwordBytes = null;
             byte[] bcryptHashBytes = null;
             try {
                 passwordBytes = Bytes.from(password, defaultCharset).array();
                 bcryptHashBytes = Bytes.from(bcryptHash, defaultCharset).array();
-                return verify(passwordBytes, bcryptHashBytes, requiredVersion);
+                return innerVerify(passwordBytes, bcryptHashBytes, strict);
             } finally {
                 Bytes.wrapNullSafe(passwordBytes).mutable().secureWipe();
                 Bytes.wrapNullSafe(bcryptHashBytes).mutable().secureWipe();
@@ -506,18 +533,17 @@ public final class BCrypt {
         /**
          * Verify given password against a bcryptHash
          */
-        private Result verify(byte[] password, byte[] bcryptHash, Version requiredVersion) {
+        private Result innerVerify(byte[] password, byte[] bcryptHash, boolean strict) {
             Objects.requireNonNull(bcryptHash);
 
-            BCryptParser parser = requiredVersion == null ? Version.VERSION_2A.parser : requiredVersion.parser;
             try {
-                HashData hashData = parser.parse(bcryptHash);
+                HashData hashData = this.version.parser.parse(bcryptHash);
 
-                if (requiredVersion != null && hashData.version != requiredVersion) {
+                if (strict && hashData.version != this.version) {
                     return new Result(hashData, false);
                 }
 
-                return verify(password, hashData.cost, hashData.rawSalt, hashData.rawHash, hashData.version);
+                return verify(password, hashData.cost, hashData.rawSalt, hashData.rawHash);
             } catch (IllegalBCryptFormatException e) {
                 return new Result(e);
             }
@@ -538,7 +564,7 @@ public final class BCrypt {
          * @return result object, see {@link Result} for more info
          */
         public Result verify(byte[] password, HashData bcryptHashData) {
-            return verify(password, bcryptHashData.cost, bcryptHashData.rawSalt, bcryptHashData.rawHash, bcryptHashData.version);
+            return verify(password, bcryptHashData.cost, bcryptHashData.rawSalt, bcryptHashData.rawHash);
         }
 
         /**
@@ -555,15 +581,14 @@ public final class BCrypt {
          * @param cost                 cost (log2 factor) which was used to create the hash
          * @param salt                 16 byte raw hash value (not radix64 version) which was used to create the hash
          * @param rawBcryptHash23Bytes 23 byte raw bcrypt hash value (not radix64 version)
-         * @param version              the version of the provided hash
          * @return result object, see {@link Result} for more info
          */
-        public Result verify(byte[] password, int cost, byte[] salt, byte[] rawBcryptHash23Bytes, Version version) {
+        public Result verify(byte[] password, int cost, byte[] salt, byte[] rawBcryptHash23Bytes) {
             Objects.requireNonNull(password);
             Objects.requireNonNull(rawBcryptHash23Bytes);
             Objects.requireNonNull(salt);
 
-            HashData hashData = BCrypt.with(version, new SecureRandom(), longPasswordStrategy).hashRaw(cost, salt, password);
+            HashData hashData = BCrypt.with(this.version, longPasswordStrategy).hashRaw(cost, salt, password);
             return new Result(hashData, Bytes.wrap(hashData.rawHash).equalsConstantTime(rawBcryptHash23Bytes));
         }
     }
@@ -644,6 +669,16 @@ public final class BCrypt {
         private static final BCryptParser DEFAULT_PARSER = new BCryptParser.Default(new Radix64Encoder.Default(), BCrypt.DEFAULT_CHARSET);
 
         /**
+         * Absolutely maximum length bcrypt can support (18x32bit)
+         */
+        public static final int MAX_PW_LENGTH_BYTE = 72;
+
+        /**
+         * The max length of the password in bytes excluding lats null-terminator byte
+         */
+        public static final int DEFAULT_MAX_PW_LENGTH_BYTE = MAX_PW_LENGTH_BYTE - 1;
+
+        /**
          * $2a$
          * <p>
          * The original specification did not define how to handle non-ASCII character, nor how to handle a null
@@ -682,10 +717,17 @@ public final class BCrypt {
         public static final Version VERSION_2Y = new Version(new byte[]{MAJOR_VERSION, 0x79}, DEFAULT_FORMATTER, DEFAULT_PARSER);
 
         /**
+         * $2y$ (2011) without the null terminator
+         * <p>
+         * See {@link #VERSION_2Y}
+         */
+        public static final Version VERSION_2Y_NO_NULL_TERMINATOR = new Version(new byte[]{MAJOR_VERSION, 0x79}, true, false, MAX_PW_LENGTH_BYTE, DEFAULT_FORMATTER, DEFAULT_PARSER);
+
+        /**
          * This mirrors how Bouncy Castle creates bcrypt hashes: with 24 byte out and without null-terminator. Gets a fake
          * version descriptor.
          */
-        public static final Version VERSION_BC = new Version(new byte[]{MAJOR_VERSION, 0x63}, false, false, DEFAULT_FORMATTER, DEFAULT_PARSER);
+        public static final Version VERSION_BC = new Version(new byte[]{MAJOR_VERSION, 0x63}, false, false, DEFAULT_MAX_PW_LENGTH_BYTE, DEFAULT_FORMATTER, DEFAULT_PARSER);
 
         /**
          * List of supported versions
@@ -710,6 +752,13 @@ public final class BCrypt {
         public final boolean appendNullTerminator;
 
         /**
+         * The max allowed length of password in bcrypt, longer than that {@link LongPasswordStrategy} will be activated.
+         * Usual lengths are between 50 and 72 bytes, most often are 56, 71 or 72 bytes.
+         * See https://security.stackexchange.com/a/39851
+         */
+        public final int allowedMaxPwLength;
+
+        /**
          * The formatter for the bcrypt message digest
          */
         public final BCryptFormatter formatter;
@@ -720,7 +769,7 @@ public final class BCrypt {
         public final BCryptParser parser;
 
         private Version(byte[] versionIdentifier, BCryptFormatter formatter, BCryptParser parser) {
-            this(versionIdentifier, true, true, formatter, parser);
+            this(versionIdentifier, true, true, DEFAULT_MAX_PW_LENGTH_BYTE, formatter, parser);
         }
 
         /**
@@ -730,14 +779,20 @@ public final class BCrypt {
          * @param versionIdentifier     version as UTF-8 encoded byte array, e.g. '2a' = new byte[]{0x32, 0x61}, do not included the separator '$'
          * @param useOnly23bytesForHash set to false if you want the full 24 byte out for the hash (otherwise will be truncated to 23 byte according to OpenBSD impl)
          * @param appendNullTerminator  as defined in $2a$+ a null terminator is appended to the password, pass false if you want avoid this
+         * @param allowedMaxPwLength    the max allowed length of password in bcrypt, longer than that {@link LongPasswordStrategy} will be activated
          * @param formatter             the formatter responsible for formatting the out hash message digest
          */
-        public Version(byte[] versionIdentifier, boolean useOnly23bytesForHash, boolean appendNullTerminator, BCryptFormatter formatter, BCryptParser parser) {
+        public Version(byte[] versionIdentifier, boolean useOnly23bytesForHash, boolean appendNullTerminator, int allowedMaxPwLength, BCryptFormatter formatter, BCryptParser parser) {
             this.versionIdentifier = versionIdentifier;
             this.useOnly23bytesForHash = useOnly23bytesForHash;
             this.appendNullTerminator = appendNullTerminator;
+            this.allowedMaxPwLength = allowedMaxPwLength;
             this.formatter = formatter;
             this.parser = parser;
+
+            if (allowedMaxPwLength > MAX_PW_LENGTH_BYTE) {
+                throw new IllegalArgumentException("allowed max pw length cannot be gt " + MAX_PW_LENGTH_BYTE);
+            }
         }
 
         @Override
@@ -747,13 +802,13 @@ public final class BCrypt {
             Version version = (Version) o;
             return useOnly23bytesForHash == version.useOnly23bytesForHash &&
                     appendNullTerminator == version.appendNullTerminator &&
+                    allowedMaxPwLength == version.allowedMaxPwLength &&
                     Arrays.equals(versionIdentifier, version.versionIdentifier);
         }
 
         @Override
         public int hashCode() {
-
-            int result = Objects.hash(useOnly23bytesForHash, appendNullTerminator);
+            int result = Objects.hash(useOnly23bytesForHash, appendNullTerminator, allowedMaxPwLength);
             result = 31 * result + Arrays.hashCode(versionIdentifier);
             return result;
         }
