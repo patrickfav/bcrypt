@@ -50,11 +50,6 @@ public final class BCrypt {
      */
     static final byte SEPARATOR = 0x24;
 
-    /**
-     * The default version of none is given
-     */
-    static final Version DEFAULT_VERSION = Version.VERSION_2A;
-
     private BCrypt() {
     }
 
@@ -65,7 +60,7 @@ public final class BCrypt {
      * @return new bcrypt hash instance
      */
     public static Hasher withDefaults() {
-        return new Hasher(DEFAULT_VERSION, new SecureRandom(), LongPasswordStrategies.strict(DEFAULT_VERSION));
+        return new Hasher(Version.VERSION_2A, new SecureRandom(), LongPasswordStrategies.strict(Version.VERSION_2A));
     }
 
     /**
@@ -76,7 +71,7 @@ public final class BCrypt {
      * @return new bcrypt hash instance
      */
     public static Hasher with(Version version) {
-        return new Hasher(version, new SecureRandom(), LongPasswordStrategies.strict(DEFAULT_VERSION));
+        return new Hasher(version, new SecureRandom(), LongPasswordStrategies.strict(version));
     }
 
     /**
@@ -88,7 +83,7 @@ public final class BCrypt {
      * @return new bcrypt hash instance
      */
     public static Hasher with(SecureRandom secureRandom) {
-        return new Hasher(DEFAULT_VERSION, secureRandom, LongPasswordStrategies.strict(DEFAULT_VERSION));
+        return new Hasher(Version.VERSION_2A, secureRandom, LongPasswordStrategies.strict(Version.VERSION_2A));
     }
 
     /**
@@ -100,7 +95,7 @@ public final class BCrypt {
      * @return new bcrypt hash instance
      */
     public static Hasher with(LongPasswordStrategy longPasswordStrategy) {
-        return new Hasher(DEFAULT_VERSION, new SecureRandom(), longPasswordStrategy);
+        return new Hasher(Version.VERSION_2A, new SecureRandom(), longPasswordStrategy);
     }
 
     /**
@@ -133,7 +128,7 @@ public final class BCrypt {
      * @return new verifier instance
      */
     public static Verifyer verifyer() {
-        return verifyer(DEFAULT_VERSION);
+        return verifyer(Version.VERSION_2A);
     }
 
     /**

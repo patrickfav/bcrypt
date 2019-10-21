@@ -1,5 +1,7 @@
 package at.favre.lib.crypto.bcrypt;
 
+import java.util.Objects;
+
 /**
  * Factory for default {@link LongPasswordStrategy} implementatins
  */
@@ -15,7 +17,7 @@ public final class LongPasswordStrategies {
      * @return new instance
      */
     public static LongPasswordStrategy truncate(BCrypt.Version version) {
-        return new LongPasswordStrategy.TruncateStrategy(version.allowedMaxPwLength);
+        return new LongPasswordStrategy.TruncateStrategy(Objects.requireNonNull(version).allowedMaxPwLength);
     }
 
     /**
@@ -25,7 +27,7 @@ public final class LongPasswordStrategies {
      * @return new instance
      */
     public static LongPasswordStrategy hashSha512(BCrypt.Version version) {
-        return new LongPasswordStrategy.Sha512DerivationStrategy(version.allowedMaxPwLength);
+        return new LongPasswordStrategy.Sha512DerivationStrategy(Objects.requireNonNull(version).allowedMaxPwLength);
     }
 
     /**
@@ -35,7 +37,7 @@ public final class LongPasswordStrategies {
      * @return new instance
      */
     public static LongPasswordStrategy strict(BCrypt.Version version) {
-        return new LongPasswordStrategy.StrictMaxPasswordLengthStrategy(version.allowedMaxPwLength);
+        return new LongPasswordStrategy.StrictMaxPasswordLengthStrategy(Objects.requireNonNull(version).allowedMaxPwLength);
     }
 
     /**
