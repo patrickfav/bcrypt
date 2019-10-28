@@ -464,4 +464,23 @@ public class BcryptTest {
         assertTrue(BCrypt.verifyer(BCrypt.Version.VERSION_2Y_NO_NULL_TERMINATOR).verify(pw, "$2y$04$w8S7HTjIfG.8RRVOhLZWtuH6eei2l7NZ/VhYUrDJndAjDmOqK6E0W".toCharArray()).verified);
         assertTrue(BCrypt.verifyer(BCrypt.Version.VERSION_2Y, LongPasswordStrategies.truncate(BCrypt.Version.VERSION_2Y)).verify(pw, "$2y$04$w8S7HTjIfG.8RRVOhLZWtu//55gj0VTX7XdNkQmDuPw.qQXsnvtkG".toCharArray()).verified);
     }
+
+    @Test
+    public void verifyInferVersion() {
+        verifyInferedVersion("<.S.2K(Zq'", "$2y$04$VYAclAMpaXY/oqAo9yUpkuWmoYywaPzyhu56HxXpVltnBIfmO9tgu", BCrypt.Version.VERSION_2Y);
+        verifyInferedVersion("<.S.2K(Zq'", "$2x$04$VYAclAMpaXY/oqAo9yUpkuWmoYywaPzyhu56HxXpVltnBIfmO9tgu", BCrypt.Version.VERSION_2X);
+        verifyInferedVersion("<.S.2K(Zq'", "$2a$04$VYAclAMpaXY/oqAo9yUpkuWmoYywaPzyhu56HxXpVltnBIfmO9tgu", BCrypt.Version.VERSION_2A);
+        verifyInferedVersion("<.S.2K(Zq'", "$2b$04$VYAclAMpaXY/oqAo9yUpkuWmoYywaPzyhu56HxXpVltnBIfmO9tgu", BCrypt.Version.VERSION_2B);
+    }
+
+    private void verifyInferedVersion(String pw, String hash, BCrypt.Version expectedVersion) {
+        BCrypt.Result result = BCrypt.verifyer().verify(pw.toCharArray(), hash.toCharArray());
+        assertTrue(result.verified);
+        assertEquals(expectedVersion, result.details.version);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void verifyStrictWithoutVersionShouldThrow() {
+        BCrypt.verifyer().verifyStrict("<.S.2K(Zq'".toCharArray(), "$2a$04$VYAclAMpaXY/oqAo9yUpkuWmoYywaPzyhu56HxXpVltnBIfmO9tgu".toCharArray());
+    }
 }

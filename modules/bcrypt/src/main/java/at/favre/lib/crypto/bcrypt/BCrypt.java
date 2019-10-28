@@ -123,12 +123,11 @@ public final class BCrypt {
 
     /**
      * Creates a new instance of bcrypt verifier to verify a password against a given hash.
-     * Uses {@link Version#VERSION_2A} and a strict long passwords strategy.
      *
      * @return new verifier instance
      */
     public static Verifyer verifyer() {
-        return verifyer(Version.VERSION_2A);
+        return verifyer(null, null);
     }
 
     /**
@@ -398,8 +397,8 @@ public final class BCrypt {
         private final Version version;
 
         private Verifyer(Version version, LongPasswordStrategy longPasswordStrategy) {
-            this.version = Objects.requireNonNull(version);
-            this.longPasswordStrategy = Objects.requireNonNull(longPasswordStrategy);
+            this.version = version;
+            this.longPasswordStrategy = longPasswordStrategy;
         }
 
         /**
@@ -416,7 +415,7 @@ public final class BCrypt {
          * @return result object, see {@link Result} for more info
          */
         public Result verifyStrict(byte[] password, byte[] bcryptHash) {
-            return innerVerify(password, bcryptHash, true);
+            return innerVerifyBytes(password, bcryptHash, true);
         }
 
         /**
@@ -430,7 +429,7 @@ public final class BCrypt {
          * @return result object, see {@link Result} for more info
          */
         public Result verify(byte[] password, byte[] bcryptHash) {
-            return innerVerify(password, bcryptHash, false);
+            return innerVerifyBytes(password, bcryptHash, false);
         }
 
         /**
@@ -447,7 +446,7 @@ public final class BCrypt {
          * @return result object, see {@link Result} for more info
          */
         public Result verifyStrict(char[] password, char[] bcryptHash) {
-            return innerVerify(password, bcryptHash, true);
+            return innerVerifyChar(password, bcryptHash, true);
         }
 
         /**
@@ -461,7 +460,7 @@ public final class BCrypt {
          * @return result object, see {@link Result} for more info
          */
         public Result verify(char[] password, char[] bcryptHash) {
-            return innerVerify(password, bcryptHash, false);
+            return innerVerifyChar(password, bcryptHash, false);
         }
 
         /**
@@ -477,7 +476,7 @@ public final class BCrypt {
          * @return result object, see {@link Result} for more info
          */
         public Result verify(char[] password, CharSequence bcryptHash) {
-            return innerVerify(password, toCharArray(bcryptHash), false);
+            return innerVerifyChar(password, toCharArray(bcryptHash), false);
         }
 
         /**
@@ -496,10 +495,13 @@ public final class BCrypt {
          */
         public Result verify(char[] password, byte[] bcryptHash) {
             try (MutableBytes pw = Bytes.from(password, defaultCharset).mutable()) {
-                return innerVerify(pw.array(), bcryptHash, false);
+                return innerVerifyBytes(pw.array(), bcryptHash, false);
             }
         }
 
+        /**
+         * Convert a string type to char array in the most efficient manner.
+         */
         private static char[] toCharArray(CharSequence charSequence) {
             if (charSequence instanceof String) {
                 return charSequence.toString().toCharArray();
@@ -512,13 +514,16 @@ public final class BCrypt {
             }
         }
 
-        private Result innerVerify(char[] password, char[] bcryptHash, boolean strict) {
+        /**
+         * Verify given password against a bcryptHash with char types
+         */
+        private Result innerVerifyChar(char[] password, char[] bcryptHash, boolean strict) {
             byte[] passwordBytes = null;
             byte[] bcryptHashBytes = null;
             try {
                 passwordBytes = Bytes.from(password, defaultCharset).array();
                 bcryptHashBytes = Bytes.from(bcryptHash, defaultCharset).array();
-                return innerVerify(passwordBytes, bcryptHashBytes, strict);
+                return innerVerifyBytes(passwordBytes, bcryptHashBytes, strict);
             } finally {
                 Bytes.wrapNullSafe(passwordBytes).mutable().secureWipe();
                 Bytes.wrapNullSafe(bcryptHashBytes).mutable().secureWipe();
@@ -526,22 +531,47 @@ public final class BCrypt {
         }
 
         /**
-         * Verify given password against a bcryptHash
+         * Verify given password against a bcryptHash with byte types
          */
-        private Result innerVerify(byte[] password, byte[] bcryptHash, boolean strict) {
+        private Result innerVerifyBytes(byte[] password, byte[] bcryptHash, boolean strict) {
             Objects.requireNonNull(bcryptHash);
 
             try {
-                HashData hashData = this.version.parser.parse(bcryptHash);
+                final Version usedVersion;
+                final HashData hashData;
 
-                if (strict && hashData.version != this.version) {
-                    return new Result(hashData, false);
+                if (this.version == null) {
+                    hashData = Version.VERSION_2A.parser.parse(bcryptHash);
+                    usedVersion = hashData.version;
+                } else {
+                    usedVersion = this.version;
+                    hashData = usedVersion.parser.parse(bcryptHash);
                 }
 
-                return verify(password, hashData.cost, hashData.rawSalt, hashData.rawHash);
+                if (strict) {
+                    if (this.version == null) {
+                        throw new IllegalArgumentException("Using strict requires to define a Version. " +
+                                "Try 'BCrypt.verifier(Version.VERSION_2A)'.");
+                    }
+                    if (hashData.version != this.version) {
+                        return new Result(hashData, false);
+                    }
+                }
+
+                return verifyBCrypt(usedVersion, determinePasswordStrategy(usedVersion), password, hashData.cost, hashData.rawSalt, hashData.rawHash);
             } catch (IllegalBCryptFormatException e) {
                 return new Result(e);
             }
+        }
+
+        private LongPasswordStrategy determinePasswordStrategy(Version usedVersion) {
+            LongPasswordStrategy usedLongPasswordStrategy;
+            if (this.longPasswordStrategy == null) {
+                usedLongPasswordStrategy = LongPasswordStrategies.strict(usedVersion);
+            } else {
+                usedLongPasswordStrategy = this.longPasswordStrategy;
+            }
+            return usedLongPasswordStrategy;
         }
 
         /**
@@ -579,12 +609,18 @@ public final class BCrypt {
          * @return result object, see {@link Result} for more info
          */
         public Result verify(byte[] password, int cost, byte[] salt, byte[] rawBcryptHash23Bytes) {
-            Objects.requireNonNull(password);
-            Objects.requireNonNull(rawBcryptHash23Bytes);
-            Objects.requireNonNull(salt);
+            Version usedVersion = this.version == null ? Version.VERSION_2A : this.version;
+            return verifyBCrypt(usedVersion, determinePasswordStrategy(usedVersion), password, cost, salt, rawBcryptHash23Bytes);
+        }
 
-            HashData hashData = BCrypt.with(this.version, longPasswordStrategy).hashRaw(cost, salt, password);
-            return new Result(hashData, Bytes.wrap(hashData.rawHash).equalsConstantTime(rawBcryptHash23Bytes));
+        /**
+         * Raw bcrypt verification
+         */
+        private static Result verifyBCrypt(Version version, LongPasswordStrategy longPasswordStrategy,
+                                           byte[] password, int cost, byte[] salt, byte[] rawBcryptHash23Bytes) {
+            HashData hashData = BCrypt.with(Objects.requireNonNull(version), Objects.requireNonNull(longPasswordStrategy))
+                    .hashRaw(cost, Objects.requireNonNull(salt), Objects.requireNonNull(password));
+            return new Result(hashData, Bytes.wrap(hashData.rawHash).equalsConstantTime(Objects.requireNonNull(rawBcryptHash23Bytes)));
         }
     }
 

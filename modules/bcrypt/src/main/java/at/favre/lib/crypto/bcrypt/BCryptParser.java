@@ -90,7 +90,7 @@ public interface BCryptParser {
 
             int parsedCostFactor;
             try {
-                parsedCostFactor = Integer.valueOf(new String(costBytes, defaultCharset));
+                parsedCostFactor = Integer.parseInt(new String(costBytes, defaultCharset));
             } catch (NumberFormatException e) {
                 throw new IllegalBCryptFormatException("cannot parse cost factor '" + new String(costBytes, defaultCharset) + "'");
             }
