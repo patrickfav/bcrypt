@@ -86,8 +86,8 @@ usually you should prefer `char[]` or `byte[]` APIs.
 If you want the hash verification to only verify for a specific version you can use `verifyStrict()`
 
 ```java
-byte[] hash2y =  BCrypt.with(BCrypt.Version.VERSION_2Y).hash(6, password.getBytes(StandardCharsets.UTF_8));
-BCrypt.Result resultStrict = BCrypt.verifyer().verifyStrict(password.getBytes(StandardCharsets.UTF_8), hash2y, BCrypt.Version.VERSION_2A);
+byte[] hash2y = BCrypt.with(BCrypt.Version.VERSION_2Y).hash(6, password.getBytes(StandardCharsets.UTF_8));
+BCrypt.Result resultStrict = BCrypt.verifyer(BCrypt.Version.VERSION_2A).verifyStrict(password.getBytes(StandardCharsets.UTF_8), hash2y);
 // resultStrict.verified == false
 ```
 
