@@ -49,23 +49,6 @@
             <plugin>
                 <groupId>net.nicoulaj.maven.plugins</groupId>
                 <artifactId>checksum-maven-plugin</artifactId>
-                <version>1.6</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>artifacts</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <algorithms>
-                        <algorithm>SHA-256</algorithm>
-                    </algorithms>
-                    <shasumSummary>true</shasumSummary>
-                    <shasumSummaryFile>checksum-sha256.txt</shasumSummaryFile>
-                    <attachChecksums>false</attachChecksums>
-                    <quiet>false</quiet>
-                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -86,7 +69,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
             <scope>test</scope>
         </dependency>
         <dependency>
