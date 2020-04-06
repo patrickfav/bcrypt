@@ -7,10 +7,9 @@
     <parent>
         <groupId>at.favre.lib</groupId>
         <artifactId>common-parent</artifactId>
-        <version>6</version>
+        <version>7</version>
     </parent>
 
-    <groupId>at.favre.lib</groupId>
     <artifactId>bcrypt-parent</artifactId>
     <packaging>pom</packaging>
     <version>0.9.0</version>
@@ -28,12 +27,10 @@
     </modules>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.jbcryptVersion>0.4</project.jbcryptVersion>
         <project.bcVersion>1.60</project.bcVersion>
-        <project.skipJarSign>true
-        </project.skipJarSign> <!-- set this to true if fail because of missing credentials -->
+        <!-- set this to true if fail because of missing credentials -->
+        <commonConfig.jarSign.skip>false</commonConfig.jarSign.skip>
     </properties>
 
     <repositories>
@@ -72,14 +69,6 @@
         </plugins>
     </build>
 
-    <developers>
-        <developer>
-            <id>patrickfav</id>
-            <name>Patrick Favre-Bulle</name>
-            <email>patrick.favrebulle@gmail.com</email>
-        </developer>
-    </developers>
-
     <distributionManagement>
         <repository>
             <id>bintray-patrickfav</id>
@@ -87,14 +76,6 @@
             <url>https://api.bintray.com/maven/patrickfav/maven/bcrypt/;publish=1</url>
         </repository>
     </distributionManagement>
-
-    <licenses>
-        <license>
-            <name>Apache License, Version 2.0</name>
-            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
 
     <scm>
         <connection>https://github.com/patrickfav/bcrypt.git</connection>
