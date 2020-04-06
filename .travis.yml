@@ -25,7 +25,7 @@ after_success:
 deploy:
   - provider: script
     script: ./mvnw -s ci-settings.xml deploy -X checkstyle:checkstyle
-    cleanup: false
+    skip_cleanup: true
     on:
       branch: master
       tags: true
@@ -39,7 +39,7 @@ deploy:
       - "modules/bcrypt/target/checksum-sha256.txt"
       - "modules/bcrypt-cli/target/bcrypt-*-full.jar"
       - "modules/bcrypt-cli/target/*.sha256"
-    cleanup: false
+    skip_cleanup: true
     on:
       branch: master
       tags: true
