@@ -7,7 +7,7 @@
     <parent>
         <groupId>at.favre.lib</groupId>
         <artifactId>common-parent</artifactId>
-        <version>7</version>
+        <version>10</version>
     </parent>
 
     <artifactId>bcrypt-parent</artifactId>
@@ -49,10 +49,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <parallel>classes</parallel>
-                    <threadCount>5</threadCount>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
