@@ -36,3 +36,4 @@ signing.properties
 keystore.jks
 ci-settings.xml
 secrets.tar
+pom.xml.versionsBackup
