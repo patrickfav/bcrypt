@@ -17,8 +17,7 @@ import static at.favre.lib.crypto.bcrypt.BCrypt.SEPARATOR;
  * <li>salt (decoded)</li>
  * <li>hash (decoded)</li>
  * </ul>
- * <p>
- * <p>
+ * 
  * see: {@link BCryptFormatter}
  * see: https://passlib.readthedocs.io/en/stable/modular_crypt_format.html
  */
