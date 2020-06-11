@@ -53,7 +53,7 @@ For advanced use cases you may add your own version by providing a version ident
 as well as parser.
 
 ```java
-Version customVersion2f = new Version(new byte[]{0x32, 0x66} /* 2f */,true ,true, myCustomFormatter, myCustomParser);
+Version customVersion2f = new Version(new byte[]{0x32, 0x66} /* 2f */, true, true, myCustomFormatter, myCustomParser);
 ```
 
 ### byte[] vs char[] API
