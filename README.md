@@ -14,11 +14,13 @@ The code is compiled with target [Java 7](https://en.wikipedia.org/wiki/Java_ver
 
 Add the dependency of the [latest version](https://github.com/patrickfav/bcrypt/releases/latest) to your `pom.xml`:
 
-    <dependency>
-        <groupId>at.favre.lib</groupId>
-        <artifactId>bcrypt</artifactId>
-        <version>{latest-version}</version>
-    </dependency>
+```xml
+<dependency>
+    <groupId>at.favre.lib</groupId>
+    <artifactId>bcrypt</artifactId>
+    <version>{latest-version}</version>
+</dependency>
+```
 
 A simple example:
 
@@ -184,11 +186,13 @@ The artifacts are deployed to [jcenter](https://bintray.com/bintray/jcenter) and
 
 Add the dependency of the [latest version](https://github.com/patrickfav/bcrypt/releases) to your `pom.xml`:
 
-    <dependency>
-        <groupId>at.favre.lib</groupId>
-        <artifactId>bcrypt</artifactId>
-        <version>{latest-version}</version>
-    </dependency>
+```xml
+<dependency>
+    <groupId>at.favre.lib</groupId>
+    <artifactId>bcrypt</artifactId>
+    <version>{latest-version}</version>
+</dependency>
+```
 
 ### Gradle
 

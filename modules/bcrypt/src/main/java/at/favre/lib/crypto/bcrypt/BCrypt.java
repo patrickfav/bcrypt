@@ -812,6 +812,7 @@ public final class BCrypt {
          * @param appendNullTerminator  as defined in $2a$+ a null terminator is appended to the password, pass false if you want avoid this
          * @param allowedMaxPwLength    the max allowed length of password in bcrypt, longer than that {@link LongPasswordStrategy} will be activated
          * @param formatter             the formatter responsible for formatting the out hash message digest
+         * @param parser                responsible for parsing the message format
          */
         public Version(byte[] versionIdentifier, boolean useOnly23bytesForHash, boolean appendNullTerminator, int allowedMaxPwLength, BCryptFormatter formatter, BCryptParser parser) {
             this.versionIdentifier = versionIdentifier;
