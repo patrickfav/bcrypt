@@ -22,7 +22,7 @@ public final class BCrypt {
     private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
     /**
-     * Fixed lenght of the bcrypt salt
+     * Fixed length of the bcrypt salt
      */
     public static final int SALT_LENGTH = 16;
 
@@ -45,6 +45,7 @@ public final class BCrypt {
      * The raw hash out length in byte
      */
     static final int HASH_OUT_LENGTH = 23;
+
     /**
      * Ascii hex pointer for '$'
      */
