@@ -87,6 +87,6 @@
 
     <ciManagement>
         <system>Travis</system>
-        <url>https://travis-ci.org/patrickfav/bcrypt</url>
+        <url>https://travis-ci.com/patrickfav/bcrypt</url>
     </ciManagement>
 </project>
