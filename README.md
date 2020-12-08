@@ -336,7 +336,7 @@ The used encoding is similar to the RFC * base64 encoding schema, but [with diff
 The core of this implementation is based on the popular jBcrypt. Many things around if have been heavily refactored and various new
 features and APIs have been added:
 
-* Optimized and fixed implementation (e.g. uses `StringBuilder` instead of `StringBuffer`)
+* Optimized and fixed implementation
 * Support of most [version](https://en.wikipedia.org/wiki/Bcrypt#Versioning_history) variations (`$2a$`, `$2b$`, `$2x$`, `$2y$`) with support of custom versions
 * Customizable handling for passwords over 72 bytes
 * Only uses byte and char arrays which can be wiped after use
