@@ -68,6 +68,7 @@
         <dependency>
             <groupId>at.favre.lib</groupId>
             <artifactId>bytes</artifactId>
+            <version>1.5.0</version>
         </dependency>
 
         <!-- test -->
@@ -91,13 +92,13 @@
         <dependency>
             <groupId>com.github.fzakaria</groupId>
             <artifactId>ascii85</artifactId>
-            <version>1.1</version>
+            <version>1.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>1.4</version>
+            <version>1.9</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
