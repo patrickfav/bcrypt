@@ -401,15 +401,15 @@ public class BcryptTest {
     @Test
     public void testVersionPojoMethods() {
         assertEquals(BCrypt.Version.VERSION_2A, BCrypt.Version.VERSION_2A);
-        assertEquals(BCrypt.Version.VERSION_2A, new BCrypt.Version(new byte[]{MAJOR_VERSION, 0x61}, true, true, BCrypt.Version.DEFAULT_MAX_PW_LENGTH_BYTE, null, null));
-        assertEquals(BCrypt.Version.VERSION_2Y, new BCrypt.Version(new byte[]{MAJOR_VERSION, 0x79}, true, true, BCrypt.Version.DEFAULT_MAX_PW_LENGTH_BYTE, null, null));
+        assertEquals(BCrypt.Version.VERSION_2A, new BCrypt.Version(new byte[]{MAJOR_VERSION, 0x61}, true, true, BCrypt.Version.MAX_PW_LENGTH_BYTE, null, null));
+        assertEquals(BCrypt.Version.VERSION_2Y, new BCrypt.Version(new byte[]{MAJOR_VERSION, 0x79}, true, true, BCrypt.Version.MAX_PW_LENGTH_BYTE, null, null));
         assertEquals(BCrypt.Version.VERSION_2Y_NO_NULL_TERMINATOR, new BCrypt.Version(new byte[]{MAJOR_VERSION, 0x79}, true, false, BCrypt.Version.MAX_PW_LENGTH_BYTE, null, null));
         assertNotEquals(BCrypt.Version.VERSION_2Y, BCrypt.Version.VERSION_2A);
         assertNotEquals(BCrypt.Version.VERSION_2A, BCrypt.Version.VERSION_2B);
         assertNotEquals(BCrypt.Version.VERSION_2X, BCrypt.Version.VERSION_2Y);
 
         assertEquals(BCrypt.Version.VERSION_2A.hashCode(), BCrypt.Version.VERSION_2A.hashCode());
-        assertEquals(BCrypt.Version.VERSION_2A.hashCode(), new BCrypt.Version(new byte[]{MAJOR_VERSION, 0x61}, true, true, BCrypt.Version.DEFAULT_MAX_PW_LENGTH_BYTE, null, null).hashCode());
+        assertEquals(BCrypt.Version.VERSION_2A.hashCode(), new BCrypt.Version(new byte[]{MAJOR_VERSION, 0x61}, true, true, BCrypt.Version.MAX_PW_LENGTH_BYTE, null, null).hashCode());
 
         assertNotEquals(BCrypt.Version.VERSION_2Y.hashCode(), BCrypt.Version.VERSION_2A.hashCode());
         assertNotEquals(BCrypt.Version.VERSION_2A.hashCode(), BCrypt.Version.VERSION_2B.hashCode());
@@ -424,7 +424,11 @@ public class BcryptTest {
         byte[] hash = BCrypt.with(truncate).hash(4, pw);
 
         assertTrue(BCrypt.verifyer(BCrypt.Version.VERSION_2A, truncate).verify(pw, hash).verified);
-        assertFalse(BCrypt.verifyer(BCrypt.Version.VERSION_2A, LongPasswordStrategies.none()).verify(pw, hash).verified);
+        assertTrue(BCrypt.verifyer(BCrypt.Version.VERSION_2A, LongPasswordStrategies.none()).verify(pw, hash).verified);
+        // Strategies "truncate" and "none" are equivalent because key expansion will just ignore extra data.
+
+        assertFalse(BCrypt.verifyer(BCrypt.Version.VERSION_2A, LongPasswordStrategies.hashSha512(BCrypt.Version.VERSION_2A)).verify(pw, hash).verified);
+        // The SHA-512 strategy yields a different hash
     }
 
     @Test
@@ -443,26 +447,42 @@ public class BcryptTest {
 
     @Test
     public void testVersionWithNullTerminator() {
-        char[] pw = "myverlongpasswordthatisatleast72charslongandlongnothisisnotlongenoughyou".toCharArray();
-        assertEquals(72, pw.length);
-        assertEquals(72, Bytes.from(pw).length());
+        char[] pw71 = "myverlongpasswordthatisatleast72charslongandlongnothisisnotlongenoughyo".toCharArray();
+        assertEquals(71, pw71.length);
+        assertEquals(71, Bytes.from(pw71).length());
+        // For a 71 characters password, with null terminator there is no repetition, whereas without null terminator
+        // the first character is used again as 72th byte.
 
         byte[] salt = Bytes.random(16).array();
 
-        byte[] hash1 = BCrypt.with(BCrypt.Version.VERSION_2Y_NO_NULL_TERMINATOR, LongPasswordStrategies.truncate(BCrypt.Version.VERSION_2Y_NO_NULL_TERMINATOR)).hash(4, salt, Bytes.from(pw).array());
-        byte[] hash2 = BCrypt.with(BCrypt.Version.VERSION_2Y, LongPasswordStrategies.truncate(BCrypt.Version.VERSION_2Y)).hash(4, salt, Bytes.from(pw).array());
+        byte[] hash71_1 = BCrypt.with(BCrypt.Version.VERSION_2Y_NO_NULL_TERMINATOR, LongPasswordStrategies.truncate(BCrypt.Version.VERSION_2Y_NO_NULL_TERMINATOR)).hash(4, salt, Bytes.from(pw71).array());
+        byte[] hash71_2 = BCrypt.with(BCrypt.Version.VERSION_2Y, LongPasswordStrategies.truncate(BCrypt.Version.VERSION_2Y)).hash(4, salt, Bytes.from(pw71).array());
+        assertNotEquals(Bytes.wrap(hash71_1).encodeUtf8(), Bytes.wrap(hash71_2).encodeUtf8());
 
-        assertNotEquals(Bytes.wrap(hash1).encodeUtf8(), Bytes.wrap(hash2).encodeUtf8());
-        System.out.println(Bytes.wrap(hash1).encodeUtf8() + "\n" + Bytes.wrap(hash2).encodeUtf8());
+
+        char[] pw72 = "myverlongpasswordthatisatleast72charslongandlongnothisisnotlongenoughyom".toCharArray();
+        assertEquals(72, pw72.length);
+        assertEquals(72, Bytes.from(pw72).length());
+
+        byte[] hash72_1 = BCrypt.with(BCrypt.Version.VERSION_2Y_NO_NULL_TERMINATOR, LongPasswordStrategies.truncate(BCrypt.Version.VERSION_2Y_NO_NULL_TERMINATOR)).hash(4, salt, Bytes.from(pw72).array());
+        byte[] hash72_2 = BCrypt.with(BCrypt.Version.VERSION_2Y, LongPasswordStrategies.truncate(BCrypt.Version.VERSION_2Y)).hash(4, salt, Bytes.from(pw72).array());
+        assertEquals(Bytes.wrap(hash72_1).encodeUtf8(), Bytes.wrap(hash72_2).encodeUtf8());
+
+        assertEquals(Bytes.wrap(hash71_1).encodeUtf8(), Bytes.wrap(hash72_1).encodeUtf8());
+        System.out.println(Bytes.wrap(hash71_1).encodeUtf8() + "\n" + Bytes.wrap(hash71_2).encodeUtf8());
     }
 
     @Test
     public void testReferenceValuesWithoutNullTerminator() {
         char[] pw = "myverlongpasswordthatisatleast72charslongandlongnothisisnotlongenoughyou".toCharArray();
+        assertEquals(72, pw.length);
 
+        char[] pw71 = new char[71];
+        System.arraycopy(pw, 0, pw71, 0, 71);
         assertTrue(BCrypt.verifyer(BCrypt.Version.VERSION_2Y_NO_NULL_TERMINATOR).verify(pw, "$2y$04$d4CIUbwyucxm87BQnDWyI.xHDm2vyIZfBDOzjASNkn/yB.6lzLwOG".toCharArray()).verified);
         assertTrue(BCrypt.verifyer(BCrypt.Version.VERSION_2Y_NO_NULL_TERMINATOR).verify(pw, "$2y$04$w8S7HTjIfG.8RRVOhLZWtuH6eei2l7NZ/VhYUrDJndAjDmOqK6E0W".toCharArray()).verified);
-        assertTrue(BCrypt.verifyer(BCrypt.Version.VERSION_2Y, LongPasswordStrategies.truncate(BCrypt.Version.VERSION_2Y)).verify(pw, "$2y$04$w8S7HTjIfG.8RRVOhLZWtu//55gj0VTX7XdNkQmDuPw.qQXsnvtkG".toCharArray()).verified);
+        assertTrue(BCrypt.verifyer(BCrypt.Version.VERSION_2Y, LongPasswordStrategies.truncate(BCrypt.Version.VERSION_2Y)).verify(pw, "$2y$04$w8S7HTjIfG.8RRVOhLZWtuH6eei2l7NZ/VhYUrDJndAjDmOqK6E0W".toCharArray()).verified);
+        assertTrue(BCrypt.verifyer(BCrypt.Version.VERSION_2Y, LongPasswordStrategies.truncate(BCrypt.Version.VERSION_2Y)).verify(pw71, "$2y$04$w8S7HTjIfG.8RRVOhLZWtu//55gj0VTX7XdNkQmDuPw.qQXsnvtkG".toCharArray()).verified);
     }
 
     @Test

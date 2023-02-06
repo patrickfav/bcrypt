@@ -299,11 +299,14 @@ public final class BCrypt {
                 throw new IllegalArgumentException("provided password must at least be length 1 if no null terminator is appended");
             }
 
-            if (password.length > version.allowedMaxPwLength + (version.appendNullTerminator ? 0 : 1)) {
+            if (password.length > version.allowedMaxPwLength) {
                 password = longPasswordStrategy.derive(password);
             }
 
             byte[] pwWithNullTerminator = version.appendNullTerminator ? Bytes.wrap(password).append((byte) 0).array() : Bytes.wrap(password).copy().array();
+            // Note: pwWithNullTerminator may be longer than allowedMaxPwLength, which is not an issue because the NUL terminator
+            // only plays a part with shorter passwords that need to be cyclically repeated to provide the 72 bytes of keying
+            // material required by EksBlowfish key expansion.
             try {
                 byte[] hash = new BCryptOpenBSDProtocol().cryptRaw(1L << (long) cost, salt, pwWithNullTerminator);
                 return new HashData(cost, version, salt, version.useOnly23bytesForHash ?
@@ -701,14 +704,12 @@ public final class BCrypt {
         private static final BCryptParser DEFAULT_PARSER = new BCryptParser.Default(new Radix64Encoder.Default(), BCrypt.DEFAULT_CHARSET);
 
         /**
-         * Absolutely maximum length bcrypt can support (18x32bit)
+         * Absolutely maximum length bcrypt can support (18x32bit).
+         * Shorter passwords are repeated cyclically, possibly with NUL bytes separating each occurrence
+         * (but the NUL byte should not count against the limite: if the password is exactly this length
+         * the all characters are used and no repetition needs to happen, so no NUL needs to be inserted).
          */
         public static final int MAX_PW_LENGTH_BYTE = 72;
-
-        /**
-         * The max length of the password in bytes excluding lats null-terminator byte
-         */
-        public static final int DEFAULT_MAX_PW_LENGTH_BYTE = MAX_PW_LENGTH_BYTE - 1;
 
         /**
          * $2a$
@@ -759,7 +760,7 @@ public final class BCrypt {
          * This mirrors how Bouncy Castle creates bcrypt hashes: with 24 byte out and without null-terminator. Gets a fake
          * version descriptor.
          */
-        public static final Version VERSION_BC = new Version(new byte[]{MAJOR_VERSION, 0x63}, false, false, DEFAULT_MAX_PW_LENGTH_BYTE, DEFAULT_FORMATTER, DEFAULT_PARSER);
+        public static final Version VERSION_BC = new Version(new byte[]{MAJOR_VERSION, 0x63}, false, false, MAX_PW_LENGTH_BYTE, DEFAULT_FORMATTER, DEFAULT_PARSER);
 
         /**
          * List of supported versions
@@ -801,7 +802,7 @@ public final class BCrypt {
         public final BCryptParser parser;
 
         private Version(byte[] versionIdentifier, BCryptFormatter formatter, BCryptParser parser) {
-            this(versionIdentifier, true, true, DEFAULT_MAX_PW_LENGTH_BYTE, formatter, parser);
+            this(versionIdentifier, true, true, MAX_PW_LENGTH_BYTE, formatter, parser);
         }
 
         /**
