@@ -2,7 +2,7 @@
 
 This is an implementation of the OpenBSD Blowfish password hashing algorithm, as described in "[A Future-Adaptable Password Scheme](http://www.openbsd.org/papers/bcrypt-paper.ps)" by Niels Provos and David Mazieres. It's core is based on [jBcrypt](https://github.com/djmdjm/jBCrypt), but  heavily refactored, modernized and with a lot of updates and enhancements. It supports all common [versions](https://en.wikipedia.org/wiki/Bcrypt#Versioning_history), has a security sensitive API and is fully tested against a range of test vectors and reference implementations.
 
-![Maven Central](https://img.shields.io/maven-central/v/at.favre.lib/bcrypt)
+[![Maven Central](https://img.shields.io/maven-central/v/at.favre.lib/bcrypt)](https://mvnrepository.com/artifact/at.favre.lib/bcrypt)
 [![Github Actions](https://github.com/patrickfav/bcrypt/actions/workflows/build_deploy.yml/badge.svg)](https://github.com/patrickfav/bcrypt/actions)
 [![Javadocs](https://www.javadoc.io/badge/at.favre.lib/bcrypt.svg)](https://www.javadoc.io/doc/at.favre.lib/bcrypt)
 [![codecov](https://codecov.io/gh/patrickfav/bcrypt/branch/master/graph/badge.svg?token=HP8FL3ZJG7)](https://codecov.io/gh/patrickfav/bcrypt)
