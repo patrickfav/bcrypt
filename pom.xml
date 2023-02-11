@@ -33,6 +33,17 @@
         <commonConfig.jarSign.skip>false</commonConfig.jarSign.skip>
     </properties>
 
+    <repositories>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo1.maven.org/maven2</url>
+        </repository>
+    </repositories>
+
     <build>
         <plugins>
             <plugin>
