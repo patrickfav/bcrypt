@@ -7,7 +7,7 @@
     <parent>
         <groupId>at.favre.lib</groupId>
         <artifactId>common-parent</artifactId>
-        <version>15</version>
+        <version>18</version>
     </parent>
 
     <artifactId>bcrypt-parent</artifactId>
@@ -33,28 +33,6 @@
         <commonConfig.jarSign.skip>false</commonConfig.jarSign.skip>
     </properties>
 
-    <repositories>
-        <repository>
-            <id>central</id>
-            <name>Maven Central</name>
-            <url>https://repo1.maven.org/maven2</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>central</id>
-            <name>Maven Central</name>
-            <url>https://repo1.maven.org/maven2</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
-
     <build>
         <plugins>
             <plugin>
@@ -72,18 +50,9 @@
         </plugins>
     </build>
 
-    <distributionManagement>
-        <repository>
-            <id>ossrh</id>
-            <name>Central Repository OSSRH</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-
     <scm>
-        <connection>https://github.com/patrickfav/bcrypt.git</connection>
-        <developerConnection>https://github.com/patrickfav/bcrypt.git</developerConnection>
-        <tag>HEAD</tag>
+        <connection>scm:git:https://github.com/patrickfav/bcrypt.git</connection>
+        <developerConnection>scm:git:https://github.com/patrickfav/bcrypt.git</developerConnection>
         <url>https://github.com/patrickfav/bcrypt</url>
     </scm>
 
@@ -93,7 +62,7 @@
     </issueManagement>
 
     <ciManagement>
-        <system>Travis</system>
-        <url>https://travis-ci.com/patrickfav/bcrypt</url>
+        <system>Github Actions</system>
+        <url>https://github.com/patrickfav/bcrypt/actions</url>
     </ciManagement>
 </project>
