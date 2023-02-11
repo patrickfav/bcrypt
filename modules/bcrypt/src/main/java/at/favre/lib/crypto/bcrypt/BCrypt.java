@@ -706,8 +706,8 @@ public final class BCrypt {
         /**
          * Absolutely maximum length bcrypt can support (18x32bit).
          * Shorter passwords are repeated cyclically, possibly with NUL bytes separating each occurrence
-         * (but the NUL byte should not count against the limite: if the password is exactly this length
-         * the all characters are used and no repetition needs to happen, so no NUL needs to be inserted).
+         * (but the NUL byte should not count against the limit: if the password is exactly this length
+         * then all characters are used and no repetition needs to happen, so no NUL needs to be inserted).
          */
         public static final int MAX_PW_LENGTH_BYTE = 72;
 
