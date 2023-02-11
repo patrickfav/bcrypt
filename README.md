@@ -2,10 +2,10 @@
 
 This is an implementation of the OpenBSD Blowfish password hashing algorithm, as described in "[A Future-Adaptable Password Scheme](http://www.openbsd.org/papers/bcrypt-paper.ps)" by Niels Provos and David Mazieres. It's core is based on [jBcrypt](https://github.com/djmdjm/jBCrypt), but  heavily refactored, modernized and with a lot of updates and enhancements. It supports all common [versions](https://en.wikipedia.org/wiki/Bcrypt#Versioning_history), has a security sensitive API and is fully tested against a range of test vectors and reference implementations.
 
-[![Download](https://api.bintray.com/packages/patrickfav/maven/bcrypt/images/download.svg)](https://bintray.com/patrickfav/maven/bcrypt/_latestVersion)
-[![Build Status](https://travis-ci.com/patrickfav/bcrypt.svg?branch=master)](https://travis-ci.com/patrickfav/bcrypt)
+![Maven Central](https://img.shields.io/maven-central/v/at.favre.lib/bcrypt)
+[![Github Actions](https://github.com/patrickfav/bcrypt/actions/workflows/build_deploy.yml/badge.svg)](https://github.com/patrickfav/bcrypt/actions)
 [![Javadocs](https://www.javadoc.io/badge/at.favre.lib/bcrypt.svg)](https://www.javadoc.io/doc/at.favre.lib/bcrypt)
-[![Coverage Status](https://coveralls.io/repos/github/patrickfav/bcrypt/badge.svg?branch=master)](https://coveralls.io/github/patrickfav/bcrypt?branch=master)
+[![codecov](https://codecov.io/gh/patrickfav/bcrypt/branch/master/graph/badge.svg?token=HP8FL3ZJG7)](https://codecov.io/gh/patrickfav/bcrypt)
 [![Maintainability](https://api.codeclimate.com/v1/badges/bbc7ebd960a9f0bb7baa/maintainability)](https://codeclimate.com/github/patrickfav/bcrypt/maintainability)
 
 The code is compiled with target [Java 7](https://en.wikipedia.org/wiki/Java_version_history#Java_SE_7) to be compatible with most [_Android_](https://www.android.com/) versions as well as normal Java applications.
