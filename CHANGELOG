@@ -1,5 +1,9 @@
 # Releases
 
+## v0.10.1
+
+* Re-Introduce DEFAULT_MAX_PW_LENGTH_BYTE to be code compatible with 0.9.0- (thx for the hint @Andrew-Cottrell)
+
 ## v0.10.0
 
 * [BREAKING CHANGE] the null terminator will not be counted to the 72 byte max length anymore. This changes the behaviour IF you used passwords with EXACTLY 72 bytes. #43, #44 (thx @quinot)

@@ -712,6 +712,13 @@ public final class BCrypt {
         public static final int MAX_PW_LENGTH_BYTE = 72;
 
         /**
+         * The max length of the password in bytes excluding lats null-terminator byte.
+         * @deprecated this will return 71 which is not correct, the null terminator should not count towards the full length if the pw is exactly 72. Use {@link #MAX_PW_LENGTH_BYTE} instead. See https://github.com/patrickfav/bcrypt/pull/44
+         */
+        @Deprecated
+        public static final int DEFAULT_MAX_PW_LENGTH_BYTE = MAX_PW_LENGTH_BYTE - 1;
+
+        /**
          * $2a$
          * <p>
          * The original specification did not define how to handle non-ASCII character, nor how to handle a null
