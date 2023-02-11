@@ -180,7 +180,7 @@ The full API can be read in the doc by passing `-h`
 
 ## Download
 
-The artifacts are deployed to [jcenter](https://bintray.com/bintray/jcenter) and [Maven Central](https://search.maven.org/).
+The artifacts are deployed to [Maven Central](https://search.maven.org/).
 
 ### Maven
 
