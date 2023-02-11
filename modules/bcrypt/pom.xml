@@ -22,6 +22,7 @@
 
     <properties>
         <maven.deploy.skip>false</maven.deploy.skip>
+        <commonConfig.jarSign.skip>true</commonConfig.jarSign.skip>
         <commonConfig.jarSign.keystore>${session.executionRootDirectory}/keystore.jks</commonConfig.jarSign.keystore>
     </properties>
 
