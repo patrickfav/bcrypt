@@ -50,10 +50,11 @@ jobs:
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }} # Value of the GPG private key to import
           gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable for GPG private key passphrase
       - name: Publish package
+        # prepare bcrypt with verify, stage and then release, after that build all modules to upload to github
         run: |
-          ./mvnw -B verify package -DskipTests && \
-          ./mvnw -B nexus-staging:deploy -P deploy,!allmodules,mainmodule && \
-          ./mvnw -B nexus-staging:release -P deploy,!allmodules,mainmodule
+          ./mvnw -B verify nexus-staging:deploy -P deploy,!allmodules,mainmodule -DskipTests && \
+          ./mvnw -B nexus-staging:release -P deploy,!allmodules,mainmodule && \
+          ./mvnw -B verify package -DskipTests
         env:
           OPENSOURCE_PROJECTS_KS_PW: ${{ secrets.KEYSTORE_PASSWORD }}
           OPENSOURCE_PROJECTS_KEY_PW: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
