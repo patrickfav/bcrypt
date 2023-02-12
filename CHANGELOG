@@ -1,5 +1,9 @@
 # Releases
 
+## v0.10.2
+
+* Fix deployment setup
+
 ## v0.10.1
 
 * Re-Introduce DEFAULT_MAX_PW_LENGTH_BYTE to be code compatible with 0.9.0- (thx for the hint @Andrew-Cottrell)

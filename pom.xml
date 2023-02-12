@@ -12,7 +12,7 @@
 
     <artifactId>bcrypt-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.10.1</version>
+    <version>0.10.2</version>
 
     <url>https://github.com/patrickfav/bcrypt</url>
     <inceptionYear>2018</inceptionYear>
