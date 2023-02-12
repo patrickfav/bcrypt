@@ -51,8 +51,8 @@ jobs:
           gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable for GPG private key passphrase
       - name: Publish package
         run: |
-          ./mvnw -B verify nexus-staging:deploy -DskipTests -P deploy -pl bcrypt && \
-          ./mvnw -B nexus-staging:release -P deploy -pl bcrypt
+          ./mvnw -B verify nexus-staging:deploy -P deploy && \
+          ./mvnw -B nexus-staging:release -P deploy
         env:
           OPENSOURCE_PROJECTS_KS_PW: ${{ secrets.KEYSTORE_PASSWORD }}
           OPENSOURCE_PROJECTS_KEY_PW: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
