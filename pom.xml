@@ -20,17 +20,32 @@
     <name>bcrypt-parent</name>
     <description>Parent Maven project for Bcrypt</description>
 
-    <modules>
-        <module>modules/bcrypt</module>
-        <module>modules/bcrypt-cli</module>
-        <module>modules/benchmark-jmh</module>
-    </modules>
+    <!-- this is a workaround to be able to only deploy the main module used in deploy phase, nexus stage plugin is buggy -->
+    <profiles>
+        <profile>
+            <id>allmodules</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>modules/bcrypt</module>
+                <module>modules/bcrypt-cli</module>
+                <module>modules/benchmark-jmh</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>mainmodule</id>
+            <modules>
+                <module>modules/bcrypt</module>
+            </modules>
+        </profile>
+    </profiles>
 
     <properties>
         <project.jbcryptVersion>0.4</project.jbcryptVersion>
         <project.bcVersion>1.70</project.bcVersion>
         <!-- set this to true if fail because of missing credentials -->
-        <commonConfig.jarSign.skip>false</commonConfig.jarSign.skip>
+        <commonConfig.jarSign.skip>true</commonConfig.jarSign.skip>
     </properties>
 
     <build>
