@@ -42,6 +42,14 @@
     </profiles>
 
     <properties>
+        <!-- SonarQube Config -->
+        <sonar.organization>patrickfav</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+        <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+        <sonar.coverage.jacoco.xmlReportPaths>**/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.language>java</sonar.language>
+
         <project.jbcryptVersion>0.4</project.jbcryptVersion>
         <project.bcVersion>1.70</project.bcVersion>
         <!-- set this to true if fail because of missing credentials -->
