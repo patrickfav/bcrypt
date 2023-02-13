@@ -400,7 +400,6 @@ public class BcryptTest {
 
     @Test
     public void testVersionPojoMethods() {
-        assertEquals(BCrypt.Version.VERSION_2A, BCrypt.Version.VERSION_2A);
         assertEquals(BCrypt.Version.VERSION_2A, new BCrypt.Version(new byte[]{MAJOR_VERSION, 0x61}, true, true, BCrypt.Version.MAX_PW_LENGTH_BYTE, null, null));
         assertEquals(BCrypt.Version.VERSION_2Y, new BCrypt.Version(new byte[]{MAJOR_VERSION, 0x79}, true, true, BCrypt.Version.MAX_PW_LENGTH_BYTE, null, null));
         assertEquals(BCrypt.Version.VERSION_2Y_NO_NULL_TERMINATOR, new BCrypt.Version(new byte[]{MAJOR_VERSION, 0x79}, true, false, BCrypt.Version.MAX_PW_LENGTH_BYTE, null, null));
