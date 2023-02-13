@@ -96,7 +96,7 @@ BCrypt.Result resultStrict = BCrypt.verifyer(BCrypt.Version.VERSION_2A).verifySt
 ### Handling for Overlong passwords
 
 Due to the limitation in the Blowfish cipher, the maximum password length is 72 bytes (note that UTF-8 encoded, a 
-character can be as much as 4 bytes). Including the null-terminator byte, this will be reduced to 71 bytes. Per 
+character can be as much as 4 bytes). Per 
 default, the `hash()` method will throw an exception if the provided password is too long. 
 
 The API supports passing a custom handling in that case, to mimic the behaviour of some popular implementations to just
@@ -113,8 +113,10 @@ Don't forget to use the same strategy when verifying:
 BCrypt.verifyer(LongPasswordStrategies.truncate(Version.VERSION_2A)).verify(pw, hash);
 ```
 
-The password will only be transformed if it is longer than 71 bytes. *It is important to note, however, that using any
+The password will only be transformed if it is longer than 72 bytes. *It is important to note, however, that using any
 of these techniques will essentially create a custom flavor of Bcrypt, possibly not compatible with other implementations.*
+
+However, you can also disable this warning by using the `LongPasswordStrategies.none` strategy. It will pass the raw data to the internal cryptographic primitive (which in turn will ignore anything longer than 72 bytes). This is the standard behaviour of BCrypt.
 
 ### Custom Salt or SecureRandom
  
