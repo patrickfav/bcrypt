@@ -22,6 +22,7 @@
 
     <properties>
         <maven.deploy.skip>false</maven.deploy.skip>
+        <!--suppress UnresolvedMavenProperty -->
         <commonConfig.jarSign.keystore>${session.executionRootDirectory}/keystore.jks</commonConfig.jarSign.keystore>
     </properties>
 
@@ -30,7 +31,7 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>4.2.0</version>
+                <version>5.1.8</version>
                 <extensions>true</extensions>
             </plugin>
             <plugin>
@@ -54,10 +55,6 @@
                 <artifactId>checksum-maven-plugin</artifactId>
             </plugin>
             <plugin>
-                <groupId>com.github.wvengen</groupId>
-                <artifactId>proguard-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jarsigner-plugin</artifactId>
             </plugin>
@@ -68,7 +65,6 @@
         <dependency>
             <groupId>at.favre.lib</groupId>
             <artifactId>bytes</artifactId>
-            <version>1.5.0</version>
         </dependency>
 
         <!-- test -->

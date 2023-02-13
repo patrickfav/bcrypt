@@ -58,7 +58,6 @@
             <groupId>at.favre.lib</groupId>
             <artifactId>bcrypt</artifactId>
             <version>0.10.2</version>
-            <classifier>optimized</classifier>
         </dependency>
         <dependency>
             <groupId>commons-cli</groupId>
