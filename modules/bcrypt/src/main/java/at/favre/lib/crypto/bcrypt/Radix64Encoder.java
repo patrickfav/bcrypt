@@ -109,7 +109,7 @@ public interface Radix64Encoder {
                 }
 
                 // Append this char's 6 bits to the word.
-                word = (word << 6) | (byte) bits;
+                word = (word << 6) | (byte) bits & 0xff;
 
                 // For every 4 chars of input, we accumulate 24 bits of output. Emit 3 bytes.
                 inCount++;
