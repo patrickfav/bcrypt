@@ -6,7 +6,8 @@ This is an implementation of the OpenBSD Blowfish password hashing algorithm, as
 [![Github Actions](https://github.com/patrickfav/bcrypt/actions/workflows/build_deploy.yml/badge.svg)](https://github.com/patrickfav/bcrypt/actions)
 [![Javadocs](https://www.javadoc.io/badge/at.favre.lib/bcrypt.svg)](https://www.javadoc.io/doc/at.favre.lib/bcrypt)
 [![codecov](https://codecov.io/gh/patrickfav/bcrypt/branch/master/graph/badge.svg?token=HP8FL3ZJG7)](https://codecov.io/gh/patrickfav/bcrypt)
-[![Maintainability](https://api.codeclimate.com/v1/badges/bbc7ebd960a9f0bb7baa/maintainability)](https://codeclimate.com/github/patrickfav/bcrypt/maintainability)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=patrickfav_bcrypt&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=patrickfav_bcrypt)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=patrickfav_bcrypt&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=patrickfav_bcrypt)
 
 The code is compiled with target [Java 7](https://en.wikipedia.org/wiki/Java_version_history#Java_SE_7) to be compatible with most [_Android_](https://www.android.com/) versions as well as normal Java applications.
 
