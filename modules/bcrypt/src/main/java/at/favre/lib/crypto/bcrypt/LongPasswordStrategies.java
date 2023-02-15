@@ -3,7 +3,7 @@ package at.favre.lib.crypto.bcrypt;
 import java.util.Objects;
 
 /**
- * Factory for default {@link LongPasswordStrategy} implementatins
+ * Factory for default {@link LongPasswordStrategy} implementations
  */
 @SuppressWarnings("WeakerAccess")
 public final class LongPasswordStrategies {

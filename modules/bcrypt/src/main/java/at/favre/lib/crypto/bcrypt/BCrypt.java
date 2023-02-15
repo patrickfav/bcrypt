@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * The main access point the the Bcrypt APIs
+ * The main access point the Bcrypt APIs
  */
 @SuppressWarnings("WeakerAccess")
 public final class BCrypt {
@@ -56,7 +56,7 @@ public final class BCrypt {
 
     /**
      * Create a new instance of bcrypt hash with default version {@link Version#VERSION_2A}.
-     * Will throw an exception if given password is longer than the max length support for bycrpt of {@link Version#allowedMaxPwLength}.
+     * Will throw an exception if given password is longer than the max length support for bcrypt of {@link Version#allowedMaxPwLength}.
      *
      * @return new bcrypt hash instance
      */
@@ -66,7 +66,7 @@ public final class BCrypt {
 
     /**
      * Create a new instance of bcrypt hash with given {@link Version}.
-     * Will throw an exception if given password is longer than the max length support for bycrpt of {@link Version#allowedMaxPwLength}.
+     * Will throw an exception if given password is longer than the max length support for bcrypt of {@link Version#allowedMaxPwLength}.
      *
      * @param version defines what version of bcrypt will be generated (mostly the version identifier changes)
      * @return new bcrypt hash instance
@@ -78,7 +78,7 @@ public final class BCrypt {
     /**
      * Create a new instance of bcrypt hash with default version {@link Version#VERSION_2A}.
      * The passed {@link SecureRandom} is used for generating the random salt.
-     * Will throw an exception if given password is longer than the max length support for bycrpt of {@link Version#allowedMaxPwLength}.
+     * Will throw an exception if given password is longer than the max length support for bcrypt of {@link Version#allowedMaxPwLength}.
      *
      * @param secureRandom to use for random salt generation
      * @return new bcrypt hash instance
@@ -143,7 +143,7 @@ public final class BCrypt {
 
     /**
      * Creates a new instance of bcrypt verifier to verify a password against a given hash.
-     * This verify also respects the passed {@link LongPasswordStrategy} for creating the reference hash - use this
+     * This "verify" also respects the passed {@link LongPasswordStrategy} for creating the reference hash - use this
      * if you use one while hashing.
      *
      * @param version              to use, also matters in  {@link Verifyer#verifyStrict(byte[], byte[])}
@@ -179,7 +179,7 @@ public final class BCrypt {
          * The random salt will be created internally with a {@link SecureRandom} instance.
          *
          * @param cost     exponential cost (log2 factor) between {@link #MIN_COST} and {@link #MAX_COST} e.g. 12 --&gt; 2^12 = 4,096 iterations
-         * @param password to hash, will be internally converted to a utf-8 byte array representation
+         * @param password to hash, will be internally converted to an utf-8 byte array representation
          * @return bcrypt hash as a char array utf-8 encoded which includes version, cost-factor, salt and the raw hash (as radix64)
          */
         public char[] hashToChar(int cost, char[] password) {
@@ -198,7 +198,7 @@ public final class BCrypt {
          * This is the same as calling <code>new String(hash(cost, password), StandardCharsets.UTF-8)</code>
          *
          * @param cost     exponential cost (log2 factor) between {@link #MIN_COST} and {@link #MAX_COST} e.g. 12 --&gt; 2^12 = 4,096 iterations
-         * @param password to hash, will be internally converted to a utf-8 byte array representation
+         * @param password to hash, will be internally converted to an utf-8 byte array representation
          * @return bcrypt as utf-8 encoded String, which includes version, cost-factor, salt and the raw hash (as radix64)
          */
         public String hashToString(int cost, char[] password) {
@@ -215,7 +215,7 @@ public final class BCrypt {
          * The random salt will be created internally with a {@link SecureRandom} instance.
          *
          * @param cost     exponential cost (log2 factor) between {@link #MIN_COST} and {@link #MAX_COST} e.g. 12 --&gt; 2^12 = 4,096 iterations
-         * @param password to hash, will be internally converted to a utf-8 byte array representation
+         * @param password to hash, will be internally converted to an utf-8 byte array representation
          * @return bcrypt hash utf-8 encoded byte array which includes version, cost-factor, salt and the raw hash (as radix64)
          */
         public byte[] hash(int cost, char[] password) {
@@ -493,7 +493,7 @@ public final class BCrypt {
          *
          * @param password   to compare against the hash
          * @param bcryptHash to compare against the password; here the whole bcrypt hash
-         *                   (including salt, etc) in its encoded form is expected not the
+         *                   (including salt, etc.) in its encoded form is expected not the
          *                   raw bytes found in {@link HashData#rawHash}
          * @return result object, see {@link Result} for more info
          */
@@ -580,7 +580,7 @@ public final class BCrypt {
 
         /**
          * Verify given raw byte arrays of salt, 23 byte bcrypt hash and password. This is handy if the bcrypt messages are not packaged
-         * in the default Modular Crypt Format (see also {@link Hasher#hashRaw(int, byte[], byte[])}.
+         * in the default Modular Crypt Format (see also {@link Hasher#hashRaw(int, byte[], byte[])}).
          * <p>
          * The result will have {@link Result#verified} true if they match. If given hash has an
          * invalid format {@link Result#validFormat} will be false; see also {@link Result#formatErrorMessage}
@@ -598,7 +598,7 @@ public final class BCrypt {
 
         /**
          * Verify given raw byte arrays of salt, 23 byte bcrypt hash and password. This is handy if the bcrypt messages are not packaged
-         * in the default Modular Crypt Format (see also {@link Hasher#hashRaw(int, byte[], byte[])}.
+         * in the default Modular Crypt Format (see also {@link Hasher#hashRaw(int, byte[], byte[])}).
          * <p>
          * The result will have {@link Result#verified} true if they match. If given hash has an
          * invalid format {@link Result#validFormat} will be false; see also {@link Result#formatErrorMessage}
@@ -697,7 +697,7 @@ public final class BCrypt {
     /**
      * The supported version identifiers for bcrypt according to the modular crypt format.
      * <p>
-     * See: https://passlib.readthedocs.io/en/stable/modular_crypt_format.html
+     * See: <a href="https://passlib.readthedocs.io/en/stable/modular_crypt_format.html">modular_crypt_format</a>
      */
     public static final class Version {
         private static final BCryptFormatter DEFAULT_FORMATTER = new BCryptFormatter.Default(new Radix64Encoder.Default(), BCrypt.DEFAULT_CHARSET);
@@ -713,7 +713,7 @@ public final class BCrypt {
 
         /**
          * The max length of the password in bytes excluding lats null-terminator byte.
-         * @deprecated this will return 71 which is not correct, the null terminator should not count towards the full length if the pw is exactly 72. Use {@link #MAX_PW_LENGTH_BYTE} instead. See https://github.com/patrickfav/bcrypt/pull/44
+         * @deprecated this will return 71 which is not correct, the null terminator should not count towards the full length if the pw is exactly 72. Use {@link #MAX_PW_LENGTH_BYTE} instead. See <a href="https://github.com/patrickfav/bcrypt/pull/44">github</a>
          */
         @Deprecated
         public static final int DEFAULT_MAX_PW_LENGTH_BYTE = MAX_PW_LENGTH_BYTE - 1;
@@ -780,13 +780,13 @@ public final class BCrypt {
         public final byte[] versionIdentifier;
 
         /**
-         * Due to a bug the OpenBSD implemenation only uses 23 bytes (184 bit) of the possible 24 byte output from
+         * Due to a bug the OpenBSD implementation only uses 23 bytes (184 bit) of the possible 24 byte output from
          * blowfish. Set this to false if you want the full 24 byte out (which makes it incompatible with most other impl)
          */
         public final boolean useOnly23bytesForHash;
 
         /**
-         * Since OpenBSD bcrypt version $2a$ a null-terminator byte must be append to the hash. This flag decides if
+         * Since OpenBSD bcrypt version $2a$ a null-terminator byte must be appended to the hash. This flag decides if
          * that will be done during hashing.
          */
         public final boolean appendNullTerminator;
@@ -794,7 +794,7 @@ public final class BCrypt {
         /**
          * The max allowed length of password in bcrypt, longer than that {@link LongPasswordStrategy} will be activated.
          * Usual lengths are between 50 and 72 bytes, most often are 56, 71 or 72 bytes.
-         * See https://security.stackexchange.com/a/39851
+         * See <a href="https://security.stackexchange.com/a/39851">security.stackexchange.com</a>
          */
         public final int allowedMaxPwLength;
 
@@ -818,7 +818,7 @@ public final class BCrypt {
          *
          * @param versionIdentifier     version as UTF-8 encoded byte array, e.g. '2a' = new byte[]{0x32, 0x61}, do not included the separator '$'
          * @param useOnly23bytesForHash set to false if you want the full 24 byte out for the hash (otherwise will be truncated to 23 byte according to OpenBSD impl)
-         * @param appendNullTerminator  as defined in $2a$+ a null terminator is appended to the password, pass false if you want avoid this
+         * @param appendNullTerminator  as defined in $2a$+ a null terminator is appended to the password, pass false if you want to avoid this
          * @param allowedMaxPwLength    the max allowed length of password in bcrypt, longer than that {@link LongPasswordStrategy} will be activated
          * @param formatter             the formatter responsible for formatting the out hash message digest
          * @param parser                responsible for parsing the message format

@@ -38,7 +38,7 @@ public final class CLIParser {
                 return null;
             }
 
-            if (commandLine.getArgs().length <= 0) {
+            if (commandLine.getArgs().length == 0) {
                 throw new IllegalArgumentException("First parameter must be password (e.g. bcrypt 'mysecretpassword' -" + ARG_HASH + " 12)");
             }
 
@@ -71,7 +71,7 @@ public final class CLIParser {
 
         final int costFactor;
         try {
-            costFactor = Integer.valueOf(hashParams[0]);
+            costFactor = Integer.parseInt(hashParams[0]);
         } catch (Exception e) {
             throw new IllegalArgumentException("First parameter of hash expected to be integer type, was " + hashParams[0]);
         }

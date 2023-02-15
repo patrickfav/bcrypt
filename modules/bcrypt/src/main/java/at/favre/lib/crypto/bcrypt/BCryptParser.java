@@ -9,7 +9,7 @@ import static at.favre.lib.crypto.bcrypt.BCrypt.SEPARATOR;
 
 /**
  * A simple parser which is able to parse Modular Crypt Format specifically for bcrypt.
- *
+ * <p>
  * It will gather the parts of the format:
  * <ul>
  * <li>version</li>
@@ -17,9 +17,9 @@ import static at.favre.lib.crypto.bcrypt.BCrypt.SEPARATOR;
  * <li>salt (decoded)</li>
  * <li>hash (decoded)</li>
  * </ul>
- * 
+ *
  * see: {@link BCryptFormatter}
- * see: https://passlib.readthedocs.io/en/stable/modular_crypt_format.html
+ * see: <a href="https://passlib.readthedocs.io/en/stable/modular_crypt_format.html">modular_crypt_format</a>
  */
 public interface BCryptParser {
 

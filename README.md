@@ -5,7 +5,7 @@ This is an implementation of the OpenBSD Blowfish password hashing algorithm, as
 [![Maven Central](https://img.shields.io/maven-central/v/at.favre.lib/bcrypt)](https://mvnrepository.com/artifact/at.favre.lib/bcrypt)
 [![Github Actions](https://github.com/patrickfav/bcrypt/actions/workflows/build_deploy.yml/badge.svg)](https://github.com/patrickfav/bcrypt/actions)
 [![Javadocs](https://www.javadoc.io/badge/at.favre.lib/bcrypt.svg)](https://www.javadoc.io/doc/at.favre.lib/bcrypt)
-[![codecov](https://codecov.io/gh/patrickfav/bcrypt/branch/master/graph/badge.svg?token=HP8FL3ZJG7)](https://codecov.io/gh/patrickfav/bcrypt)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=patrickfav_bcrypt&metric=coverage)](https://sonarcloud.io/summary/new_code?id=patrickfav_bcrypt)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=patrickfav_bcrypt&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=patrickfav_bcrypt)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=patrickfav_bcrypt&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=patrickfav_bcrypt)
 
