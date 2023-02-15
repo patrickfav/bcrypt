@@ -50,7 +50,7 @@ public interface Radix64Encoder {
 
     /**
      * A mod of Square's Okio Base64 encoder
-     *
+     * <p>
      * Original author: Alexander Y. Kleymenov
      *
      * @see <a href="https://github.com/square/okio/blob/okio-parent-1.15.0/okio/src/main/java/okio/Base64.java">Okio</a>

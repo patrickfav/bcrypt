@@ -37,9 +37,9 @@ import java.util.Locale;
  *     MtoN69SN.GE25fCpldebzkryUyopws6
  * </pre>
  * <p>
- * The literal <code>$</code> is a simple seperator
+ * The literal <code>$</code> is a simple separator
  * <p>
- * see: https://passlib.readthedocs.io/en/stable/modular_crypt_format.html
+ * see: <a href="https://passlib.readthedocs.io/en/stable/modular_crypt_format.html">modular_crypt_format</a>
  */
 public interface BCryptFormatter {
 
