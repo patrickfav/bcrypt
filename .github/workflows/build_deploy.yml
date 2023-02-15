@@ -45,8 +45,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=$SONARQUBE_PROJECT
-      - name: Analyze with Codecov
-        uses: codecov/codecov-action@v3
 
   deploy:
     needs: build
