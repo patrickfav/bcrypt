@@ -36,15 +36,15 @@ public final class BCrypt {
      */
     public static final int MAX_COST = 31;
 
+     /**
+     * The raw hash out length in byte
+     */
+    public static final int HASH_OUT_LENGTH = 23;
+    
     /**
      * Ascii hex pointer for '2'
      */
     static final byte MAJOR_VERSION = 0x32;
-
-    /**
-     * The raw hash out length in byte
-     */
-    static final int HASH_OUT_LENGTH = 23;
 
     /**
      * Ascii hex pointer for '$'
