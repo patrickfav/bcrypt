@@ -743,9 +743,6 @@ public final class BCrypt {
          * Due to a bug in crypt_blowfish, a PHP implementation of BCrypt, a new version string was introduced to
          * recognize old hashes. It was mis-handling characters with the 8th bit set. Nobody else, including canonical
          * OpenBSD, adopted the idea of 2x/2y so this version marker change was limited to crypt_blowfish.
-         * <p>
-         * Nobody else, including canonical OpenBSD, adopted the idea of 2x/2y. This version marker change was limited
-         * to crypt_blowfish.
          */
         public static final Version VERSION_2X = new Version(new byte[]{MAJOR_VERSION, 0x78}, DEFAULT_FORMATTER, DEFAULT_PARSER);
 
