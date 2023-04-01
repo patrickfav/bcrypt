@@ -296,7 +296,7 @@ it with `java -jar modules/benchmark-jmh/target/benchmark-jmh-x.y.z-full.jar`.
 ### Test Vectors and Reference Implementations
 
 This implementation is tested against the bcrypt implementation jBcrypt and Bouncy Castle. It includes test vectors
-found in the test cases of bcrypt and [various](https://stackoverflow.com/a/12761326/774398) [places](http://openwall.info/wiki/john/sample-hashes) [on](http://cvsweb.openwall.com/cgi/cvsweb.cgi/Owl/packages/glibc/crypt_blowfish/wrapper.c?rev=HEAD) [the web](https://bitbucket.org/vadim/bcrypt.net/src/464c41416dc9/BCrypt.Net.Test/TestBCrypt.cs?fileviewer=file-view-default). Additionally I [created a reference test suite](https://github.com/patrickfav/bcrypt/wiki/Published-Test-Vectors) for regression tests and to check compatibility with
+found in the test cases of bcrypt and [various](https://stackoverflow.com/a/12761326/774398) [places](http://openwall.info/wiki/john/sample-hashes) [on](http://cvsweb.openwall.com/cgi/cvsweb.cgi/Owl/packages/glibc/crypt_blowfish/wrapper.c?rev=HEAD) [the web](https://github.com/BcryptNet/bcrypt.net/blob/main/src/BCrypt.Net.UnitTests/BCryptTests.cs). Additionally I [created a reference test suite](https://github.com/patrickfav/bcrypt/wiki/Published-Test-Vectors) for regression tests and to check compatibility with
 other libraries.
 
 ### The Modular Crypt Format for bcrypt
