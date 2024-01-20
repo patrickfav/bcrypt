@@ -13,6 +13,8 @@ The code is compiled with target [Java 7](https://en.wikipedia.org/wiki/Java_ver
 
 ## Quickstart
 
+This library is published to Maven Central
+
 Add the dependency of the [latest version](https://github.com/patrickfav/bcrypt/releases/latest) to your `pom.xml`:
 
 ```xml
@@ -21,6 +23,12 @@ Add the dependency of the [latest version](https://github.com/patrickfav/bcrypt/
     <artifactId>bcrypt</artifactId>
     <version>{latest-version}</version>
 </dependency>
+```
+
+Or if you are using Gradle:
+
+```groovy
+implementation("at.favre.lib:bcrypt:{latest-version}")
 ```
 
 A simple example:
